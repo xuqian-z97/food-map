@@ -31,6 +31,7 @@ require_file "AGENTS.md"
 require_dir ".agents"
 require_dir "skills"
 require_dir "harness"
+require_dir "deploy"
 
 for skill in skills/*/SKILL.md; do
   [ -f "$skill" ] || fail "no project skills found"
@@ -46,6 +47,8 @@ contains "CODEX-product.md" "纯文字"
 contains "AGENTS.md" "多代理开发模式"
 contains "AGENTS.md" "项目专属 Skills"
 contains "CODEX-gen.md" "harness"
+contains "CODEX-after.md" "跨云"
+contains "CODEX-after.md" "Docker Compose"
+contains "AGENTS.md" "ECS2"
 
 printf 'PASS: documentation structure and core rules are present.\n'
-

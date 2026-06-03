@@ -765,7 +765,117 @@ Docker Compose
 
 早期开发时，可以在一个 PostgreSQL 容器中创建多个逻辑数据库。但每个服务仍必须使用自己的数据库或 schema，并且不能访问其他服务的数据。
 
-## 15. 单个服务建议代码结构
+## 15. 服务器部署方案
+
+### 15.1 当前服务器
+
+ECS1：
+
+```text
+公网 IP：112.124.13.171
+配置：2C2G
+系统：CentOS 7.4 64
+已安装：Docker，含 Redis、MySQL 容器
+```
+
+ECS2：
+
+```text
+公网 IP：115.190.223.31
+配置：4C4G
+系统：Ubuntu 22.04 64
+已安装：无
+```
+
+对象存储：
+
+```text
+阿里云 OSS
+```
+
+### 15.2 跨云约束
+
+两台服务器不在同一个云厂商或同一个 VPC，不能默认使用内网通信。
+
+部署原则：
+
+- 不通过裸公网访问 Redis、PostgreSQL、Nacos、RabbitMQ。
+- 不把内部组件端口开放到公网。
+- 如果必须跨服务器访问内部组件，必须先建立 WireGuard/VPN 隧道。
+- MVP 阶段优先把核心运行时放在 ECS2 单机，降低跨公网依赖。
+
+### 15.3 MVP 推荐部署
+
+ECS2 作为主应用服务器：
+
+```text
+Nginx
+Spring Cloud Gateway
+Nacos standalone
+PostgreSQL + PostGIS
+RabbitMQ
+Redis
+MVP 微服务
+```
+
+ECS1 作为辅助服务器：
+
+```text
+备份
+轻量监控，后续
+跳板，后续可选
+Redis 备用，不作为 MVP 默认跨公网 Redis
+```
+
+OSS 用于：
+
+```text
+用户头像
+推荐菜单图片
+门店图片
+```
+
+### 15.4 MVP 部署方式
+
+MVP 使用：
+
+```text
+Docker Compose
+```
+
+暂不使用 Kubernetes。
+
+原因：
+
+- 当前服务器资源较小。
+- 微服务仍处于项目早期。
+- Compose 更适合快速交付和验证。
+- 后续可以迁移到 ACK/Kubernetes。
+
+### 15.5 安全组原则
+
+公网允许：
+
+```text
+80/tcp
+443/tcp
+22/tcp，仅允许固定运维 IP
+```
+
+禁止公网开放：
+
+```text
+5432 PostgreSQL
+6379 Redis
+8848 Nacos
+9848 Nacos gRPC
+5672 RabbitMQ
+15672 RabbitMQ Management
+8080 Gateway
+微服务内部端口
+```
+
+## 16. 单个服务建议代码结构
 
 每个服务采用统一结构：
 
@@ -799,7 +909,7 @@ service-name
 | dto | 请求和响应对象 |
 | config | Spring 配置 |
 
-## 16. MVP 后端里程碑
+## 17. MVP 后端里程碑
 
 ### B1：基础设施骨架
 
@@ -854,11 +964,10 @@ service-name
 - 对象存储集成。
 - 图片元数据。
 
-## 17. 后端待决策问题
+## 18. 后端待决策问题
 
 1. MVP 使用 RocketMQ 还是 RabbitMQ。
 2. 使用 MyBatis 还是 MyBatis-Plus。
 3. Spring Cloud Alibaba 版本。
 4. 本地开发使用一个 PostgreSQL 容器多个数据库，还是多个 PostgreSQL 容器。
 5. 公开推荐是否需要审核后才进入社区接口。
-

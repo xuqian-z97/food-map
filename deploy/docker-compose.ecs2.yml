@@ -1,0 +1,110 @@
+services:
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: foodmap-nginx
+    restart: unless-stopped
+    ports:
+      - "${NGINX_HTTP_PORT:-80}:80"
+      - "${NGINX_HTTPS_PORT:-443}:443"
+    volumes:
+      - ./nginx/foodmap.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - gateway
+    networks:
+      - foodmap-net
+
+  gateway:
+    image: foodmap/foodmap-gateway-service:latest
+    container_name: foodmap-gateway
+    restart: unless-stopped
+    environment:
+      JAVA_OPTS: ${JAVA_OPTS}
+      SPRING_PROFILES_ACTIVE: prod
+      NACOS_SERVER_ADDR: nacos:8848
+    expose:
+      - "8080"
+    depends_on:
+      - nacos
+    networks:
+      - foodmap-net
+
+  nacos:
+    image: nacos/nacos-server:v2.3.2
+    container_name: foodmap-nacos
+    restart: unless-stopped
+    environment:
+      MODE: standalone
+      NACOS_AUTH_ENABLE: ${NACOS_AUTH_ENABLE:-true}
+      NACOS_AUTH_TOKEN: ${NACOS_AUTH_TOKEN}
+      NACOS_AUTH_IDENTITY_KEY: ${NACOS_AUTH_IDENTITY_KEY}
+      NACOS_AUTH_IDENTITY_VALUE: ${NACOS_AUTH_IDENTITY_VALUE}
+      JVM_XMS: 256m
+      JVM_XMX: 512m
+      JVM_XMN: 128m
+    expose:
+      - "8848"
+      - "9848"
+    volumes:
+      - nacos-data:/home/nacos/data
+      - nacos-logs:/home/nacos/logs
+    networks:
+      - foodmap-net
+
+  postgres:
+    image: postgis/postgis:16-3.4
+    container_name: foodmap-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      TZ: ${TZ:-Asia/Shanghai}
+    expose:
+      - "5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - foodmap-net
+
+  redis:
+    image: redis:7.4-alpine
+    container_name: foodmap-redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes", "--requirepass", "${REDIS_PASSWORD}"]
+    expose:
+      - "6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - foodmap-net
+
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: foodmap-rabbitmq
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+    expose:
+      - "5672"
+      - "15672"
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    networks:
+      - foodmap-net
+
+  # Application services are placeholders until backend images are generated.
+  # Add auth/user/relation/store/recommendation/community/media services here
+  # after backend module Dockerfiles and image tags are created.
+
+networks:
+  foodmap-net:
+    driver: bridge
+
+volumes:
+  nacos-data:
+  nacos-logs:
+  postgres-data:
+  redis-data:
+  rabbitmq-data:
+

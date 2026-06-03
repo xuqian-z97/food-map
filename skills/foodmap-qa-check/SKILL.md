@@ -63,6 +63,13 @@ Harness：
 - 重要迭代是否执行 `harness/scripts/run-all.sh`。
 - 未执行的 harness 检查是否说明原因。
 
+部署：
+
+- `deploy/` 文件结构是否完整。
+- 安全组不暴露 Redis、PostgreSQL、Nacos、RabbitMQ 和微服务内部端口。
+- 跨云服务器不通过裸公网访问内部依赖。
+- `.env` 不进入 Git。
+
 ## 工作流程
 
 1. 读取相关文档和当前任务范围。

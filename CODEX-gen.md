@@ -115,6 +115,13 @@ food-map
 │   ├── file-boundary-rules.md
 │   ├── api-contract-checklist.md
 │   └── scripts
+├── deploy
+│   ├── README.md
+│   ├── architecture.md
+│   ├── env.example
+│   ├── docker-compose.ecs2.yml
+│   ├── nginx
+│   └── checklists
 ├── AGENTS.md
 ├── CODEX-product.md
 ├── CODEX-front.md
@@ -406,6 +413,13 @@ food-map
 生成 iOS App 壳。
 ```
 
+部署准备：
+
+```text
+MVP 阶段使用 Docker Compose 部署到 ECS2，ECS1 作为辅助节点。
+两台服务器不在同一云厂商或 VPC 时，不通过裸公网访问 Redis、数据库、Nacos、RabbitMQ。
+```
+
 ## 14. 当前里程碑状态
 
 | 里程碑 | 状态 |
@@ -415,6 +429,7 @@ food-map
 | 多代理子规范 | 已完成 |
 | 项目专属 Skills | 已完成 |
 | Harness 约束和验收脚手架 | 已完成 |
+| 部署方案和模板 | 已完成 |
 | 后端骨架 | 未开始 |
 | iOS App 壳 | 未开始 |
 | 认证/用户接口 | 未开始 |

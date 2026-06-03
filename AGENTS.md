@@ -438,6 +438,15 @@ ios/FoodMapApp
 | 监控 | Actuator、Prometheus、Grafana |
 | 链路追踪 | OpenTelemetry 或 SkyWalking |
 
+部署约束：
+
+- MVP 使用 Docker Compose，不使用 Kubernetes。
+- ECS2 作为主应用服务器。
+- ECS1 作为辅助服务器。
+- 两台服务器不在同一云厂商/VPC 时，不通过裸公网访问 Redis、PostgreSQL、Nacos、RabbitMQ。
+- 如需跨服务器访问内部组件，必须先建立 WireGuard/VPN。
+- 阿里云 OSS 用于图片和头像。
+
 ### 8.3 后端目录约定
 
 推荐结构：
@@ -772,3 +781,4 @@ git@github.com:xuqian-z97/food-map.git
 2. 生成 iOS App 壳。
 3. 实现认证和用户基础能力。
 4. 实现门店和推荐主流程。
+5. 后端镜像生成后，完善 `deploy/docker-compose.ecs2.yml` 中的应用服务配置。

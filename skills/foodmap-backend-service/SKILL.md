@@ -14,6 +14,7 @@ description: Use when creating, updating, testing, or reviewing FoodMap Java Spr
 - 设计 API、DTO、数据库表、事件。
 - 实现权限、可见范围、社区统计。
 - 配置 Docker Compose、Nacos、Redis、消息队列、PostgreSQL/PostGIS。
+- 生成或调整 ECS2 Docker Compose 部署模板。
 
 ## 必读文档
 
@@ -39,6 +40,15 @@ description: Use when creating, updating, testing, or reviewing FoodMap Java Spr
 - MinIO 或阿里云 OSS
 - Maven
 - Docker Compose
+
+## 部署约束
+
+- MVP 使用 Docker Compose 部署。
+- ECS2 是主应用服务器。
+- ECS1 是辅助服务器。
+- 两台服务器不在同一云厂商/VPC 时，不通过裸公网访问 Redis、PostgreSQL、Nacos、RabbitMQ。
+- 如需跨服务器访问内部组件，必须先建立 WireGuard/VPN。
+- OSS 用于用户头像、推荐菜单图片和门店图片。
 
 ## 服务边界
 
@@ -105,4 +115,3 @@ service-name
 - API 使用 DTO。
 - 权限和可见范围由后端校验。
 - 关键业务规则有测试或明确说明暂未测试原因。
-
