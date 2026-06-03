@@ -78,6 +78,8 @@ Stage 0 交付物：
 - 前端架构文档。
 - 后端架构文档。
 - 项目迭代文档。
+- AGENTS 协作规范。
+- .agents 子代理规范。
 
 当前尚未生成应用代码。
 
@@ -87,6 +89,12 @@ Stage 0 交付物：
 
 ```text
 myTinyProject
+├── .agents
+│   ├── frontend-agent.md
+│   ├── backend-agent.md
+│   ├── api-agent.md
+│   ├── qa-agent.md
+│   └── docs-agent.md
 ├── AGENTS.md
 ├── CODEX-product.md
 ├── CODEX-front.md
@@ -384,6 +392,7 @@ myTinyProject
 | --- | --- |
 | 文档基础建设 | 已完成 |
 | AGENTS 协作规范 | 已完成 |
+| 多代理子规范 | 已完成 |
 | 后端骨架 | 未开始 |
 | iOS App 壳 | 未开始 |
 | 认证/用户接口 | 未开始 |
