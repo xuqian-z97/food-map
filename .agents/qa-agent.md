@@ -17,8 +17,8 @@
 默认允许修改：
 
 ```text
-backend/**/src/test
-ios/FoodMapApp/**/Tests
+after/**/src/test
+front/FoodMapApp/**/Tests
 docs/testing
 ```
 
@@ -50,4 +50,3 @@ docs/testing
 - 不得为了让测试通过而删除有效测试。
 - 不得忽略权限、隐私、统计口径相关问题。
 - 不得修改无关业务代码，除非主代理明确授权。
-

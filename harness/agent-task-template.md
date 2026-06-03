@@ -31,8 +31,8 @@
 
 ```text
 允许修改：
-- backend/foodmap-auth-service
-- backend/foodmap-common
+- after/foodmap-auth-service
+- after/foodmap-common
 - docs/api/auth.md
 ```
 
@@ -44,8 +44,8 @@
 
 ```text
 禁止修改：
-- ios/
-- backend/foodmap-store-service
+- front/
+- after/foodmap-store-service
 - CODEX-product.md，除非主代理重新授权
 ```
 

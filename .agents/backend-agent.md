@@ -46,8 +46,8 @@
 默认只允许修改主代理指定的单个后端服务目录，例如：
 
 ```text
-backend/foodmap-auth-service
-backend/foodmap-common
+after/foodmap-auth-service
+after/foodmap-common
 ```
 
 不得跨服务修改，除非主代理明确授权。
@@ -80,4 +80,3 @@ backend/foodmap-common
 - 不得让前端承担核心权限判断。
 - 不得把非 PUBLIC 推荐写入全站社区统计。
 - 不得擅自改变消息队列、数据库或注册中心选型。
-

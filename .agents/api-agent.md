@@ -19,8 +19,8 @@
 
 ```text
 docs/api
-backend/**/dto
-ios/FoodMapApp/**/Models
+after/**/dto
+front/FoodMapApp/**/Models
 ```
 
 实际任务中必须由主代理指定更精确范围。
@@ -52,4 +52,3 @@ ios/FoodMapApp/**/Models
 - 不得绕过后端权限规则。
 - 不得让前端自行判断核心可见权限。
 - 不得改变服务边界或数据库归属，除非主代理明确授权。
-

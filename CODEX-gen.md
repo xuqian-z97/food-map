@@ -74,10 +74,10 @@ FoodMap 是一款 iOS 优先的美食推荐地图 App。
 当前阶段：
 
 ```text
-Stage 0：文档基础建设已完成
+Stage 1：后端微服务骨架已完成
 ```
 
-Stage 0 交付物：
+已完成交付物：
 
 - 产品文档。
 - 前端架构文档。
@@ -87,8 +87,9 @@ Stage 0 交付物：
 - .agents 子代理规范。
 - skills 项目专属工作流。
 - harness 多代理约束和验收脚手架。
+- `after/` Java 微服务 Maven 多模块骨架。
 
-当前尚未生成应用代码。
+当前尚未生成 `front/` iOS 应用代码；后端暂为可编译骨架，尚未实现业务 API、数据库迁移和持久化逻辑。
 
 ## 6. 计划中的仓库结构
 
@@ -127,7 +128,7 @@ food-map
 ├── CODEX-front.md
 ├── CODEX-after.md
 ├── CODEX-gen.md
-├── backend
+├── after
 │   ├── pom.xml
 │   ├── foodmap-common
 │   ├── foodmap-gateway-service
@@ -139,7 +140,7 @@ food-map
 │   ├── foodmap-community-service
 │   ├── foodmap-media-service
 │   └── docker-compose.yml
-├── ios
+├── front
 │   └── FoodMapApp
 └── docs
     ├── api
@@ -174,7 +175,7 @@ food-map
 
 交付物：
 
-- backend/pom.xml
+- after/pom.xml
 - foodmap-common
 - 各服务模块
 - 基础 Spring Boot 应用
@@ -398,16 +399,16 @@ food-map
 完成文档基础建设后，下一步推荐：
 
 ```text
-优先生成后端微服务骨架。
+优先实现认证服务和用户服务基础能力。
 ```
 
 原因：
 
-- 后端服务边界是当前项目的核心要求。
-- API 契约会指导 iOS App 开发。
+- 认证和用户能力是登录、好友、情侣、推荐归属的基础。
+- API 契约会指导后续 `front/` iOS App 开发。
 - 认证、用户、门店、推荐服务构成项目主干。
 
-后端骨架完成后：
+认证和用户基础能力完成后：
 
 ```text
 生成 iOS App 壳。
@@ -430,7 +431,7 @@ MVP 阶段使用 Docker Compose 部署到 ECS2，ECS1 作为辅助节点。
 | 项目专属 Skills | 已完成 |
 | Harness 约束和验收脚手架 | 已完成 |
 | 部署方案和模板 | 已完成 |
-| 后端骨架 | 未开始 |
+| 后端骨架 | 已完成 |
 | iOS App 壳 | 未开始 |
 | 认证/用户接口 | 未开始 |
 | 地图壳 | 未开始 |

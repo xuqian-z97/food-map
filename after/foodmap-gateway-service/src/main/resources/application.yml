@@ -1,0 +1,50 @@
+server:
+  port: ${SERVER_PORT:8080}
+
+spring:
+  application:
+    name: foodmap-gateway-service
+  cloud:
+    nacos:
+      discovery:
+        server-addr: ${NACOS_SERVER_ADDR:127.0.0.1:8848}
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+      routes:
+        - id: auth-service
+          uri: lb://foodmap-auth-service
+          predicates:
+            - Path=/api/auth/**
+        - id: user-service
+          uri: lb://foodmap-user-service
+          predicates:
+            - Path=/api/users/**
+        - id: relation-service
+          uri: lb://foodmap-relation-service
+          predicates:
+            - Path=/api/friends/**,/api/couple/**,/internal/relations/**
+        - id: store-service
+          uri: lb://foodmap-store-service
+          predicates:
+            - Path=/api/stores/**
+        - id: recommendation-service
+          uri: lb://foodmap-recommendation-service
+          predicates:
+            - Path=/api/recommendations/**
+        - id: community-service
+          uri: lb://foodmap-community-service
+          predicates:
+            - Path=/api/community/**
+        - id: media-service
+          uri: lb://foodmap-media-service
+          predicates:
+            - Path=/api/media/**
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

@@ -18,13 +18,13 @@
 默认允许：
 
 ```text
-ios/FoodMapApp
+front/FoodMapApp
 ```
 
 默认禁止：
 
 ```text
-backend
+after
 CODEX-after.md
 ```
 
@@ -33,15 +33,15 @@ CODEX-after.md
 默认允许主代理指定的单个后端服务，例如：
 
 ```text
-backend/foodmap-auth-service
-backend/foodmap-common
+after/foodmap-auth-service
+after/foodmap-common
 ```
 
 默认禁止：
 
 ```text
-ios
-其他未授权 backend 服务
+front
+其他未授权 after 服务
 ```
 
 ### API 契约子代理
@@ -50,8 +50,8 @@ ios
 
 ```text
 docs/api
-backend/**/dto
-ios/FoodMapApp/**/Models
+after/**/dto
+front/FoodMapApp/**/Models
 ```
 
 实际任务必须由主代理进一步收窄范围。
@@ -61,8 +61,8 @@ ios/FoodMapApp/**/Models
 默认允许：
 
 ```text
-backend/**/src/test
-ios/FoodMapApp/**/Tests
+after/**/src/test
+front/FoodMapApp/**/Tests
 docs/testing
 harness
 ```
@@ -88,8 +88,8 @@ docs
 默认禁止：
 
 ```text
-backend
-ios
+after
+front
 ```
 
 ## 4. 冲突处理
@@ -99,4 +99,3 @@ ios
 1. 主代理重新拆分任务。
 2. 或指定一个子代理负责编辑，另一个只提供建议。
 3. 或由主代理本地完成该文件修改。
-
