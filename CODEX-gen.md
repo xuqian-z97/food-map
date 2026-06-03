@@ -10,6 +10,7 @@
 - CODEX-front.md
 - CODEX-after.md
 - CODEX-gen.md
+- AGENTS.md
 
 这些文件是后续代码生成的事实依据。
 
@@ -22,8 +23,9 @@
 3. 如果需求影响 iOS 架构、页面、SDK 或 UI 流程，必须更新 CODEX-front.md。
 4. 如果需求影响后端服务、API、数据归属或基础设施，必须更新 CODEX-after.md。
 5. 如果需求影响里程碑、开发顺序或项目规则，必须更新 CODEX-gen.md。
-6. 根据更新后的文档生成或修改代码。
-7. 尽可能通过测试或构建命令验证变更。
+6. 如果需求影响开发代理职责、前后端验收标准或协作规则，必须更新 AGENTS.md。
+7. 根据更新后的文档生成或修改代码。
+8. 尽可能通过测试或构建命令验证变更。
 
 代码不能偏离这些文档。
 
@@ -85,6 +87,7 @@ Stage 0 交付物：
 
 ```text
 myTinyProject
+├── AGENTS.md
 ├── CODEX-product.md
 ├── CODEX-front.md
 ├── CODEX-after.md
@@ -380,6 +383,7 @@ myTinyProject
 | 里程碑 | 状态 |
 | --- | --- |
 | 文档基础建设 | 已完成 |
+| AGENTS 协作规范 | 已完成 |
 | 后端骨架 | 未开始 |
 | iOS App 壳 | 未开始 |
 | 认证/用户接口 | 未开始 |
