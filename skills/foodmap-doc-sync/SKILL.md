@@ -25,6 +25,8 @@ description: Use when FoodMap requirements, architecture, milestones, agent rule
 - `CODEX-gen.md`
 - `AGENTS.md`
 - `.agents/*.md`
+- `skills/*/SKILL.md`
+- `harness/*.md`
 
 ## 工作流程
 
@@ -36,6 +38,8 @@ description: Use when FoodMap requirements, architecture, milestones, agent rule
    - 后端服务、数据库、API、基础设施写入 `CODEX-after.md`。
    - 迭代顺序、项目结构、同步规则写入 `CODEX-gen.md`。
    - 代理职责、文件边界、验收标准写入 `AGENTS.md` 和 `.agents/*.md`。
+   - 项目工作流写入 `skills/*/SKILL.md`。
+   - 多代理约束和验收脚手架写入 `harness/`。
 4. 检查关键规则没有丢失。
 5. 输出变更摘要和未决事项。
 
@@ -55,4 +59,4 @@ description: Use when FoodMap requirements, architecture, milestones, agent rule
 - 文档中没有互相冲突的技术栈、服务边界或页面定义。
 - 如果新增代码生成规则，`CODEX-gen.md` 或 `AGENTS.md` 已更新。
 - 如果新增子代理职责，`.agents/*.md` 已更新。
-
+- 如果新增验收脚手架或自动检查，`harness/` 已更新。

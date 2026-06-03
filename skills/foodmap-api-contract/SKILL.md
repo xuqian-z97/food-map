@@ -22,6 +22,7 @@ description: Use when designing, updating, checking, or implementing FoodMap API
 - `CODEX-front.md`
 - `AGENTS.md`
 - `.agents/api-agent.md`
+- `harness/api-contract-checklist.md`
 
 如涉及产品语义，同时读取 `CODEX-product.md`。
 
@@ -92,7 +93,7 @@ description: Use when designing, updating, checking, or implementing FoodMap API
 2. 定义请求、响应、错误结构和分页结构。
 3. 对齐后端 DTO 与 iOS 模型。
 4. 如契约变化，更新 `CODEX-after.md`、`CODEX-front.md` 或 `docs/api`。
-5. 检查权限、可见范围和统计口径。
+5. 按 `harness/api-contract-checklist.md` 检查权限、可见范围、分页、bbox 和统计口径。
 6. 输出接口变更摘要。
 
 ## 验收标准
@@ -101,4 +102,3 @@ description: Use when designing, updating, checking, or implementing FoodMap API
 - 前后端字段命名一致。
 - 分页、bbox、可见范围、错误结构明确。
 - 不出现前端自行判断核心权限的契约设计。
-
