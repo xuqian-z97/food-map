@@ -92,7 +92,7 @@ Stage 0 交付物：
 推荐未来结构：
 
 ```text
-myTinyProject
+food-map
 ├── .agents
 │   ├── frontend-agent.md
 │   ├── backend-agent.md
