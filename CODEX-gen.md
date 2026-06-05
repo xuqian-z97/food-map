@@ -88,6 +88,7 @@ Stage 1：后端微服务骨架已完成
 - skills 项目专属工作流。
 - harness 多代理约束和验收脚手架。
 - `after/` Java 微服务 Maven 多模块骨架。
+- 本地隔离开发环境配置和 profile 切换约定。
 
 当前尚未生成 `front/` iOS 应用代码；后端暂为可编译骨架，尚未实现业务 API、数据库迁移和持久化逻辑。
 
@@ -180,6 +181,7 @@ food-map
 - 各服务模块
 - 基础 Spring Boot 应用
 - Docker Compose 基础配置
+- local / orbstack / prod profile 切换
 - 标准包结构
 
 服务：
@@ -432,6 +434,7 @@ MVP 阶段使用 Docker Compose 部署到 ECS2，ECS1 作为辅助节点。
 | Harness 约束和验收脚手架 | 已完成 |
 | 部署方案和模板 | 已完成 |
 | 后端骨架 | 已完成 |
+| 本地隔离开发环境配置 | 已完成 |
 | iOS App 壳 | 未开始 |
 | 认证/用户接口 | 未开始 |
 | 地图壳 | 未开始 |

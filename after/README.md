@@ -1,10 +1,10 @@
-# FoodMap Backend
+# FoodMap 后端
 
-## 1. Purpose
+## 1. 目录目的
 
-This directory contains the Java microservice backend skeleton for FoodMap.
+本目录存放 FoodMap 的 Java 微服务后端骨架。
 
-The backend follows the project rules in:
+后端实现必须遵守：
 
 - `CODEX-after.md`
 - `AGENTS.md`
@@ -12,16 +12,16 @@ The backend follows the project rules in:
 - `skills/foodmap-backend-service/SKILL.md`
 - `harness/`
 
-## 2. Technology Baseline
+## 2. 技术基线
 
 - Java 21
 - Maven
 - Spring Boot 3.3.x
 - Spring Cloud 2023.0.x
 - Spring Cloud Alibaba Nacos Discovery
-- Docker Compose deployment template under `deploy/`
+- `deploy/` 下的 Docker Compose 部署和本地开发模板
 
-## 3. Modules
+## 3. 模块
 
 ```text
 after
@@ -37,28 +37,61 @@ after
 └── foodmap-media-service
 ```
 
-## 4. Current Scope
+## 4. 当前范围
 
-This iteration creates the compileable service skeleton only:
+当前迭代只生成可编译的服务骨架：
 
-- Maven parent and modules.
-- Spring Boot application entry points.
-- Basic internal health/info endpoints.
-- Gateway route placeholders.
-- Shared common API response and enums.
+- Maven 父工程和模块。
+- Spring Boot 启动入口。
+- 基础内部 health/info 接口。
+- 网关路由占位。
+- 统一 API 响应和枚举。
+- `local / orbstack / prod` profile 切换配置。
 
-Business APIs, database migrations, service-specific DTOs, and persistence are planned for later iterations.
+业务 API、数据库迁移、服务 DTO 和持久化逻辑将在后续迭代中实现。
 
-## 5. Build
+## 5. 环境 Profile
 
-From this directory:
+启动环境优先级：
+
+```text
+SPRING_PROFILES_ACTIVE > FOODMAP_PROFILE > local
+```
+
+| Profile | 使用方式 |
+| --- | --- |
+| local | 默认值，适合 IDEA/Maven 在 Mac 本机启动，依赖通过 `127.0.0.1` 访问 |
+| orbstack | 适合后续服务运行在 Docker/OrbStack 容器网络，依赖通过 Compose 服务名访问 |
+| prod | 生产环境，必须显式注入配置 |
+
+## 6. 构建
+
+在本目录执行：
 
 ```sh
 mvn validate
 ```
 
-From project root:
+更严格的编译：
+
+```sh
+mvn -DskipTests compile
+```
+
+从项目根目录执行：
 
 ```sh
 ./harness/scripts/run-all.sh
 ```
+
+## 7. 启动单个服务
+
+示例：
+
+```sh
+./scripts/run-service.sh foodmap-auth-service local
+```
+
+不传 profile 时默认使用 `local`。
+
+脚本会先安装当前服务及其依赖模块，再只对目标服务执行 `spring-boot:run`，避免 Spring Boot 插件误作用到父 POM。

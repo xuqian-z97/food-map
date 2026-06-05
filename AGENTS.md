@@ -434,7 +434,7 @@ front/FoodMapApp
 | API 文档 | OpenAPI + Knife4j |
 | 构建 | Maven |
 | 容器 | Docker |
-| 本地环境 | Docker Compose |
+| 本地环境 | Docker Compose / OrbStack / Spring Profiles |
 | 监控 | Actuator、Prometheus、Grafana |
 | 链路追踪 | OpenTelemetry 或 SkyWalking |
 
@@ -446,6 +446,8 @@ front/FoodMapApp
 - 两台服务器不在同一云厂商/VPC 时，不通过裸公网访问 Redis、PostgreSQL、Nacos、RabbitMQ。
 - 如需跨服务器访问内部组件，必须先建立 WireGuard/VPN。
 - 阿里云 OSS 用于图片和头像。
+- 本地服务 profile 使用 `SPRING_PROFILES_ACTIVE > FOODMAP_PROFILE > local` 的优先级。
+- IDEA/Maven 本机启动默认使用 `local`；Docker/OrbStack 容器网络启动使用 `orbstack`；生产使用 `prod`。
 
 ### 8.3 后端目录约定
 

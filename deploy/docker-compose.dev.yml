@@ -1,0 +1,98 @@
+name: foodmap-dev
+
+services:
+  postgres:
+    image: ${POSTGRES_IMAGE:-postgis/postgis:16-3.4}
+    container_name: foodmap-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-foodmap}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-foodmap_dev_pwd}
+      POSTGRES_DB: ${POSTGRES_DB:-foodmap_platform}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - foodmap-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-foodmap} -d ${POSTGRES_DB:-foodmap_platform}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - foodmap-dev
+
+  redis:
+    image: ${REDIS_IMAGE:-redis:7.2-alpine}
+    container_name: foodmap-redis
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - foodmap-redis-data:/data
+    command: ["redis-server", "--appendonly", "yes"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - foodmap-dev
+
+  nacos:
+    image: ${NACOS_IMAGE:-nacos/nacos-server:v2.4.3}
+    container_name: foodmap-nacos
+    environment:
+      MODE: standalone
+      PREFER_HOST_MODE: hostname
+      NACOS_AUTH_ENABLE: "false"
+      JVM_XMS: 256m
+      JVM_XMX: 512m
+      JVM_XMN: 128m
+    ports:
+      - "${NACOS_HTTP_PORT:-8848}:8848"
+      - "${NACOS_GRPC_PORT:-9848}:9848"
+      - "${NACOS_RAFT_PORT:-9849}:9849"
+    networks:
+      - foodmap-dev
+
+  rabbitmq:
+    image: ${RABBITMQ_IMAGE:-rabbitmq:3.13-management-alpine}
+    container_name: foodmap-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER:-foodmap}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS:-foodmap_dev_pwd}
+    ports:
+      - "${RABBITMQ_PORT:-5672}:5672"
+      - "${RABBITMQ_MANAGEMENT_PORT:-15672}:15672"
+    volumes:
+      - foodmap-rabbitmq-data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - foodmap-dev
+
+  minio:
+    image: ${MINIO_IMAGE:-minio/minio:latest}
+    container_name: foodmap-minio
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-foodmap}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-foodmap_dev_pwd}
+    ports:
+      - "${MINIO_API_PORT:-9000}:9000"
+      - "${MINIO_CONSOLE_PORT:-9001}:9001"
+    volumes:
+      - foodmap-minio-data:/data
+    command: ["server", "/data", "--console-address", ":9001"]
+    networks:
+      - foodmap-dev
+
+networks:
+  foodmap-dev:
+    driver: bridge
+
+volumes:
+  foodmap-postgres-data:
+  foodmap-redis-data:
+  foodmap-rabbitmq-data:
+  foodmap-minio-data:

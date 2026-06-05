@@ -4,13 +4,50 @@ server:
 spring:
   application:
     name: foodmap-community-service
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:${FOODMAP_PROFILE:local}}
   cloud:
     nacos:
       discovery:
+        enabled: ${NACOS_DISCOVERY_ENABLED:true}
         server-addr: ${NACOS_SERVER_ADDR:127.0.0.1:8848}
+
+foodmap:
+  env:
+    profile: ${SPRING_PROFILES_ACTIVE:${FOODMAP_PROFILE:local}}
 
 management:
   endpoints:
     web:
       exposure:
         include: health,info
+
+---
+spring:
+  config:
+    activate:
+      on-profile: local
+  cloud:
+    nacos:
+      discovery:
+        server-addr: ${NACOS_SERVER_ADDR:127.0.0.1:8848}
+
+---
+spring:
+  config:
+    activate:
+      on-profile: orbstack
+  cloud:
+    nacos:
+      discovery:
+        server-addr: ${NACOS_SERVER_ADDR:nacos:8848}
+
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
+  cloud:
+    nacos:
+      discovery:
+        server-addr: ${NACOS_SERVER_ADDR}

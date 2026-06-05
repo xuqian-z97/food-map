@@ -48,7 +48,7 @@
 | API 文档 | OpenAPI + Knife4j |
 | 构建工具 | Maven |
 | 容器化 | Docker |
-| 本地开发 | Docker Compose |
+| 本地开发 | Docker Compose / OrbStack / Spring Profiles |
 | 监控 | Spring Boot Actuator、Prometheus、Grafana |
 | 链路追踪 | OpenTelemetry 或 SkyWalking |
 
@@ -746,6 +746,26 @@ status = NORMAL
 
 ## 14. 本地开发环境
 
+本地开发环境采用环境 profile 自动切换：
+
+| Profile | 启动位置 | 依赖访问方式 | 说明 |
+| --- | --- | --- | --- |
+| local | Mac 本机、IDEA、Maven | `127.0.0.1` | 默认 profile，不设置环境变量时自动使用 |
+| orbstack | Docker / OrbStack 容器网络 | Compose 服务名，如 `nacos:8848` | 后续微服务容器化后使用 |
+| prod | ECS 生产环境 | 显式环境变量 | 不允许依赖本地默认值 |
+
+后端服务必须通过以下优先级确定启动环境：
+
+```text
+SPRING_PROFILES_ACTIVE > FOODMAP_PROFILE > local
+```
+
+原因：
+
+- 本机 IDEA 启动时访问容器依赖应使用 `127.0.0.1`。
+- 服务运行在 Docker / OrbStack 容器网络中时，访问依赖应使用 Compose 服务名。
+- 生产环境必须显式注入配置，避免误连本地组件。
+
 推荐本地组件：
 
 ```text
@@ -764,6 +784,23 @@ Docker Compose
 ```
 
 早期开发时，可以在一个 PostgreSQL 容器中创建多个逻辑数据库。但每个服务仍必须使用自己的数据库或 schema，并且不能访问其他服务的数据。
+
+本地隔离环境文件：
+
+```text
+.env.dev.example
+deploy/docker-compose.dev.yml
+deploy/dev-env/README.md
+```
+
+启动本地依赖：
+
+```sh
+cp .env.dev.example .env.dev
+docker compose --env-file .env.dev -f deploy/docker-compose.dev.yml up -d
+```
+
+当前阶段 Java 微服务优先由 IDEA 或 Maven 在 Mac 本机启动，使用 `local` profile；待服务 Dockerfile 完成后，再切换到 `orbstack` profile 由 Compose 统一启动。
 
 ## 15. 服务器部署方案
 
@@ -894,6 +931,7 @@ service-name
 ├── src/main/resources
 │   ├── application.yml
 │   └── mapper
+├── scripts，按需
 └── pom.xml
 ```
 
@@ -918,6 +956,7 @@ service-name
 - 网关服务。
 - Nacos 配置。
 - Docker Compose 基础服务。
+- Spring profile 环境切换。
 
 ### B2：认证和用户
 

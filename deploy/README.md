@@ -143,3 +143,27 @@ deploy
 
 当前配置是模板，用于指导部署。后端微服务代码生成后，需要补充镜像名、端口、健康检查和环境变量。
 
+## 7. 本地隔离开发环境
+
+本地开发使用：
+
+```text
+deploy/docker-compose.dev.yml
+.env.dev.example
+deploy/dev-env/README.md
+```
+
+当前本地 Compose 主要启动 PostgreSQL/PostGIS、Redis、Nacos、RabbitMQ 和 MinIO。
+
+推荐方式：
+
+1. 依赖运行在 OrbStack 或 Docker Desktop。
+2. Java 微服务先通过 IDEA/Maven 在 Mac 本机启动，默认使用 `local` profile。
+3. 后续微服务容器化后，在 Compose 网络中使用 `orbstack` profile。
+
+启动本地依赖：
+
+```sh
+cp .env.dev.example .env.dev
+docker compose --env-file .env.dev -f deploy/docker-compose.dev.yml up -d
+```
