@@ -484,6 +484,9 @@ service-name
 │       └── ServiceApplication.java
 ├── src/main/resources
 │   ├── application.yml
+│   ├── application-local.yml
+│   ├── application-orbstack.yml
+│   ├── application-prod.yml
 │   └── mapper
 └── pom.xml
 ```

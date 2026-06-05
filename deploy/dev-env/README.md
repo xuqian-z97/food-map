@@ -108,3 +108,16 @@ NACOS_SERVER_ADDR=<生产 Nacos 地址>
 ```
 
 后续数据库、Redis、OSS、MQ 配置也采用同样方式，不在生产配置中写本地默认值。
+
+## 8. Spring Boot 配置文件约定
+
+每个后端微服务都使用分文件 profile 配置：
+
+```text
+application.yml
+application-local.yml
+application-orbstack.yml
+application-prod.yml
+```
+
+`application.yml` 只放通用项；环境差异必须放到对应的 `application-{profile}.yml` 中。

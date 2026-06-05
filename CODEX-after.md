@@ -766,6 +766,22 @@ SPRING_PROFILES_ACTIVE > FOODMAP_PROFILE > local
 - 服务运行在 Docker / OrbStack 容器网络中时，访问依赖应使用 Compose 服务名。
 - 生产环境必须显式注入配置，避免误连本地组件。
 
+后端服务必须使用分文件配置，不再把多个环境写在同一个 `application.yml` 的多段 YAML 中：
+
+```text
+application.yml
+application-local.yml
+application-orbstack.yml
+application-prod.yml
+```
+
+配置职责：
+
+- `application.yml`：服务名、端口、Actuator、网关路由等所有环境共用配置。
+- `application-local.yml`：Mac 本机和 IDEA 启动时使用的本地依赖地址。
+- `application-orbstack.yml`：Docker / OrbStack 容器网络中的依赖地址。
+- `application-prod.yml`：生产环境配置占位，只通过环境变量注入真实地址和密钥。
+
 推荐本地组件：
 
 ```text
@@ -930,6 +946,9 @@ service-name
 │       └── ServiceApplication.java
 ├── src/main/resources
 │   ├── application.yml
+│   ├── application-local.yml
+│   ├── application-orbstack.yml
+│   ├── application-prod.yml
 │   └── mapper
 ├── scripts，按需
 └── pom.xml

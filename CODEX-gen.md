@@ -181,7 +181,7 @@ food-map
 - 各服务模块
 - 基础 Spring Boot 应用
 - Docker Compose 基础配置
-- local / orbstack / prod profile 切换
+- `application-{profile}.yml` 分文件环境配置
 - 标准包结构
 
 服务：

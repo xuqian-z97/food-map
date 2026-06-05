@@ -46,7 +46,7 @@ after
 - 基础内部 health/info 接口。
 - 网关路由占位。
 - 统一 API 响应和枚举。
-- `local / orbstack / prod` profile 切换配置。
+- `application-local.yml / application-orbstack.yml / application-prod.yml` 分文件 profile 配置。
 
 业务 API、数据库迁移、服务 DTO 和持久化逻辑将在后续迭代中实现。
 
@@ -63,6 +63,15 @@ SPRING_PROFILES_ACTIVE > FOODMAP_PROFILE > local
 | local | 默认值，适合 IDEA/Maven 在 Mac 本机启动，依赖通过 `127.0.0.1` 访问 |
 | orbstack | 适合后续服务运行在 Docker/OrbStack 容器网络，依赖通过 Compose 服务名访问 |
 | prod | 生产环境，必须显式注入配置 |
+
+配置文件职责：
+
+```text
+application.yml           通用配置，如端口、服务名、Actuator、网关路由
+application-local.yml     IDEA/Maven 本机启动配置
+application-orbstack.yml  Docker/OrbStack 容器网络配置
+application-prod.yml      生产环境配置占位
+```
 
 ## 6. 构建
 
