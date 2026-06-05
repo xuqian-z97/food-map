@@ -19,11 +19,11 @@ spring:
         - id: auth-service
           uri: lb://foodmap-auth-service
           predicates:
-            - Path=/api/auth/**
+            - Path=/api/auth/**,/internal/auth/**
         - id: user-service
           uri: lb://foodmap-user-service
           predicates:
-            - Path=/api/users/**
+            - Path=/api/users/**,/internal/users/**
         - id: relation-service
           uri: lb://foodmap-relation-service
           predicates:
@@ -31,19 +31,19 @@ spring:
         - id: store-service
           uri: lb://foodmap-store-service
           predicates:
-            - Path=/api/stores/**
+            - Path=/api/stores/**,/internal/stores/**
         - id: recommendation-service
           uri: lb://foodmap-recommendation-service
           predicates:
-            - Path=/api/recommendations/**
+            - Path=/api/recommendations/**,/internal/recommendations/**
         - id: community-service
           uri: lb://foodmap-community-service
           predicates:
-            - Path=/api/community/**
+            - Path=/api/community/**,/internal/community/**
         - id: media-service
           uri: lb://foodmap-media-service
           predicates:
-            - Path=/api/media/**
+            - Path=/api/media/**,/internal/media/**
 
 foodmap:
   env:

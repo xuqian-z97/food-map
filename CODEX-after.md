@@ -112,6 +112,7 @@ foodmap-gateway-service
 
 - 外部 API 统一入口。
 - 将请求路由到内部微服务。
+- 通过 Spring Cloud LoadBalancer 解析 `lb://service-name` 路由。
 - 在合适场景下进行 JWT 前置校验。
 - 限流。
 - 请求日志。
@@ -126,6 +127,7 @@ foodmap-gateway-service
 
 - 如果后续使用不透明 Token，可依赖认证服务校验 Token。
 - 依赖 Nacos 进行服务发现。
+- 依赖 Spring Cloud LoadBalancer 完成服务实例选择。
 
 ### 5.2 认证服务
 

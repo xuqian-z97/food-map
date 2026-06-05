@@ -93,7 +93,18 @@ mvn -DskipTests compile
 ./harness/scripts/run-all.sh
 ```
 
-## 7. 启动单个服务
+## 7. 网关验证
+
+服务注册到 Nacos 后，可以通过网关验证内部健康检查路由：
+
+```sh
+curl http://localhost:8080/internal/auth/health
+curl http://localhost:8080/internal/users/health
+```
+
+`/api/**` 路径预留给正式业务 API，当前骨架阶段的健康检查路径统一使用 `/internal/**`。
+
+## 8. 启动单个服务
 
 示例：
 

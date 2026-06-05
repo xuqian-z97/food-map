@@ -506,6 +506,8 @@ service-name
 验收标准：
 
 - 能路由外部 API 到内部服务。
+- 能通过 Nacos + Spring Cloud LoadBalancer 访问已注册服务。
+- 骨架阶段可通过 `/internal/**/health` 验证网关到服务的内部路由。
 - 支持基础 JWT 前置校验。
 - 支持 CORS。
 - 支持请求日志。
