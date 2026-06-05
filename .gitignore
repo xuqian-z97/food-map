@@ -12,6 +12,9 @@ target/
 # macOS metadata
 .DS_Store
 
+# IDE metadata
+.idea/
+
 # BlueJ files
 *.ctxt
 
