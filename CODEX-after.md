@@ -1648,7 +1648,273 @@ Docker Compose
 微服务内部端口
 ```
 
-## 16. 单个服务建议代码结构
+## 16. 后端微服务企业级开发基线
+
+本节基于 Spring Boot、Spring Cloud、Flyway、OWASP、OpenTelemetry、RabbitMQ、PostgreSQL、Docker 和 Testcontainers 等官方文档总结，作为 FoodMap 后续后端代码开发的基础规则。
+
+参考来源：
+
+- Spring Boot Externalized Configuration：`https://docs.spring.io/spring-boot/reference/features/external-config.html`
+- Spring Boot Actuator Endpoints：`https://docs.spring.io/spring-boot/3.5/reference/actuator/endpoints.html`
+- Spring Boot Metrics：`https://docs.spring.io/spring-boot/reference/actuator/metrics.html`
+- Spring Cloud Gateway RateLimiter：`https://docs.spring.io/spring-cloud-gateway/reference/spring-cloud-gateway-server-webmvc/filters/ratelimiter.html`
+- Spring Cloud OpenFeign：`https://docs.spring.io/spring-cloud-openfeign/docs/current/reference/html/`
+- Spring Framework Transaction Management：`https://docs.spring.io/spring-framework/reference/6.2/data-access/transaction/declarative.html`
+- Flyway Validate / Repeatable Migrations：`https://documentation.red-gate.com/flyway/reference/commands/validate`、`https://documentation.red-gate.com/flyway/flyway-concepts/migrations/repeatable-migrations`
+- OWASP REST Security Cheat Sheet：`https://cheatsheetseries.owasp.org/cheatsheets/REST_Security_Cheat_Sheet.html`
+- OpenTelemetry Java：`https://opentelemetry.io/docs/languages/java/`
+- RabbitMQ Consumer Acknowledgements and Publisher Confirms：`https://www.rabbitmq.com/docs/confirms`
+- PostgreSQL Unique Indexes / Partial Indexes：`https://www.postgresql.org/docs/current/indexes-unique.html`、`https://www.postgresql.org/docs/current/indexes-partial.html`
+- Dockerfile Best Practices：`https://docs.docker.com/engine/userguide/eng-image/dockerfile_best-practices/`
+- Spring Boot Testcontainers：`https://docs.spring.io/spring-boot/reference/testing/testcontainers.html`
+
+### 16.1 服务边界和数据所有权
+
+必须遵守：
+
+- 每个微服务只能拥有和访问自己的数据库。
+- 跨服务数据访问只能通过内部 API 或消息事件完成。
+- API、事件、日志和前端展示只能使用业务主键，不暴露数据库自增主键 `id`。
+- 一个服务不能把另一个服务的数据库表结构作为自己的查询依赖。
+- 跨服务查询必须有明确超时、失败处理和降级策略。
+
+建议逐步补齐：
+
+- 对高频内部查询提供专门的内部接口，路径统一使用 `/internal/**`。
+- 对最终一致性场景使用事件和本地索引，不用链式同步调用拼装复杂页面。
+- 对跨服务事件携带必要快照字段，避免消费者为了展示再反查多个服务。
+
+暂缓引入：
+
+- 服务网格。
+- 分布式事务框架。
+- 大规模 CQRS/Event Sourcing。
+
+### 16.2 代码分层和依赖方向
+
+每个服务使用统一分层：
+
+```text
+controller -> application -> domain -> infrastructure / mapper
+```
+
+必须遵守：
+
+- `controller` 只处理 HTTP 协议、参数校验、认证上下文提取和 DTO 转换。
+- `application` 负责编排用例、事务边界、调用领域逻辑、调用外部客户端和发送事件。
+- `domain` 放业务规则、状态流转、可见范围判断和领域对象。
+- `infrastructure` 放 OpenFeign 客户端、MQ、对象存储、第三方 API、缓存实现。
+- `mapper` 只负责数据库访问，不写业务判断。
+- 禁止 Controller 直接调用 Mapper。
+- 禁止 DTO、Entity、Mapper 对象在不合适的层级相互穿透。
+
+建议逐步补齐：
+
+- 复杂业务入参使用 Command 对象，查询条件使用 Query 对象。
+- 领域状态变化使用明确方法表达，例如 `accept()`、`reject()`、`hide()`，避免到处散落 `setStatus()`。
+- 公共返回结构、异常模型和分页模型放在 `foodmap-common`。
+
+### 16.3 API 设计和 DTO 规则
+
+必须遵守：
+
+- 外部 API 统一通过网关暴露。
+- Controller 使用 Request/Response DTO，不直接暴露数据库实体。
+- 写接口必须从 Token 中获取当前用户身份，不允许客户端传入当前用户 ID 作为事实来源。
+- 所有入参必须使用 Bean Validation 校验。
+- 列表接口必须分页，默认分页大小和最大分页大小必须有限制。
+- API 错误响应使用统一错误结构，错误码稳定可枚举。
+- API 不能在 URL、日志或异常信息中泄露 Token、密码、手机号完整值、邮箱完整值、私密推荐内容。
+- HTTP 方法语义要稳定：查询用 `GET`，创建用 `POST`，整体更新用 `PUT`，删除或逻辑删除用 `DELETE`。
+
+建议逐步补齐：
+
+- 使用 OpenAPI/Knife4j 描述接口、请求、响应、错误码和鉴权要求。
+- 每个接口定义 `operationId`，便于后续生成客户端或联调文档。
+- 对创建类接口支持幂等键，例如 `Idempotency-Key` 请求头。
+- 对外部 API 使用 `/api/{domain}`，内部 API 使用 `/internal/{domain}`。
+
+### 16.4 配置和环境规则
+
+必须遵守：
+
+- 配置必须外部化，不把生产密码、Token 密钥、OSS 密钥写入代码仓库。
+- 服务必须支持 `local`、`orbstack`、`prod` profile。
+- profile 优先级遵循 `SPRING_PROFILES_ACTIVE > FOODMAP_PROFILE > local`。
+- 配置项优先使用 `@ConfigurationProperties` 绑定结构化对象。
+- 生产环境敏感配置必须来自环境变量、配置中心或密钥系统。
+
+建议逐步补齐：
+
+- Nacos 作为配置中心时，只保存环境相关配置和开关，不保存业务表结构或业务规则正文。
+- 对关键配置启用启动期校验，缺失时服务直接启动失败。
+- 将本地示例配置放在 `.env.dev.example`，真实 `.env` 不提交仓库。
+
+### 16.5 数据库和 Flyway 规则
+
+必须遵守：
+
+- 所有数据库结构变更必须通过 Flyway 管理。
+- 每个服务只维护自己的 `src/main/resources/db/migration`。
+- 已经执行到共享环境的版本化迁移脚本禁止修改，只能新增迁移。
+- `flyway validate` 或应用启动期校验失败时，不能继续部署。
+- 主业务表必须有业务主键和唯一约束。
+- 逻辑删除字段统一为 `is_delete`，查询默认过滤 `is_delete = 0`。
+- 有唯一约束且支持逻辑删除后重建的数据，优先使用 PostgreSQL 部分唯一索引。
+- 表和字段必须通过 `comment on table` / `comment on column` 写入中文注释。
+
+建议逐步补齐：
+
+- 可重复迁移只用于视图、函数、静态字典等可重建对象，不用于普通业务表演进。
+- 大表字段新增尽量拆成“加 nullable 字段 -> 回填 -> 加约束”的多步迁移。
+- 关键查询上线前必须补索引，并在文档或 PR 中说明索引用途。
+
+### 16.6 事务和一致性规则
+
+必须遵守：
+
+- 事务边界放在 application 层。
+- 单服务内写操作必须保证本地事务一致性。
+- 不使用跨服务分布式事务。
+- 跨服务状态变更使用事件最终一致性，消费端必须支持重复消息。
+- 事务内避免发起慢外部调用；如无法避免，必须设置超时。
+- Spring 声明式事务默认只对运行时异常回滚，业务代码需要 checked exception 回滚时必须显式配置。
+
+建议逐步补齐：
+
+- 需要“本地事务成功后再发消息”的场景，后续引入 Outbox 表。
+- 事件消费者使用业务唯一键做幂等处理。
+- 对状态机类业务使用明确的状态流转校验，避免非法状态跳转。
+
+### 16.7 服务间调用和韧性规则
+
+必须遵守：
+
+- 服务间同步调用必须设置连接超时和读取超时。
+- 同步调用不能形成深层链式调用。
+- 内部 API 失败时必须转成明确业务错误或降级结果。
+- 网关必须预留限流能力，对登录、上传、搜索等高风险接口优先启用。
+- 外部第三方 API 调用必须封装在 infrastructure 层，不能散落在业务代码里。
+
+建议逐步补齐：
+
+- 使用 OpenFeign 作为内部 REST 客户端时，为每个客户端配置超时、日志级别和错误解码。
+- 对关键远程调用引入 Spring Cloud CircuitBreaker/Resilience4j。
+- 对高德、OSS 等外部依赖增加熔断、重试上限和失败告警。
+
+### 16.8 消息和事件规则
+
+必须遵守：
+
+- 事件名使用过去式，例如 `RecommendationCreatedEvent`。
+- 事件必须包含 `eventId`、`eventType`、`occurredAt`、`sourceService`、业务主键和必要快照字段。
+- 消费者必须幂等。
+- 消息消费必须使用手动确认或等价可靠确认机制。
+- 消费失败必须有重试上限和死信处理策略。
+- 发布关键事件时必须关注发布确认，不能默认“发出去就算成功”。
+
+建议逐步补齐：
+
+- 事件结构统一放到 `foodmap-common` 或各服务明确的 event 包。
+- 事件版本字段使用 `eventVersion`，后续兼容事件演进。
+- 社区统计类事件允许最终一致性，并提供重建索引或重算统计的运维入口。
+
+### 16.9 安全规则
+
+必须遵守：
+
+- 生产环境外部 API 必须通过 HTTPS。
+- JWT 必须校验签名、过期时间、签发方和目标受众。
+- 禁止接受 `alg=none` 等不安全 JWT。
+- Refresh Token 必须哈希存储且支持撤销。
+- 每个非公开接口都必须在服务端做权限校验，不能只依赖网关或前端。
+- CORS 必须按环境配置允许来源，不能在生产使用无限制 `*`。
+- 日志中必须脱敏手机号、邮箱、Token、密码、密钥和私密内容。
+- 文件上传必须校验类型、大小、所有者和业务引用关系。
+
+建议逐步补齐：
+
+- 对登出或强制下线场景维护 Token denylist 或等价机制。
+- 对登录、注册、上传、评论等接口启用限流。
+- 对管理后台和内部运维接口使用更强认证策略。
+
+### 16.10 日志、指标和链路追踪规则
+
+必须遵守：
+
+- 每个服务必须启用 Actuator health。
+- 生产环境 Actuator 只开放必要端点，健康详情不能无鉴权暴露。
+- 日志必须包含 `traceId`、`spanId`、`serviceName`、`requestId`。
+- 异常日志必须有业务上下文，但不能输出敏感数据。
+- 所有外部调用、数据库慢查询、MQ 消费失败必须可定位。
+
+建议逐步补齐：
+
+- 使用 Micrometer 暴露 JVM、HTTP、数据库连接池、缓存和自定义业务指标。
+- 使用 OpenTelemetry 统一采集 traces、metrics、logs。
+- 对核心业务增加业务指标，例如注册数、登录失败数、推荐创建数、评论发布数、公开统计消费延迟。
+
+### 16.11 缓存规则
+
+必须遵守：
+
+- Redis 缓存只能作为性能优化，不能作为唯一事实来源。
+- 缓存 Key 必须包含服务名、业务名和版本前缀。
+- 缓存必须设置 TTL。
+- 私密推荐、Token、权限结果等敏感缓存必须严格控制 TTL 和删除策略。
+
+建议逐步补齐：
+
+- 对热门公开门店、公开菜品榜单使用缓存。
+- 对权限校验类缓存采用短 TTL，关系变更时主动失效。
+- 防止缓存穿透、击穿和雪崩，必要时使用空值缓存、互斥锁或随机 TTL。
+
+### 16.12 测试和质量规则
+
+必须遵守：
+
+- 关键业务规则必须有单元测试。
+- 数据库 Mapper、Flyway 脚本、复杂 SQL 必须有集成测试或可执行验证。
+- 权限、可见范围、逻辑删除、分页、幂等、事务回滚必须覆盖测试。
+- 提交前至少执行对应模块 Maven 编译或测试。
+
+建议逐步补齐：
+
+- 使用 Testcontainers 做 PostgreSQL/PostGIS、Redis、RabbitMQ 等集成测试。
+- API 契约稳定后，为核心接口补充契约测试。
+- 对网关路由、服务发现、限流和认证过滤器补充集成测试。
+
+### 16.13 容器和部署规则
+
+必须遵守：
+
+- Docker 镜像必须使用固定基础镜像版本，不使用漂移的 `latest`。
+- 镜像内服务尽量使用非 root 用户运行。
+- 构建上下文必须使用 `.dockerignore` 排除无关文件。
+- 容器必须有健康检查或由部署层接入 health endpoint。
+- 生产环境不向公网暴露数据库、Redis、Nacos、RabbitMQ 和内部微服务端口。
+
+建议逐步补齐：
+
+- 使用多阶段构建减少镜像体积。
+- 镜像标签包含版本号或 Git commit。
+- 部署前执行 Flyway 校验和应用健康检查。
+
+### 16.14 当前阶段暂缓项
+
+以下能力属于企业级项目常见实践，但 FoodMap MVP 阶段暂缓引入：
+
+- Kubernetes。
+- 服务网格。
+- 分布式事务框架。
+- 独立配置密钥系统。
+- 完整灰度发布平台。
+- 全量自动化压测平台。
+- 独立审计日志服务。
+
+暂缓不代表不重要，而是避免在业务主链路尚未跑通前引入过重基础设施。
+
+## 17. 单个服务建议代码结构
 
 每个服务采用统一结构：
 
@@ -1686,7 +1952,7 @@ service-name
 | dto | 请求和响应对象 |
 | config | Spring 配置 |
 
-## 17. MVP 后端里程碑
+## 18. MVP 后端里程碑
 
 ### B1：基础设施骨架
 
@@ -1742,7 +2008,7 @@ service-name
 - 对象存储集成。
 - 图片元数据。
 
-## 18. 后端待决策问题
+## 19. 后端待决策问题
 
 1. MVP 使用 RocketMQ 还是 RabbitMQ。
 2. 使用 MyBatis 还是 MyBatis-Plus。
