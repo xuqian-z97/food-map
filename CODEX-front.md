@@ -250,6 +250,8 @@ GROUP     群组，后续支持
 - AddRecommendationView
 - EditRecommendationView
 - RecommendationDetailView
+- RecommendationCommentsView
+- CommentComposerView
 - VisibilityPickerView
 - TagPickerView
 
@@ -258,6 +260,9 @@ GROUP     群组，后续支持
 - 创建推荐菜单。
 - 编辑推荐菜单。
 - 删除推荐菜单。
+- 查看推荐菜单评论。
+- 发布文字评论。
+- 上传可选评论图片，单条评论最多 3 张。
 - 上传可选图片。
 - 选择标签。
 - 选择可见范围。
@@ -490,4 +495,3 @@ TabView
 3. MVP 图片是否直接上传到对象存储。
 4. MVP 是否展示社区 Tab。
 5. 最终视觉风格和产品名称。
-

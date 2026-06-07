@@ -48,7 +48,7 @@ description: Use when creating, updating, testing, or reviewing FoodMap Java Spr
 - ECS1 是辅助服务器。
 - 两台服务器不在同一云厂商/VPC 时，不通过裸公网访问 Redis、PostgreSQL、Nacos、RabbitMQ。
 - 如需跨服务器访问内部组件，必须先建立 WireGuard/VPN。
-- OSS 用于用户头像、推荐菜单图片和门店图片。
+- OSS 用于用户头像、推荐菜单图片、推荐评论图片和门店图片。
 
 ## 服务边界
 
@@ -76,6 +76,8 @@ MVP 服务：
 - 写接口必须从 Token 获取当前用户身份。
 - Controller 使用 DTO，不直接暴露实体。
 - 推荐服务负责可见范围事实判断。
+- 推荐评论和评论图片继承所属推荐菜单的可见范围。
+- 单条推荐评论最多支持 3 张图片。
 - 社区服务只能统计 `PUBLIC` 且 `NORMAL` 的推荐。
 - 推荐服务不能直接访问关系服务数据库。
 

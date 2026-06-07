@@ -310,6 +310,8 @@ front/FoodMapApp
 - AddRecommendationView
 - EditRecommendationView
 - RecommendationDetailView
+- RecommendationCommentsView
+- CommentComposerView
 - VisibilityPickerView
 - TagPickerView
 
@@ -317,6 +319,9 @@ front/FoodMapApp
 
 - 添加推荐时菜名为必填纯文字。
 - 推荐理由、图片、标签、价格、推荐程度为可选。
+- 推荐详情支持查看评论列表。
+- 用户可以发布文字评论，并可选上传最多 3 张评论图片。
+- 评论人昵称展示使用后端返回的评论昵称快照。
 - 可见范围必须在提交前明确选择。
 - 可见范围至少支持：仅自己、指定用户、好友、情侣、群组、全部公开。
 - 图片上传失败时保留已填写文本，并允许重试。
@@ -649,6 +654,8 @@ service-name
 
 - recommendations
 - recommendation_images
+- recommendation_comments
+- recommendation_comment_images
 - tags
 - recommendation_tags
 - visibility_rules
@@ -658,8 +665,12 @@ service-name
 - 支持创建、编辑、删除推荐菜单。
 - 菜名必填，并以纯文字保存。
 - 推荐理由、图片、标签、价格、推荐程度为可选。
+- 支持推荐菜单评论。
+- 评论表冗余评论人昵称快照。
+- 单条评论最多支持 3 张图片。
 - 支持 PRIVATE、SPECIFIC_USERS、FRIENDS、COUPLE、GROUP、PUBLIC 可见范围。
 - 所有推荐查询都必须校验当前用户可见权限。
+- 评论查询和评论发布也必须校验推荐内容可见权限。
 - 创建或变更 PUBLIC 推荐时发送领域事件。
 - 不直接访问关系服务数据库。
 
@@ -711,7 +722,7 @@ service-name
 - 校验图片类型和大小。
 - 保存媒体元数据。
 - 返回可访问 URL 或签名 URL。
-- 支持推荐服务校验媒体引用。
+- 支持推荐图片和评论图片的媒体引用校验。
 
 #### 8.4.9 通知服务
 
@@ -773,9 +784,11 @@ service-name
 5. 菜名必填，图片和标签可选。
 6. 用户能选择推荐可见范围。
 7. 好友和情侣只能看到被授权内容。
-8. 公开社区只展示 PUBLIC 推荐。
-9. PUBLIC 推荐能进入社区统计。
-10. 私密、指定用户、好友、情侣、群组内容不会进入全站统计。
+8. 用户只能查看和发布自己有权访问的推荐评论。
+9. 单条评论最多支持 3 张图片。
+10. 公开社区只展示 PUBLIC 推荐。
+11. PUBLIC 推荐能进入社区统计。
+12. 私密、指定用户、好友、情侣、群组内容不会进入全站统计。
 
 ## 10. GitHub 同步要求
 

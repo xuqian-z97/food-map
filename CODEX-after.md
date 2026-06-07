@@ -306,6 +306,8 @@ foodmap-recommendation-service
 - 保存可选推荐理由、价格、推荐程度。
 - 管理推荐标签。
 - 管理推荐图片引用。
+- 管理推荐评论。
+- 管理评论图片引用。
 - 管理可见规则。
 - 查询当前用户可见的推荐内容。
 - 发送推荐相关领域事件。
@@ -321,6 +323,8 @@ foodmap_recommendation_db
 ```text
 recommendations
 recommendation_images
+recommendation_comments
+recommendation_comment_images
 tags
 recommendation_tags
 visibility_rules
@@ -404,6 +408,7 @@ foodmap-media-service
 - 校验图片类型和大小。
 - 保存媒体元数据。
 - 管理媒体使用引用。
+- 支持推荐图片和评论图片的引用校验。
 - 返回公开 URL 或签名 URL。
 
 数据库：
@@ -1009,6 +1014,47 @@ foodmap_recommendation_db
 | media_id | bigint not null | 媒体业务主键，关联媒体服务 media_files.media_id |
 | sort_order | int not null default 0 | 图片排序值，数值越小越靠前 |
 
+表：`recommendation_comments`
+
+中文名：推荐评论表。
+
+用途：保存用户围绕某条推荐菜单发布的评论内容。MVP 阶段评论对象为推荐菜单，不直接对门店创建独立评论。
+
+| 字段名 | 推荐类型 | 中文注释 |
+| --- | --- | --- |
+| comment_id | bigint not null | 评论业务主键，用于跨接口引用评论 |
+| recommendation_id | bigint not null | 推荐业务主键，关联 recommendations.recommendation_id |
+| store_id | bigint not null | 门店业务主键快照，便于按门店聚合评论 |
+| dish_name | varchar(128) not null | 推荐菜名快照，便于评论列表展示 |
+| user_id | bigint not null | 评论人用户业务主键 |
+| user_nickname | varchar(64) not null | 评论人昵称快照，避免用户改名导致历史评论展示变化 |
+| parent_comment_id | bigint | 父评论业务主键，一级评论为空，回复评论填写被回复评论的 comment_id |
+| comment_content | varchar(1000) not null | 评论正文内容 |
+| image_count | smallint not null default 0 | 评论图片数量，范围为 0 到 3 |
+| comment_status | varchar(32) not null | 评论状态，如 NORMAL、HIDDEN、DELETED |
+
+评论规则：
+
+- 用户只能评论自己有权限查看的推荐菜单。
+- 用户只能查看自己有权限查看的推荐菜单下的评论。
+- 评论图片最多 3 张，由业务层和数据库约束共同校验。
+- 评论人昵称冗余保存为快照字段，不作为用户当前昵称的事实来源。
+- 非 PUBLIC 推荐下的评论不能进入全站社区统计。
+
+表：`recommendation_comment_images`
+
+中文名：推荐评论图片表。
+
+用途：保存评论关联的图片引用和展示顺序，实际文件元数据由媒体服务维护。
+
+| 字段名 | 推荐类型 | 中文注释 |
+| --- | --- | --- |
+| comment_image_id | bigint not null | 评论图片业务主键 |
+| comment_id | bigint not null | 评论业务主键，关联 recommendation_comments.comment_id |
+| recommendation_id | bigint not null | 推荐业务主键，便于按推荐删除或查询评论图片 |
+| media_id | bigint not null | 媒体业务主键，关联媒体服务 media_files.media_id |
+| sort_order | int not null default 0 | 图片排序值，数值越小越靠前 |
+
 表：`tags`
 
 中文名：标签表。
@@ -1157,7 +1203,7 @@ foodmap_media_db
 | usage_id | bigint not null | 媒体使用引用业务主键 |
 | media_id | bigint not null | 媒体业务主键，关联 media_files.media_id |
 | owner_user_id | bigint not null | 文件所属用户业务主键 |
-| biz_type | varchar(64) not null | 使用场景，如 AVATAR、RECOMMENDATION_IMAGE、STORE_IMAGE |
+| biz_type | varchar(64) not null | 使用场景，如 AVATAR、RECOMMENDATION_IMAGE、COMMENT_IMAGE、STORE_IMAGE |
 | biz_id | bigint not null | 使用该媒体的业务对象主键，如 user_id、recommendation_id、store_id |
 
 ## 7. 服务通信模式
@@ -1322,6 +1368,9 @@ PUT /api/recommendations/{recommendationId}
 DELETE /api/recommendations/{recommendationId}
 GET /api/stores/{storeId}/recommendations
 GET /api/recommendations/mine
+GET /api/recommendations/{recommendationId}/comments
+POST /api/recommendations/{recommendationId}/comments
+DELETE /api/recommendations/{recommendationId}/comments/{commentId}
 ```
 
 ### 10.6 媒体接口
@@ -1386,6 +1435,13 @@ GET /api/community/stores/nearby
 - 好友关系
 - 情侣关系
 - 群组成员关系
+
+评论可见性规则：
+
+- 评论列表继承所属推荐菜单的可见范围。
+- 发布评论前必须先校验当前用户是否有权查看所属推荐菜单。
+- 评论图片继承所属评论和推荐菜单的可见范围。
+- 非 PUBLIC 推荐下的评论和评论图片不能进入全站社区统计。
 
 ## 13. 社区统计规则
 
