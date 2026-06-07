@@ -1795,12 +1795,62 @@ controller -> application -> domain -> infrastructure / mapper
 - 内部 API 失败时必须转成明确业务错误或降级结果。
 - 网关必须预留限流能力，对登录、上传、搜索等高风险接口优先启用。
 - 外部第三方 API 调用必须封装在 infrastructure 层，不能散落在业务代码里。
+- 业务服务不能直接散落使用 `RestTemplate`、`WebClient` 或 OpenFeign 原始错误模型，必须经过统一内部调用封装处理超时、错误码、请求头透传和日志。
 
 建议逐步补齐：
 
 - 使用 OpenFeign 作为内部 REST 客户端时，为每个客户端配置超时、日志级别和错误解码。
 - 对关键远程调用引入 Spring Cloud CircuitBreaker/Resilience4j。
 - 对高德、OSS 等外部依赖增加熔断、重试上限和失败告警。
+
+### 16.7.1 中间件访问封装规则
+
+阶段一必须在 `foodmap-common` 中沉淀 Redis、对象存储、MQ 和内部服务调用的统一封装接口。业务服务后续只能依赖这些接口或服务内基础设施适配器，不能在业务代码中散落直接操作中间件 SDK。
+
+必须遵守：
+
+- 业务代码不能直接散落使用 `RedisTemplate`、`StringRedisTemplate`、`RabbitTemplate`、`MinioClient`、OSS SDK 或其他中间件原始客户端。
+- 所有 Redis Key 必须通过统一 Key 规则生成，格式为 `foodmap:{service}:{biz}:{version}:{key}`。
+- Redis 缓存写入必须显式设置 TTL，不能创建无过期时间的业务缓存。
+- MQ 事件发布必须通过统一事件发布接口，例如 `DomainEventPublisher`，不能直接在业务服务里调用 MQ 客户端。
+- MQ 事件必须使用统一事件信封，至少包含 `eventId`、`eventType`、`eventVersion`、`sourceService`、`occurredAt` 和业务载荷。
+- 对象存储访问必须通过统一对象存储接口，例如 `ObjectStorageClient`，不能把 MinIO 或 OSS SDK 调用散落到业务代码。
+- 内部服务调用必须通过统一客户端配置，包含超时、请求头透传、错误解码和安全日志。
+- 中间件封装层必须记录调用耗时、结果和错误码，但不能记录敏感内容、完整 Token、完整 objectKey 或私密业务正文。
+
+阶段一推荐包结构：
+
+```text
+foodmap-common
+├── redis
+│   ├── CacheKeyBuilder
+│   ├── CacheKeyNames
+│   ├── CacheClient
+│   └── DistributedLockClient
+├── storage
+│   ├── ObjectStorageClient
+│   ├── ObjectStorageCommand
+│   ├── ObjectStorageResult
+│   └── ObjectStorageException
+├── mq
+│   ├── DomainEvent
+│   ├── DomainEventEnvelope
+│   ├── DomainEventPublisher
+│   ├── EventPublishResult
+│   └── EventConsumeGuard
+└── client
+    ├── InternalRequestHeaders
+    ├── InternalClientException
+    ├── InternalClientProperties
+    └── FeignClientConfiguration
+```
+
+阶段一实现策略：
+
+- Redis、MQ、对象存储先定义稳定接口和轻量默认实现，避免业务服务直接绑定具体 SDK。
+- MinIO 作为本地开发默认对象存储实现，阿里云 OSS 先保留适配器接口和配置占位。
+- RabbitMQ 作为本地开发默认 MQ 实现，RocketMQ 先保留事件模型兼容空间。
+- 分布式锁阶段一可以先提供接口和明确异常，具体实现根据业务需要落地。
 
 ### 16.8 消息和事件规则
 
@@ -1847,12 +1897,88 @@ controller -> application -> domain -> infrastructure / mapper
 - 日志必须包含 `traceId`、`spanId`、`serviceName`、`requestId`。
 - 异常日志必须有业务上下文，但不能输出敏感数据。
 - 所有外部调用、数据库慢查询、MQ 消费失败必须可定位。
+- 项目必须提供通用日志方法，业务代码不能随意字符串拼接打印关键业务日志。
+- 涉及用户、认证、推荐、评论、文件、中间件调用的日志必须通过通用日志方法或统一日志封装输出。
+- 日志字段名必须稳定，常用字段统一使用 `userId`、`accountId`、`storeId`、`recommendationId`、`commentId`、`mediaId`、`eventId`、`requestId`、`traceId`。
+- 日志参数必须先脱敏再输出，不能依赖开发者手工记忆敏感字段。
 
 建议逐步补齐：
 
 - 使用 Micrometer 暴露 JVM、HTTP、数据库连接池、缓存和自定义业务指标。
 - 使用 OpenTelemetry 统一采集 traces、metrics、logs。
 - 对核心业务增加业务指标，例如注册数、登录失败数、推荐创建数、评论发布数、公开统计消费延迟。
+
+### 16.10.1 统一日志方法规则
+
+阶段一必须在 `foodmap-common` 中沉淀统一日志工具和 MDC 上下文能力，避免各服务日志格式、字段和脱敏策略不一致。
+
+推荐包结构：
+
+```text
+foodmap-common
+└── logging
+    ├── LogConstants
+    ├── LogContext
+    ├── LogField
+    ├── LogMdcFilter
+    ├── SafeLog
+    ├── LogMasker
+    └── BusinessLogEvent
+```
+
+必须遵守：
+
+- `LogMdcFilter` 负责写入或透传 `traceId`、`requestId`、`serviceName`、`userId`。
+- `LogMasker` 负责手机号、邮箱、Token、密码、密钥、对象存储 Key、私密推荐内容、评论正文等脱敏。
+- `SafeLog` 或等价通用方法负责结构化业务日志输出。
+- 业务成功日志使用稳定事件名，例如 `recommendation.create.success`、`comment.create.success`。
+- 可恢复业务异常、参数错误、权限失败、幂等重复使用 `warn`。
+- 系统异常、中间件异常、外部依赖异常、数据不一致使用 `error`。
+- 本地排查信息使用 `debug`，生产默认关闭。
+- 禁止通过字符串拼接输出关键业务日志。
+
+推荐写法：
+
+```java
+SafeLog.info(
+    log,
+    "recommendation.create.success",
+    LogField.of("userId", userId),
+    LogField.of("storeId", storeId),
+    LogField.of("recommendationId", recommendationId)
+);
+```
+
+不推荐写法：
+
+```java
+log.info("用户创建推荐成功：" + userId + "," + storeId + "," + recommendationId);
+```
+
+脱敏示例：
+
+```text
+13812345678 -> 138****5678
+test@example.com -> t***@example.com
+Bearer abc.def.ghi -> Bearer ***
+```
+
+中间件封装层日志必须至少包含：
+
+- 调用类型，如 `redis`、`mq`、`object_storage`、`internal_client`。
+- 调用目标，如 cacheName、topic、bucket、serviceName。
+- 调用结果，如 success、failed。
+- 耗时。
+- 错误码或异常类型。
+
+中间件封装层日志禁止输出：
+
+- 完整 Token。
+- 完整密码或密钥。
+- 完整手机号或邮箱。
+- 完整对象存储 Key。
+- 私密推荐内容。
+- 评论正文。
 
 ### 16.11 缓存规则
 
@@ -1954,7 +2080,7 @@ service-name
 
 ## 18. MVP 后端里程碑
 
-### B1：基础设施骨架
+### B1：后端工程基线和基础设施封装
 
 - 父级 Maven 项目。
 - 统一依赖管理。
@@ -1962,6 +2088,14 @@ service-name
 - Nacos 配置。
 - Docker Compose 基础服务。
 - Spring profile 环境切换。
+- `foodmap-common` 统一响应、错误码、异常、分页和校验。
+- `foodmap-common` 当前用户上下文、JWT 工具接口和请求头透传。
+- `foodmap-common` 统一日志上下文、日志脱敏和安全日志方法。
+- `foodmap-common` Redis Key 规范、缓存客户端和分布式锁接口。
+- `foodmap-common` 对象存储统一接口，MinIO 默认实现和 OSS 适配器占位。
+- `foodmap-common` MQ 事件模型、事件发布接口和消费幂等辅助。
+- `foodmap-common` 内部服务调用超时、错误解码和安全日志封装。
+- Actuator health、基础指标和 OpenTelemetry 预留。
 
 ### B2：认证和用户
 
