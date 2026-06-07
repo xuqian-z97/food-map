@@ -2,13 +2,26 @@ package com.foodmap.common.logging;
 
 import java.util.Locale;
 
+/**
+ * 日志脱敏工具，统一处理手机号、邮箱、Token、对象存储 Key 和私密业务正文。
+ *
+ * <p>该类是日志安全底线：新增敏感字段时应优先扩展这里，而不是在业务代码中手工脱敏。</p>
+ */
 public final class LogMasker {
 
+    /**
+     * 通用掩码值，用于完全不可输出的敏感内容，例如密码、Token 和评论正文。
+     */
     private static final String MASKED = "***";
 
     private LogMasker() {
     }
 
+    /**
+     * 根据字段名选择脱敏策略，适合 SafeLog 统一处理结构化日志字段。
+     *
+     * <p>排查日志泄露时应优先检查字段名是否命中该方法中的敏感规则。</p>
+     */
     public static String maskByFieldName(String fieldName, Object value) {
         if (value == null) {
             return null;
@@ -40,6 +53,9 @@ public final class LogMasker {
         return text;
     }
 
+    /**
+     * 手机号保留前三位和后四位，便于排查用户反馈，同时避免完整手机号泄露。
+     */
     public static String maskPhone(String phone) {
         if (phone == null || phone.length() < 7) {
             return MASKED;
@@ -47,6 +63,9 @@ public final class LogMasker {
         return phone.substring(0, 3) + "****" + phone.substring(phone.length() - 4);
     }
 
+    /**
+     * 邮箱保留首字母和域名，便于识别邮箱来源，但隐藏本地部分主体。
+     */
     public static String maskEmail(String email) {
         if (email == null || email.isBlank()) {
             return MASKED;
@@ -58,6 +77,9 @@ public final class LogMasker {
         return email.charAt(0) + "***" + email.substring(atIndex);
     }
 
+    /**
+     * Token 只保留认证类型，例如 Bearer，真实凭证永远不进入日志。
+     */
     public static String maskToken(String token) {
         if (token == null || token.isBlank()) {
             return MASKED;
@@ -68,6 +90,9 @@ public final class LogMasker {
         return MASKED;
     }
 
+    /**
+     * 对象存储 Key 只保留前两级业务目录和文件名，中间路径可能包含用户或业务隐私。
+     */
     public static String maskObjectKey(String objectKey) {
         if (objectKey == null || objectKey.isBlank()) {
             return MASKED;
