@@ -445,6 +445,7 @@ MVP 阶段使用 Docker Compose 部署到 ECS2，ECS1 作为辅助节点。
 | 阶段一中间件封装和统一日志规则 | 已完成 |
 | 阶段一 foodmap-common 首批基线代码 | 已完成 |
 | 后端代码注释规则和首批注释补齐 | 已完成 |
+| 阶段一 common.validation.Check 校验工具 | 已完成 |
 | iOS App 壳 | 未开始 |
 | 认证/用户接口 | 未开始 |
 | 地图壳 | 未开始 |

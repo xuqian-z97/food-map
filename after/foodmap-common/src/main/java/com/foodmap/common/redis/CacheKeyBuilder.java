@@ -1,5 +1,7 @@
 package com.foodmap.common.redis;
 
+import com.foodmap.common.validation.Check;
+
 /**
  * Redis Key 构造器，强制所有业务缓存使用统一格式 {@code foodmap:{service}:{biz}:{version}:{key}}。
  *
@@ -65,20 +67,10 @@ public final class CacheKeyBuilder {
     public String build() {
         return String.join(":",
                 PREFIX,
-                requireText("service", service),
-                requireText("biz", biz),
-                requireText("version", version),
-                requireText("key", key)
+                Check.noColon("service", service),
+                Check.noColon("biz", biz),
+                Check.noColon("version", version),
+                Check.noColon("key", key)
         );
-    }
-
-    private static String requireText(String fieldName, String value) {
-        if (value == null || value.isBlank()) {
-            throw new IllegalArgumentException(fieldName + " must not be blank");
-        }
-        if (value.contains(":")) {
-            throw new IllegalArgumentException(fieldName + " must not contain ':'");
-        }
-        return value.trim();
     }
 }

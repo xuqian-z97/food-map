@@ -1,5 +1,7 @@
 package com.foodmap.common.mq;
 
+import com.foodmap.common.validation.Check;
+
 import java.time.Instant;
 import java.util.UUID;
 
@@ -23,18 +25,11 @@ public record DomainEventEnvelope<T>(
     public static <T> DomainEventEnvelope<T> of(String eventType, String sourceService, T payload) {
         return new DomainEventEnvelope<>(
                 UUID.randomUUID().toString(),
-                requireText("eventType", eventType),
+                Check.notBlank("eventType", eventType),
                 "v1",
-                requireText("sourceService", sourceService),
+                Check.notBlank("sourceService", sourceService),
                 Instant.now(),
                 payload
         );
-    }
-
-    private static String requireText(String fieldName, String value) {
-        if (value == null || value.isBlank()) {
-            throw new IllegalArgumentException(fieldName + " must not be blank");
-        }
-        return value.trim();
     }
 }

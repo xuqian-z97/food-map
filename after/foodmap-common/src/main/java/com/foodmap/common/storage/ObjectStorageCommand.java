@@ -1,5 +1,7 @@
 package com.foodmap.common.storage;
 
+import com.foodmap.common.validation.Check;
+
 /**
  * 对象存储上传命令，集中描述上传目标、文件类型、大小和所属用户。
  *
@@ -23,32 +25,11 @@ public record ObjectStorageCommand(
             Long ownerUserId
     ) {
         return new ObjectStorageCommand(
-                requireText("bucketName", bucketName),
-                requireText("objectKey", objectKey),
-                requireText("contentType", contentType),
-                requirePositive("contentLength", contentLength),
-                requirePositive("ownerUserId", ownerUserId)
+                Check.notBlank("bucketName", bucketName),
+                Check.notBlank("objectKey", objectKey),
+                Check.notBlank("contentType", contentType),
+                Check.positive("contentLength", contentLength),
+                Check.positive("ownerUserId", ownerUserId)
         );
-    }
-
-    private static String requireText(String fieldName, String value) {
-        if (value == null || value.isBlank()) {
-            throw new IllegalArgumentException(fieldName + " must not be blank");
-        }
-        return value.trim();
-    }
-
-    private static long requirePositive(String fieldName, long value) {
-        if (value <= 0) {
-            throw new IllegalArgumentException(fieldName + " must be positive");
-        }
-        return value;
-    }
-
-    private static Long requirePositive(String fieldName, Long value) {
-        if (value == null || value <= 0) {
-            throw new IllegalArgumentException(fieldName + " must be positive");
-        }
-        return value;
     }
 }

@@ -1707,6 +1707,9 @@ controller -> application -> domain -> infrastructure / mapper
 - `mapper` 只负责数据库访问，不写业务判断。
 - 禁止 Controller 直接调用 Mapper。
 - 禁止 DTO、Entity、Mapper 对象在不合适的层级相互穿透。
+- 重复出现 2 次以上的基础校验、值判断、脱敏、时间处理逻辑，应优先沉淀到 `foodmap-common` 中有明确边界的项目级工具类。
+- 项目级工具类必须按职责命名和分包，例如 `common.validation.Check`、`common.logging.LogMasker`，禁止创建无明确边界的万能类，如 `CommonUtils`、`StringUtils`、`DateUtils`。
+- 构造 record、Command、事件信封和中间件命令时，基础参数校验应优先复用 `common.validation.Check`，避免每个类重复编写 `requireText`、`requirePositive` 等私有方法。
 - 所有公共类、跨模块复用类、接口、枚举、异常、事件、配置类和中间件封装类必须提供类级 Javadoc 注释。
 - 常量类和枚举类中的每一个常量、每一个枚举项都必须提供 Javadoc 注释，说明业务含义、使用场景和排查价值。
 - 对外暴露的公共方法、静态工厂方法、复杂业务判断、脱敏规则、幂等规则、权限规则和状态流转必须提供方法级注释。
