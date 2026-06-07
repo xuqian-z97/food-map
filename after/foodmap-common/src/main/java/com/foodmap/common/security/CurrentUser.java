@@ -1,9 +1,8 @@
 package com.foodmap.common.security;
 
-import java.util.UUID;
-
 public record CurrentUser(
-        UUID userId,
+        Long userId,
+        Long accountId,
         String accountName
 ) {
 }
