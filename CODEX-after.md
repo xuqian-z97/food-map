@@ -514,7 +514,17 @@ foodmap_admin_db
 - 服务之间的数据交互只能通过内部 API 或 MQ 事件完成。
 - 本地开发可以使用一个 PostgreSQL/PostGIS 容器创建多个逻辑数据库，但仍必须保持服务数据库边界。
 
-#### 6.1.2 固定字段
+#### 6.1.2 持久化对象、DTO 和 VO 分层
+
+- 数据库结构对应的 Java 类统一称为持久化实体，必须放在各服务的 `infrastructure.persistence.entity` 包中。
+- 持久化实体只表达数据库表结构和持久化映射，不允许作为 Controller 请求体、响应体或前端展示模型直接暴露。
+- 所有业务表固定字段 `id / created_time / updated_time / is_delete` 由 `foodmap-common` 中的 `BaseEntity` 承载。
+- `BaseEntity` 只承载固定字段，不承载 `user_id`、`account_id`、`store_id` 等业务主键。
+- DTO 用于后端 HTTP/API 入参和响应，必须放在各服务的 `dto` 包中。
+- VO 用于前端展示或后续 BFF 展示聚合，必须与 DTO、持久化实体分离。
+- Entity、DTO、VO 之间通过 application 层或专门转换方法显式转换，禁止在 Controller 中直接返回 Entity。
+
+#### 6.1.3 固定字段
 
 每张业务表必须包含以下固定字段：
 

@@ -92,6 +92,12 @@ Stage 1：后端微服务骨架已完成
 
 当前尚未生成 `front/` iOS 应用代码；后端暂为可编译骨架，尚未实现业务 API、数据库迁移和持久化逻辑。
 
+当前迭代新增约束：
+
+- 数据库结构对应 Java 类作为持久化实体存放在 `infrastructure.persistence.entity` 中。
+- 固定字段由 `foodmap-common` 的 `BaseEntity` 承载。
+- 持久化实体、DTO、VO 必须分离，Controller 不直接暴露 Entity。
+
 ## 6. 计划中的仓库结构
 
 推荐未来结构：

@@ -184,10 +184,11 @@ ViewModel：
 
 接口：
 
-- POST /api/auth/register
-- POST /api/auth/login
-- POST /api/auth/refresh
-- GET /api/users/me
+- POST /api/auth/register，B1 已落地最小契约
+- POST /api/auth/login，B1 已落地最小契约
+- GET /api/users/me，B1 已落地最小契约
+- POST /api/auth/refresh，后续实现
+- POST /api/auth/logout，后续实现
 
 ### 7.2 地图功能
 
