@@ -87,6 +87,8 @@ MVP 服务：
 - 数据库结构对应 Java 类必须放在服务内 `infrastructure.persistence.entity` 包中，并与 DTO、VO 明确区分。
 - `foodmap-common` 的 `BaseEntity` 只承载 `id / created_time / updated_time / is_delete` 固定字段，不承载业务主键。
 - Controller 只能使用 DTO 作为请求和响应契约，不能直接暴露数据库持久化实体。
+- application 层只能依赖仓储端口接口，不能直接依赖内存仓储、JDBC 仓储、MyBatis Mapper 等基础设施实现。
+- 内存仓储只允许作为单元测试或本地替身，不作为生产 profile 默认持久化实现。
 - 公共类、跨模块复用类、接口、枚举、异常、事件、配置类和中间件封装类必须提供类级 Javadoc 注释。
 - 常量类和枚举类中的每一个常量、每一个枚举项都必须提供 Javadoc 注释，说明业务含义、使用场景和排查价值。
 - 对外暴露的公共方法、静态工厂方法、复杂业务判断、脱敏规则、幂等规则、权限规则和状态流转必须提供方法级注释。
@@ -139,5 +141,6 @@ service-name
 - 不存在跨服务直接查表。
 - API 使用 DTO。
 - 数据库持久化实体、DTO、VO 已分层存放并显式转换。
+- application 层依赖仓储端口接口，基础设施实现没有向上穿透。
 - 权限和可见范围由后端校验。
 - 关键业务规则有测试或明确说明暂未测试原因。

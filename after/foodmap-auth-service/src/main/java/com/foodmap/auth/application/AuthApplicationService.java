@@ -8,6 +8,10 @@ import com.foodmap.auth.domain.LoginType;
 import com.foodmap.auth.domain.Pbkdf2PasswordHashService;
 import com.foodmap.auth.domain.RegisteredChannel;
 import com.foodmap.auth.domain.TokenStatus;
+import com.foodmap.auth.application.port.AuthAccountRepository;
+import com.foodmap.auth.application.port.AuthCredentialRepository;
+import com.foodmap.auth.application.port.LoginLogRepository;
+import com.foodmap.auth.application.port.RefreshTokenRepository;
 import com.foodmap.auth.dto.LoginRequest;
 import com.foodmap.auth.dto.LoginResponse;
 import com.foodmap.auth.dto.RegisterRequest;
@@ -16,10 +20,6 @@ import com.foodmap.auth.infrastructure.persistence.entity.AuthAccountEntity;
 import com.foodmap.auth.infrastructure.persistence.entity.AuthCredentialEntity;
 import com.foodmap.auth.infrastructure.persistence.entity.LoginLogEntity;
 import com.foodmap.auth.infrastructure.persistence.entity.RefreshTokenEntity;
-import com.foodmap.auth.infrastructure.persistence.memory.InMemoryAuthAccountRepository;
-import com.foodmap.auth.infrastructure.persistence.memory.InMemoryAuthCredentialRepository;
-import com.foodmap.auth.infrastructure.persistence.memory.InMemoryLoginLogRepository;
-import com.foodmap.auth.infrastructure.persistence.memory.InMemoryRefreshTokenRepository;
 import com.foodmap.common.exception.CommonErrorCode;
 import com.foodmap.common.exception.FoodMapException;
 import org.springframework.stereotype.Service;
@@ -40,19 +40,19 @@ public class AuthApplicationService {
     private final AtomicLong tokenIdSequence = new AtomicLong(400_000L);
     private final AtomicLong loginLogIdSequence = new AtomicLong(500_000L);
 
-    private final InMemoryAuthAccountRepository accountRepository;
-    private final InMemoryAuthCredentialRepository credentialRepository;
-    private final InMemoryRefreshTokenRepository refreshTokenRepository;
-    private final InMemoryLoginLogRepository loginLogRepository;
+    private final AuthAccountRepository accountRepository;
+    private final AuthCredentialRepository credentialRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
+    private final LoginLogRepository loginLogRepository;
     private final Pbkdf2PasswordHashService passwordHashService;
     private final HmacTokenIssuer tokenIssuer;
     private final UserProfileProvisionClient userProfileProvisionClient;
 
     public AuthApplicationService(
-            InMemoryAuthAccountRepository accountRepository,
-            InMemoryAuthCredentialRepository credentialRepository,
-            InMemoryRefreshTokenRepository refreshTokenRepository,
-            InMemoryLoginLogRepository loginLogRepository,
+            AuthAccountRepository accountRepository,
+            AuthCredentialRepository credentialRepository,
+            RefreshTokenRepository refreshTokenRepository,
+            LoginLogRepository loginLogRepository,
             Pbkdf2PasswordHashService passwordHashService,
             HmacTokenIssuer tokenIssuer,
             UserProfileProvisionClient userProfileProvisionClient

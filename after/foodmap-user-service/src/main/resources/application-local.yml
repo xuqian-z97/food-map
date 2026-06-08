@@ -1,4 +1,11 @@
 spring:
+  datasource:
+    url: ${USER_DB_URL:jdbc:postgresql://127.0.0.1:${POSTGRES_PORT:5432}/${USER_DB_NAME:foodmap_user_db}}
+    username: ${USER_DB_USERNAME:${POSTGRES_USER:foodmap}}
+    password: ${USER_DB_PASSWORD:${POSTGRES_PASSWORD:foodmap_dev_pwd}}
+  flyway:
+    enabled: ${USER_FLYWAY_ENABLED:true}
+    locations: classpath:db/migration
   cloud:
     nacos:
       discovery:

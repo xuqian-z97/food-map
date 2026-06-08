@@ -1,4 +1,11 @@
 spring:
+  datasource:
+    url: ${AUTH_DB_URL}
+    username: ${AUTH_DB_USERNAME}
+    password: ${AUTH_DB_PASSWORD}
+  flyway:
+    enabled: ${AUTH_FLYWAY_ENABLED:true}
+    locations: classpath:db/migration
   cloud:
     nacos:
       discovery:

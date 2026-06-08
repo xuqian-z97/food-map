@@ -97,6 +97,13 @@ Stage 1：后端微服务骨架已完成
 - 数据库结构对应 Java 类作为持久化实体存放在 `infrastructure.persistence.entity` 中。
 - 固定字段由 `foodmap-common` 的 `BaseEntity` 承载。
 - 持久化实体、DTO、VO 必须分离，Controller 不直接暴露 Entity。
+- 应用层通过仓储端口访问持久化能力，运行时使用 JDBC 或 MyBatis 实现，内存仓储仅用于测试。
+
+当前 B1 后续目标：
+
+- 认证服务和用户服务接入真实 PostgreSQL/Flyway/JDBC 持久化。
+- 网关解析认证 Token 后向下游服务透传可信用户身份。
+- 实现 Refresh Token 刷新和退出登录撤销能力。
 
 ## 6. 计划中的仓库结构
 

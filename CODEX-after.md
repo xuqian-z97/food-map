@@ -523,6 +523,9 @@ foodmap_admin_db
 - DTO 用于后端 HTTP/API 入参和响应，必须放在各服务的 `dto` 包中。
 - VO 用于前端展示或后续 BFF 展示聚合，必须与 DTO、持久化实体分离。
 - Entity、DTO、VO 之间通过 application 层或专门转换方法显式转换，禁止在 Controller 中直接返回 Entity。
+- 应用层只能依赖仓储端口接口，不能直接依赖内存仓储、JDBC 仓储、MyBatis Mapper 等基础设施实现。
+- 内存仓储只用于单元测试或本地替身，不允许作为生产 profile 的默认持久化实现。
+- 运行时数据库访问实现优先放在 `infrastructure.persistence.jdbc` 或后续 `infrastructure.persistence.mybatis` 包中。
 
 #### 6.1.3 固定字段
 

@@ -87,6 +87,33 @@ cd after
 NACOS_SERVER_ADDR=127.0.0.1:8848
 ```
 
+认证服务和用户服务已经接入 PostgreSQL/Flyway，本机启动时还会连接：
+
+```text
+AUTH_DB_URL=jdbc:postgresql://127.0.0.1:5432/foodmap_auth_db
+USER_DB_URL=jdbc:postgresql://127.0.0.1:5432/foodmap_user_db
+```
+
+全新 PostgreSQL 数据卷会通过 `deploy/postgres/init/01-create-foodmap-databases.sql` 自动创建各微服务逻辑数据库。
+
+如果你的 PostgreSQL 容器已经有旧数据卷，初始化脚本不会再次执行。可以手动执行：
+
+```sh
+docker exec -it foodmap-postgres psql -U foodmap -d foodmap_platform
+```
+
+进入 psql 后执行：
+
+```sql
+create database foodmap_auth_db owner foodmap;
+create database foodmap_user_db owner foodmap;
+create database foodmap_relation_db owner foodmap;
+create database foodmap_store_db owner foodmap;
+create database foodmap_recommendation_db owner foodmap;
+create database foodmap_community_db owner foodmap;
+create database foodmap_media_db owner foodmap;
+```
+
 ## 6. 后续容器化 Java 服务
 
 当微服务 Dockerfile 补齐后，Compose 中的 Java 服务应使用：

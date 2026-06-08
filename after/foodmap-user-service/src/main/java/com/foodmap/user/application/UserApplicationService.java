@@ -4,9 +4,9 @@ import com.foodmap.common.exception.CommonErrorCode;
 import com.foodmap.common.exception.FoodMapException;
 import com.foodmap.common.security.CurrentUser;
 import com.foodmap.common.validation.Check;
+import com.foodmap.user.application.port.UserRepository;
 import com.foodmap.user.dto.CurrentUserResponse;
 import com.foodmap.user.infrastructure.persistence.entity.UserEntity;
-import com.foodmap.user.infrastructure.persistence.memory.InMemoryUserRepository;
 import org.springframework.stereotype.Service;
 
 /**
@@ -14,9 +14,9 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class UserApplicationService {
-    private final InMemoryUserRepository userRepository;
+    private final UserRepository userRepository;
 
-    public UserApplicationService(InMemoryUserRepository userRepository) {
+    public UserApplicationService(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
 
