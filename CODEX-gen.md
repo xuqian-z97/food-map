@@ -74,7 +74,7 @@ FoodMap 是一款 iOS 优先的美食推荐地图 App。
 当前阶段：
 
 ```text
-Stage 1：后端微服务骨架已完成
+Stage 1：后端认证用户基础能力与 iOS 认证测试壳已完成
 ```
 
 已完成交付物：
@@ -89,8 +89,11 @@ Stage 1：后端微服务骨架已完成
 - harness 多代理约束和验收脚手架。
 - `after/` Java 微服务 Maven 多模块骨架。
 - 本地隔离开发环境配置和 profile 切换约定。
+- 认证服务和用户服务已接入 PostgreSQL、Flyway 和 JDBC 持久化。
+- `front/FoodMapApp` iOS SwiftUI 工程已生成。
+- iOS 登录页、注册页、认证会话状态、Keychain Token 存储和地图占位页已生成。
 
-当前尚未生成 `front/` iOS 应用代码；后端暂为可编译骨架，尚未实现业务 API、数据库迁移和持久化逻辑。
+当前 iOS 工程可通过 Xcode 打开。命令行完整构建依赖本机 Xcode 已安装 iOS 平台组件；若 `xcodebuild` 提示 iOS 平台未安装，需要先在 Xcode Settings 的 Components 中安装对应 iOS 平台。
 
 当前迭代新增约束：
 
@@ -101,9 +104,10 @@ Stage 1：后端微服务骨架已完成
 
 当前 B1 后续目标：
 
-- 认证服务和用户服务接入真实 PostgreSQL/Flyway/JDBC 持久化。
 - 网关解析认证 Token 后向下游服务透传可信用户身份。
 - 实现 Refresh Token 刷新和退出登录撤销能力。
+- iOS 登录页联调本地认证服务，并在登录后进入真实地图首页。
+- 生成高德地图首页壳、门店查询 API 契约和门店服务基础能力。
 
 ## 6. 计划中的仓库结构
 

@@ -79,6 +79,18 @@ FoodMapApp
     └── Localizable.strings
 ```
 
+当前落地工程：
+
+- `front/FoodMapApp/FoodMapApp.xcodeproj` 已生成，可通过 Xcode 打开。
+- 当前使用 SwiftUI + MVVM 生成认证测试壳。
+- 登录页支持账号名、手机号或邮箱作为登录标识。
+- 注册页支持账号名、手机号、邮箱、昵称、密码。
+- 登录和注册请求通过统一 `APIClient` 调用后端网关或认证服务。
+- Access Token 和 Refresh Token 已通过 Keychain 封装持久化。
+- 登录成功后进入 `MapHomePlaceholderView`，后续替换为高德地图首页。
+- 当前默认服务地址为 `http://127.0.0.1:8081`，可在登录页手动切换为本机实际后端地址，例如 `http://127.0.0.1:18081`。
+- 本机 Xcode 如果尚未安装 iOS 平台组件，需要先在 Xcode Settings 的 Components 中安装 iOS 平台后再执行完整模拟器构建。
+
 ## 6. 核心模块
 
 ### 6.1 App 模块
@@ -189,6 +201,16 @@ ViewModel：
 - GET /api/users/me，B1 已落地最小契约
 - POST /api/auth/refresh，后续实现
 - POST /api/auth/logout，后续实现
+
+当前实现：
+
+- `LoginView` 已落地账号名、手机号或邮箱登录入口。
+- `RegisterView` 已落地测试注册入口。
+- `LoginViewModel` 负责登录表单状态、错误展示和提交状态。
+- `AuthSessionStore` 负责认证会话状态、Token 保存和退出登录。
+- `APIClient` 负责认证接口 JSON 请求和统一响应解析。
+- `KeychainTokenStore` 负责 Token 的 Keychain 保存、读取和清理。
+- 注册成功后当前停留在注册弹窗并展示账号 ID；登录成功后进入地图占位页。
 
 ### 7.2 地图功能
 
