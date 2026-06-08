@@ -8,6 +8,7 @@ import com.foodmap.auth.domain.LoginType;
 import com.foodmap.auth.domain.Pbkdf2PasswordHashService;
 import com.foodmap.auth.domain.RegisteredChannel;
 import com.foodmap.auth.domain.TokenStatus;
+import com.foodmap.auth.application.port.AuthBusinessIdGenerator;
 import com.foodmap.auth.application.port.AuthAccountRepository;
 import com.foodmap.auth.application.port.AuthCredentialRepository;
 import com.foodmap.auth.application.port.LoginLogRepository;
@@ -25,21 +26,16 @@ import com.foodmap.common.exception.FoodMapException;
 import org.springframework.stereotype.Service;
 
 import java.time.OffsetDateTime;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * 认证应用服务，编排注册、登录、密码校验和 Token 签发用例。
  *
- * <p>Controller 只与本服务交换 DTO，不接触持久化实体。后续接入真实数据库时替换仓储实现即可。</p>
+ * <p>Controller 只与本服务交换 DTO，不接触持久化实体。业务主键必须通过 AuthBusinessIdGenerator 生成，
+ * 不能使用服务内存计数器，避免服务重启后与数据库已有业务主键冲突。</p>
  */
 @Service
 public class AuthApplicationService {
-    private final AtomicLong accountIdSequence = new AtomicLong(100_000L);
-    private final AtomicLong userIdSequence = new AtomicLong(200_000L);
-    private final AtomicLong credentialIdSequence = new AtomicLong(300_000L);
-    private final AtomicLong tokenIdSequence = new AtomicLong(400_000L);
-    private final AtomicLong loginLogIdSequence = new AtomicLong(500_000L);
-
+    private final AuthBusinessIdGenerator businessIdGenerator;
     private final AuthAccountRepository accountRepository;
     private final AuthCredentialRepository credentialRepository;
     private final RefreshTokenRepository refreshTokenRepository;
@@ -49,6 +45,7 @@ public class AuthApplicationService {
     private final UserProfileProvisionClient userProfileProvisionClient;
 
     public AuthApplicationService(
+            AuthBusinessIdGenerator businessIdGenerator,
             AuthAccountRepository accountRepository,
             AuthCredentialRepository credentialRepository,
             RefreshTokenRepository refreshTokenRepository,
@@ -57,6 +54,7 @@ public class AuthApplicationService {
             HmacTokenIssuer tokenIssuer,
             UserProfileProvisionClient userProfileProvisionClient
     ) {
+        this.businessIdGenerator = businessIdGenerator;
         this.accountRepository = accountRepository;
         this.credentialRepository = credentialRepository;
         this.refreshTokenRepository = refreshTokenRepository;
@@ -71,8 +69,8 @@ public class AuthApplicationService {
      */
     public RegisterResponse register(RegisterRequest request) {
         ensureLoginIdentifierAvailable(request.accountName(), request.phone(), request.email());
-        Long accountId = accountIdSequence.incrementAndGet();
-        Long userId = userIdSequence.incrementAndGet();
+        Long accountId = businessIdGenerator.nextAccountId();
+        Long userId = businessIdGenerator.nextUserId();
         OffsetDateTime now = OffsetDateTime.now();
 
         AuthAccountEntity account = new AuthAccountEntity();
@@ -89,7 +87,7 @@ public class AuthApplicationService {
         accountRepository.save(account);
 
         AuthCredentialEntity credential = new AuthCredentialEntity();
-        credential.setCredentialId(credentialIdSequence.incrementAndGet());
+        credential.setCredentialId(businessIdGenerator.nextCredentialId());
         credential.setAccountId(accountId);
         credential.setCredentialType(CredentialType.PASSWORD.name());
         credential.setPasswordHash(passwordHashService.hash(request.password()));
@@ -150,7 +148,7 @@ public class AuthApplicationService {
 
     private void saveRefreshToken(Long accountId, String refreshToken, OffsetDateTime expiresTime, OffsetDateTime now) {
         RefreshTokenEntity entity = new RefreshTokenEntity();
-        entity.setTokenId(tokenIdSequence.incrementAndGet());
+        entity.setTokenId(businessIdGenerator.nextRefreshTokenId());
         entity.setAccountId(accountId);
         entity.setTokenHash(tokenIssuer.tokenHash(refreshToken));
         entity.setExpiresTime(expiresTime);
@@ -164,7 +162,7 @@ public class AuthApplicationService {
     private void writeLoginLog(Long accountId, String loginIdentifier, LoginResult result) {
         OffsetDateTime now = OffsetDateTime.now();
         LoginLogEntity entity = new LoginLogEntity();
-        entity.setLoginLogId(loginLogIdSequence.incrementAndGet());
+        entity.setLoginLogId(businessIdGenerator.nextLoginLogId());
         entity.setAccountId(accountId);
         entity.setLoginType(resolveLoginType(loginIdentifier).name());
         entity.setLoginResult(result.name());

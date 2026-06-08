@@ -90,6 +90,7 @@ Stage 1：后端认证用户基础能力与 iOS 认证测试壳已完成
 - `after/` Java 微服务 Maven 多模块骨架。
 - 本地隔离开发环境配置和 profile 切换约定。
 - 认证服务和用户服务已接入 PostgreSQL、Flyway 和 JDBC 持久化。
+- 认证服务业务主键已从内存计数器调整为 Flyway 管理的 PostgreSQL sequence，避免服务重启后 ID 重复。
 - `front/FoodMapApp` iOS SwiftUI 工程已生成。
 - iOS 登录页、注册页、认证会话状态、Keychain Token 存储和地图占位页已生成。
 

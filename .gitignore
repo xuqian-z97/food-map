@@ -18,6 +18,8 @@ target/
 # Xcode local build output
 DerivedData/
 front/**/DerivedData/
+*.xcworkspace/
+xcuserdata/
 
 # BlueJ files
 *.ctxt

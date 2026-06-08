@@ -418,6 +418,7 @@ front/FoodMapApp
 - 库表结构必须通过 Flyway 迁移脚本管理。
 - 每张业务表必须包含 `id / created_time / updated_time / is_delete` 固定字段。
 - 主业务表必须包含 `bigint` 类型业务主键，跨服务引用使用业务主键而不是自增 `id`。
+- 持久化业务主键不能使用服务内存计数器生成；当前 PostgreSQL 服务优先使用 Flyway 管理的数据库 sequence。
 - 数据库结构对应 Java 类必须放在服务内 `infrastructure.persistence.entity` 包中，并与 DTO、VO 明确区分。
 - `foodmap-common` 的 `BaseEntity` 只承载 `id / created_time / updated_time / is_delete` 固定字段，不承载业务主键。
 - Controller 只能使用 DTO 作为请求和响应契约，不能直接暴露数据库持久化实体。

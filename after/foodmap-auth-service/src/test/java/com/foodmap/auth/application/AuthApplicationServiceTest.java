@@ -19,6 +19,7 @@ class AuthApplicationServiceTest {
     @Test
     void registersAccountAndLogsInWithAccountName() {
         AuthApplicationService service = new AuthApplicationService(
+                new TestAuthBusinessIdGenerator(),
                 new InMemoryAuthAccountRepository(),
                 new InMemoryAuthCredentialRepository(),
                 new InMemoryRefreshTokenRepository(),
