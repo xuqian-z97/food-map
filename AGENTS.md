@@ -844,13 +844,12 @@ git@github.com:xuqian-z97/food-map.git
 
 ## 11. 当前优先级
 
-当前阶段已完成文档、多代理规则、harness、`after/` 后端微服务骨架、认证/用户持久化基础能力，以及 `front/FoodMapApp` iOS SwiftUI 认证测试壳。
+当前阶段已完成文档、多代理规则、harness、`after/` 后端微服务骨架、认证/用户持久化基础能力、Refresh Token 刷新与退出登录、网关 Access Token 校验和可信用户身份透传，以及 `front/FoodMapApp` iOS SwiftUI 认证测试壳。
 
 下一步推荐：
 
 1. 安装 Xcode iOS 平台组件后，使用模拟器验证登录和注册页面。
 2. 将 iOS 登录页联调本地认证服务。
-3. 网关解析认证 Token 后向下游服务透传可信用户身份。
-4. 生成高德地图首页壳、门店查询 API 契约和门店服务基础能力。
-5. 实现推荐主流程和评论体系。
-6. 后端镜像生成后，完善 `deploy/docker-compose.ecs2.yml` 中的应用服务配置。
+3. 生成高德地图首页壳、门店查询 API 契约和门店服务基础能力。
+4. 实现推荐主流程和评论体系。
+5. 后端镜像生成后，完善 `deploy/docker-compose.ecs2.yml` 中的应用服务配置。

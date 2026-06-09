@@ -1416,6 +1416,7 @@ POST /api/auth/register
 POST /api/auth/login
 POST /api/auth/refresh
 POST /api/auth/logout
+GET /api/auth/me
 ```
 
 ### 10.2 用户接口
@@ -1496,6 +1497,8 @@ GET /api/community/stores/nearby
 - 后端校验资源归属。
 - 后端校验推荐内容可见范围。
 - 网关可以校验基础 JWT 结构。
+- 网关校验 Access Token 后向下游透传 `X-FoodMap-User-Id` 和 `X-FoodMap-Account-Id`。
+- 下游服务必须通过 `foodmap-common` 中的当前用户解析工具读取可信身份请求头，不能直接信任客户端传入的用户 ID。
 - 服务内部仍必须做权限校验。
 
 ### 11.3 密码

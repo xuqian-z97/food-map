@@ -48,6 +48,8 @@ spring:
 foodmap:
   env:
     profile: ${SPRING_PROFILES_ACTIVE:${FOODMAP_PROFILE:local}}
+  security:
+    token-secret: ${FOODMAP_TOKEN_SECRET:foodmap-local-token-secret-please-change}
 
 management:
   endpoints:

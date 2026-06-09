@@ -2,6 +2,8 @@ package com.foodmap.user.controller;
 
 import com.foodmap.common.api.ApiResponse;
 import com.foodmap.common.security.CurrentUser;
+import com.foodmap.common.security.CurrentUserResolver;
+import com.foodmap.common.security.FoodMapAuthHeaders;
 import com.foodmap.user.application.UserApplicationService;
 import com.foodmap.user.dto.CurrentUserResponse;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,14 +24,14 @@ public class UserController {
     }
 
     /**
-     * 查询当前用户资料。MVP 阶段先从网关透传请求头读取身份，后续替换为统一认证上下文解析器。
+     * 查询当前用户资料，从网关透传的可信身份请求头解析当前用户。
      */
     @GetMapping("/me")
     public ApiResponse<CurrentUserResponse> me(
-            @RequestHeader("X-FoodMap-User-Id") Long userId,
-            @RequestHeader("X-FoodMap-Account-Id") Long accountId,
-            @RequestHeader(value = "X-FoodMap-Account-Name", required = false) String accountName
+            @RequestHeader(FoodMapAuthHeaders.USER_ID) String userId,
+            @RequestHeader(FoodMapAuthHeaders.ACCOUNT_ID) String accountId
     ) {
-        return ApiResponse.ok(userApplicationService.currentUser(new CurrentUser(userId, accountId, accountName)));
+        CurrentUser currentUser = CurrentUserResolver.fromTrustedHeaders(userId, accountId);
+        return ApiResponse.ok(userApplicationService.currentUser(currentUser));
     }
 }

@@ -91,6 +91,9 @@ Stage 1：后端认证用户基础能力与 iOS 认证测试壳已完成
 - 本地隔离开发环境配置和 profile 切换约定。
 - 认证服务和用户服务已接入 PostgreSQL、Flyway 和 MyBatis Mapper/XML 持久化。
 - 认证服务业务主键已从内存计数器调整为 Flyway 管理的 PostgreSQL sequence，避免服务重启后 ID 重复。
+- 认证服务已补齐 Refresh Token 刷新、退出登录撤销和当前会话查询接口。
+- 网关已具备 Access Token 校验和可信用户身份请求头透传能力。
+- `foodmap-common` 已提供 Token 编解码、内部身份请求头常量和当前用户解析工具。
 - `front/FoodMapApp` iOS SwiftUI 工程已生成。
 - iOS 登录页、注册页、认证会话状态、Keychain Token 存储和地图占位页已生成。
 
@@ -108,8 +111,6 @@ Stage 1：后端认证用户基础能力与 iOS 认证测试壳已完成
 
 当前 B1 后续目标：
 
-- 网关解析认证 Token 后向下游服务透传可信用户身份。
-- 实现 Refresh Token 刷新和退出登录撤销能力。
 - iOS 登录页联调本地认证服务，并在登录后进入真实地图首页。
 - 生成高德地图首页壳、门店查询 API 契约和门店服务基础能力。
 

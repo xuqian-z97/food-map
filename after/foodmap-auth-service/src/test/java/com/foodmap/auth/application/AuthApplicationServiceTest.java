@@ -2,17 +2,22 @@ package com.foodmap.auth.application;
 
 import com.foodmap.auth.domain.HmacTokenIssuer;
 import com.foodmap.auth.domain.Pbkdf2PasswordHashService;
+import com.foodmap.auth.dto.CurrentAuthResponse;
 import com.foodmap.auth.dto.LoginRequest;
 import com.foodmap.auth.dto.LoginResponse;
+import com.foodmap.auth.dto.LogoutRequest;
+import com.foodmap.auth.dto.RefreshTokenRequest;
 import com.foodmap.auth.dto.RegisterRequest;
 import com.foodmap.auth.dto.RegisterResponse;
 import com.foodmap.auth.infrastructure.persistence.memory.InMemoryAuthAccountRepository;
 import com.foodmap.auth.infrastructure.persistence.memory.InMemoryAuthCredentialRepository;
 import com.foodmap.auth.infrastructure.persistence.memory.InMemoryLoginLogRepository;
 import com.foodmap.auth.infrastructure.persistence.memory.InMemoryRefreshTokenRepository;
+import com.foodmap.common.exception.FoodMapException;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class AuthApplicationServiceTest {
 
@@ -45,5 +50,20 @@ class AuthApplicationServiceTest {
         assertThat(loginResponse.userId()).isEqualTo(registerResponse.userId());
         assertThat(loginResponse.accessToken()).isNotBlank();
         assertThat(loginResponse.refreshToken()).isNotBlank();
+
+        LoginResponse refreshed = service.refresh(new RefreshTokenRequest(loginResponse.refreshToken()));
+        CurrentAuthResponse currentAuth = service.current(refreshed.accessToken());
+
+        assertThat(refreshed.accountId()).isEqualTo(registerResponse.accountId());
+        assertThat(refreshed.userId()).isEqualTo(registerResponse.userId());
+        assertThat(refreshed.accessToken()).isNotBlank();
+        assertThat(refreshed.refreshToken()).isEqualTo(loginResponse.refreshToken());
+        assertThat(currentAuth.accountId()).isEqualTo(registerResponse.accountId());
+        assertThat(currentAuth.userId()).isEqualTo(registerResponse.userId());
+
+        service.logout(new LogoutRequest(loginResponse.refreshToken()));
+
+        assertThatThrownBy(() -> service.refresh(new RefreshTokenRequest(loginResponse.refreshToken())))
+                .isInstanceOf(FoodMapException.class);
     }
 }

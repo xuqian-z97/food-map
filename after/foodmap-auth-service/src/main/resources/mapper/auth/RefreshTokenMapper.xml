@@ -27,6 +27,9 @@
             <if test="condition.id != null">and id = #{condition.id}</if>
             <if test="condition.tokenId != null">and token_id = #{condition.tokenId}</if>
             <if test="condition.accountId != null">and account_id = #{condition.accountId}</if>
+            <if test="condition.tokenHash != null and condition.tokenHash != ''">
+                and token_hash = #{condition.tokenHash}
+            </if>
             <if test="condition.tokenStatus != null and condition.tokenStatus != ''">
                 and token_status = #{condition.tokenStatus}
             </if>

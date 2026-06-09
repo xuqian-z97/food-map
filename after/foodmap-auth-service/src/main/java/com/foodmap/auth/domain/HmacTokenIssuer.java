@@ -1,28 +1,21 @@
 package com.foodmap.auth.domain;
 
-import com.foodmap.common.exception.CommonErrorCode;
-import com.foodmap.common.exception.FoodMapException;
+import com.foodmap.common.security.HmacTokenCodec;
+import com.foodmap.common.security.TokenClaims;
 import com.foodmap.common.validation.Check;
 import org.springframework.stereotype.Component;
 
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
-import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
-import java.util.Base64;
-import java.util.UUID;
 
 /**
  * HMAC Token 签发器，用于 MVP 阶段生成可验证结构的 Access Token 和 Refresh Token。
  *
- * <p>该实现先提供稳定接口和测试闭环，后续接入标准 JWT 库时只替换本类，不影响应用层。</p>
+ * <p>本类保留在认证领域层作为应用层依赖入口，底层编解码逻辑委托给 common 中的 HmacTokenCodec，
+ * 确保认证服务签发逻辑和网关解析逻辑保持一致。</p>
  */
 @Component
 public class HmacTokenIssuer {
-    private static final String HMAC_ALGORITHM = "HmacSHA256";
-    private static final Base64.Encoder URL_ENCODER = Base64.getUrlEncoder().withoutPadding();
-
-    private final String secret;
+    private final HmacTokenCodec tokenCodec;
 
     /**
      * 使用本地默认密钥创建签发器，生产环境后续必须从安全配置注入。
@@ -35,49 +28,41 @@ public class HmacTokenIssuer {
      * 使用指定密钥创建签发器，测试可传入固定值以便排查 Token 结构。
      */
     public HmacTokenIssuer(String secret) {
-        this.secret = Check.notBlank("secret", secret);
+        this.tokenCodec = new HmacTokenCodec(Check.notBlank("secret", secret));
     }
 
     /**
      * 签发 Access Token，载荷包含账号和用户业务主键，供网关和服务端提取身份。
      */
     public String issueAccessToken(Long accountId, Long userId, OffsetDateTime expiresTime) {
-        return issue("ACCESS", accountId, userId, expiresTime);
+        return tokenCodec.issueAccessToken(accountId, userId, expiresTime);
     }
 
     /**
      * 签发 Refresh Token，载荷包含随机 nonce，降低刷新令牌碰撞和重放排查难度。
      */
     public String issueRefreshToken(Long accountId, Long userId, OffsetDateTime expiresTime) {
-        return issue("REFRESH", accountId, userId, expiresTime) + "." + UUID.randomUUID();
+        return tokenCodec.issueRefreshToken(accountId, userId, expiresTime);
     }
 
     /**
      * 对明文 Token 做哈希摘要，用于数据库保存 Refresh Token 时避免落明文。
      */
     public String tokenHash(String token) {
-        return sign(Check.notBlank("token", token));
+        return tokenCodec.tokenHash(token);
     }
 
-    private String issue(String tokenType, Long accountId, Long userId, OffsetDateTime expiresTime) {
-        Check.positive("accountId", accountId);
-        Check.positive("userId", userId);
-        String header = URL_ENCODER.encodeToString("{\"alg\":\"HS256\",\"typ\":\"JWT\"}".getBytes(StandardCharsets.UTF_8));
-        String payload = URL_ENCODER.encodeToString(("{\"tokenType\":\"" + tokenType
-                + "\",\"accountId\":" + accountId
-                + ",\"userId\":" + userId
-                + ",\"expiresTime\":\"" + expiresTime + "\"}").getBytes(StandardCharsets.UTF_8));
-        String unsignedToken = header + "." + payload;
-        return unsignedToken + "." + sign(unsignedToken);
+    /**
+     * 解析 Access Token，供认证服务的会话查询接口复用网关同款校验逻辑。
+     */
+    public TokenClaims parseAccessToken(String token) {
+        return tokenCodec.parseAccessToken(token);
     }
 
-    private String sign(String value) {
-        try {
-            Mac mac = Mac.getInstance(HMAC_ALGORITHM);
-            mac.init(new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), HMAC_ALGORITHM));
-            return URL_ENCODER.encodeToString(mac.doFinal(value.getBytes(StandardCharsets.UTF_8)));
-        } catch (Exception ex) {
-            throw new FoodMapException(CommonErrorCode.INTERNAL_ERROR, "Token 签名服务不可用");
-        }
+    /**
+     * 解析 Refresh Token，供刷新和退出登录接口校验令牌类型、签名和身份声明。
+     */
+    public TokenClaims parseRefreshToken(String token) {
+        return tokenCodec.parseRefreshToken(token);
     }
 }
