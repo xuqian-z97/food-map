@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.foodmap.auth.infrastructure.persistence.mapper.RefreshTokenMapper">
+    <resultMap id="RefreshTokenResultMap" type="com.foodmap.auth.infrastructure.persistence.entity.RefreshTokenEntity">
+        <id property="id" column="id"/>
+        <result property="createdTime" column="created_time"/>
+        <result property="updatedTime" column="updated_time"/>
+        <result property="isDelete" column="is_delete"/>
+        <result property="tokenId" column="token_id"/>
+        <result property="accountId" column="account_id"/>
+        <result property="tokenHash" column="token_hash"/>
+        <result property="expiresTime" column="expires_time"/>
+        <result property="revokedTime" column="revoked_time"/>
+        <result property="tokenStatus" column="token_status"/>
+    </resultMap>
+
+    <sql id="BaseColumns">
+        id, created_time, updated_time, is_delete, token_id, account_id,
+        token_hash, expires_time, revoked_time, token_status
+    </sql>
+
+    <sql id="ConditionWhere">
+        where is_delete = 0
+        <if test="condition != null">
+            <if test="condition.id != null">and id = #{condition.id}</if>
+            <if test="condition.tokenId != null">and token_id = #{condition.tokenId}</if>
+            <if test="condition.accountId != null">and account_id = #{condition.accountId}</if>
+            <if test="condition.tokenStatus != null and condition.tokenStatus != ''">
+                and token_status = #{condition.tokenStatus}
+            </if>
+            <if test="condition.expiresTime != null">and expires_time &gt;= #{condition.expiresTime}</if>
+        </if>
+    </sql>
+
+    <select id="selectById" resultMap="RefreshTokenResultMap">
+        select <include refid="BaseColumns"/>
+        from refresh_tokens
+        where id = #{id} and is_delete = 0
+        limit 1
+    </select>
+
+    <select id="selectByBizId" resultMap="RefreshTokenResultMap">
+        select <include refid="BaseColumns"/>
+        from refresh_tokens
+        where token_id = #{tokenId} and is_delete = 0
+        limit 1
+    </select>
+
+    <select id="selectListByCondition" resultMap="RefreshTokenResultMap">
+        select <include refid="BaseColumns"/>
+        from refresh_tokens
+        <include refid="ConditionWhere"/>
+        order by id desc
+    </select>
+
+    <select id="selectPageByCondition" resultMap="RefreshTokenResultMap">
+        select <include refid="BaseColumns"/>
+        from refresh_tokens
+        <include refid="ConditionWhere"/>
+        order by id desc
+        limit #{limit} offset #{offset}
+    </select>
+
+    <insert id="insertOne" parameterType="com.foodmap.auth.infrastructure.persistence.entity.RefreshTokenEntity">
+        insert into refresh_tokens
+        (created_time, updated_time, is_delete, token_id, account_id, token_hash,
+         expires_time, revoked_time, token_status)
+        values
+        (#{createdTime}, #{updatedTime}, #{isDelete}, #{tokenId}, #{accountId}, #{tokenHash},
+         #{expiresTime}, #{revokedTime}, #{tokenStatus})
+    </insert>
+
+    <insert id="insertBatch">
+        insert into refresh_tokens
+        (created_time, updated_time, is_delete, token_id, account_id, token_hash,
+         expires_time, revoked_time, token_status)
+        values
+        <foreach collection="items" item="item" separator=",">
+            (#{item.createdTime}, #{item.updatedTime}, #{item.isDelete}, #{item.tokenId}, #{item.accountId},
+             #{item.tokenHash}, #{item.expiresTime}, #{item.revokedTime}, #{item.tokenStatus})
+        </foreach>
+    </insert>
+
+    <update id="updateById" parameterType="com.foodmap.auth.infrastructure.persistence.entity.RefreshTokenEntity">
+        update refresh_tokens
+        set account_id = #{accountId},
+            token_hash = #{tokenHash},
+            expires_time = #{expiresTime},
+            revoked_time = #{revokedTime},
+            token_status = #{tokenStatus},
+            updated_time = #{updatedTime},
+            is_delete = #{isDelete}
+        where id = #{id}
+    </update>
+
+    <update id="updateByBizId" parameterType="com.foodmap.auth.infrastructure.persistence.entity.RefreshTokenEntity">
+        update refresh_tokens
+        set account_id = #{accountId},
+            token_hash = #{tokenHash},
+            expires_time = #{expiresTime},
+            revoked_time = #{revokedTime},
+            token_status = #{tokenStatus},
+            updated_time = #{updatedTime},
+            is_delete = #{isDelete}
+        where token_id = #{tokenId}
+    </update>
+
+    <update id="updateBatchByBizId">
+        <foreach collection="items" item="item" separator=";">
+            update refresh_tokens
+            set account_id = #{item.accountId},
+                token_hash = #{item.tokenHash},
+                expires_time = #{item.expiresTime},
+                revoked_time = #{item.revokedTime},
+                token_status = #{item.tokenStatus},
+                updated_time = #{item.updatedTime},
+                is_delete = #{item.isDelete}
+            where token_id = #{item.tokenId}
+        </foreach>
+    </update>
+
+    <update id="logicDeleteById">
+        update refresh_tokens
+        set is_delete = 1, updated_time = #{updatedTime}
+        where id = #{id}
+    </update>
+
+    <update id="logicDeleteByBizIds">
+        update refresh_tokens
+        set is_delete = 1, updated_time = #{updatedTime}
+        where token_id in
+        <foreach collection="tokenIds" item="tokenId" open="(" close=")" separator=",">
+            #{tokenId}
+        </foreach>
+    </update>
+</mapper>

@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.foodmap.auth.infrastructure.persistence.mapper.AuthAccountMapper">
+    <resultMap id="AuthAccountResultMap" type="com.foodmap.auth.infrastructure.persistence.entity.AuthAccountEntity">
+        <id property="id" column="id"/>
+        <result property="createdTime" column="created_time"/>
+        <result property="updatedTime" column="updated_time"/>
+        <result property="isDelete" column="is_delete"/>
+        <result property="accountId" column="account_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="accountName" column="account_name"/>
+        <result property="phone" column="phone"/>
+        <result property="email" column="email"/>
+        <result property="accountStatus" column="account_status"/>
+        <result property="registeredChannel" column="registered_channel"/>
+        <result property="lastLoginTime" column="last_login_time"/>
+    </resultMap>
+
+    <sql id="BaseColumns">
+        id, created_time, updated_time, is_delete, account_id, user_id, account_name,
+        phone, email, account_status, registered_channel, last_login_time
+    </sql>
+
+    <sql id="ConditionWhere">
+        where is_delete = 0
+        <if test="condition != null">
+            <if test="condition.id != null">and id = #{condition.id}</if>
+            <if test="condition.accountId != null">and account_id = #{condition.accountId}</if>
+            <if test="condition.userId != null">and user_id = #{condition.userId}</if>
+            <if test="condition.accountName != null and condition.accountName != ''">
+                and account_name like concat('%', #{condition.accountName}, '%')
+            </if>
+            <if test="condition.phone != null and condition.phone != ''">and phone = #{condition.phone}</if>
+            <if test="condition.email != null and condition.email != ''">and lower(email) = lower(#{condition.email})</if>
+            <if test="condition.accountStatus != null and condition.accountStatus != ''">
+                and account_status = #{condition.accountStatus}
+            </if>
+            <if test="condition.registeredChannel != null and condition.registeredChannel != ''">
+                and registered_channel = #{condition.registeredChannel}
+            </if>
+        </if>
+    </sql>
+
+    <select id="selectById" resultMap="AuthAccountResultMap">
+        select <include refid="BaseColumns"/>
+        from auth_accounts
+        where id = #{id} and is_delete = 0
+        limit 1
+    </select>
+
+    <select id="selectByBizId" resultMap="AuthAccountResultMap">
+        select <include refid="BaseColumns"/>
+        from auth_accounts
+        where account_id = #{accountId} and is_delete = 0
+        limit 1
+    </select>
+
+    <select id="selectListByCondition" resultMap="AuthAccountResultMap">
+        select <include refid="BaseColumns"/>
+        from auth_accounts
+        <include refid="ConditionWhere"/>
+        order by id desc
+    </select>
+
+    <select id="selectPageByCondition" resultMap="AuthAccountResultMap">
+        select <include refid="BaseColumns"/>
+        from auth_accounts
+        <include refid="ConditionWhere"/>
+        order by id desc
+        limit #{limit} offset #{offset}
+    </select>
+
+    <insert id="insertOne" parameterType="com.foodmap.auth.infrastructure.persistence.entity.AuthAccountEntity">
+        insert into auth_accounts
+        (created_time, updated_time, is_delete, account_id, user_id, account_name, phone, email,
+         account_status, registered_channel, last_login_time)
+        values
+        (#{createdTime}, #{updatedTime}, #{isDelete}, #{accountId}, #{userId}, #{accountName}, #{phone}, #{email},
+         #{accountStatus}, #{registeredChannel}, #{lastLoginTime})
+    </insert>
+
+    <insert id="insertBatch">
+        insert into auth_accounts
+        (created_time, updated_time, is_delete, account_id, user_id, account_name, phone, email,
+         account_status, registered_channel, last_login_time)
+        values
+        <foreach collection="items" item="item" separator=",">
+            (#{item.createdTime}, #{item.updatedTime}, #{item.isDelete}, #{item.accountId}, #{item.userId},
+             #{item.accountName}, #{item.phone}, #{item.email}, #{item.accountStatus}, #{item.registeredChannel},
+             #{item.lastLoginTime})
+        </foreach>
+    </insert>
+
+    <update id="updateById" parameterType="com.foodmap.auth.infrastructure.persistence.entity.AuthAccountEntity">
+        update auth_accounts
+        set user_id = #{userId},
+            account_name = #{accountName},
+            phone = #{phone},
+            email = #{email},
+            account_status = #{accountStatus},
+            registered_channel = #{registeredChannel},
+            last_login_time = #{lastLoginTime},
+            updated_time = #{updatedTime},
+            is_delete = #{isDelete}
+        where id = #{id}
+    </update>
+
+    <update id="updateByBizId" parameterType="com.foodmap.auth.infrastructure.persistence.entity.AuthAccountEntity">
+        update auth_accounts
+        set user_id = #{userId},
+            account_name = #{accountName},
+            phone = #{phone},
+            email = #{email},
+            account_status = #{accountStatus},
+            registered_channel = #{registeredChannel},
+            last_login_time = #{lastLoginTime},
+            updated_time = #{updatedTime},
+            is_delete = #{isDelete}
+        where account_id = #{accountId}
+    </update>
+
+    <update id="updateBatchByBizId">
+        <foreach collection="items" item="item" separator=";">
+            update auth_accounts
+            set user_id = #{item.userId},
+                account_name = #{item.accountName},
+                phone = #{item.phone},
+                email = #{item.email},
+                account_status = #{item.accountStatus},
+                registered_channel = #{item.registeredChannel},
+                last_login_time = #{item.lastLoginTime},
+                updated_time = #{item.updatedTime},
+                is_delete = #{item.isDelete}
+            where account_id = #{item.accountId}
+        </foreach>
+    </update>
+
+    <update id="logicDeleteById">
+        update auth_accounts
+        set is_delete = 1, updated_time = #{updatedTime}
+        where id = #{id}
+    </update>
+
+    <update id="logicDeleteByBizIds">
+        update auth_accounts
+        set is_delete = 1, updated_time = #{updatedTime}
+        where account_id in
+        <foreach collection="accountIds" item="accountId" open="(" close=")" separator=",">
+            #{accountId}
+        </foreach>
+    </update>
+</mapper>

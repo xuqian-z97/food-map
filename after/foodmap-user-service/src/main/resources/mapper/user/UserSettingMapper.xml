@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.foodmap.user.infrastructure.persistence.mapper.UserSettingMapper">
+    <resultMap id="UserSettingResultMap" type="com.foodmap.user.infrastructure.persistence.entity.UserSettingEntity">
+        <id property="id" column="id"/>
+        <result property="createdTime" column="created_time"/>
+        <result property="updatedTime" column="updated_time"/>
+        <result property="isDelete" column="is_delete"/>
+        <result property="settingId" column="setting_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="defaultVisibilityType" column="default_visibility_type"/>
+        <result property="allowFriendRequest" column="allow_friend_request"/>
+        <result property="allowSearchByPhone" column="allow_search_by_phone"/>
+        <result property="allowSearchByEmail" column="allow_search_by_email"/>
+    </resultMap>
+
+    <sql id="BaseColumns">
+        id, created_time, updated_time, is_delete, setting_id, user_id, default_visibility_type,
+        allow_friend_request, allow_search_by_phone, allow_search_by_email
+    </sql>
+
+    <sql id="ConditionWhere">
+        where is_delete = 0
+        <if test="condition != null">
+            <if test="condition.id != null">and id = #{condition.id}</if>
+            <if test="condition.settingId != null">and setting_id = #{condition.settingId}</if>
+            <if test="condition.userId != null">and user_id = #{condition.userId}</if>
+            <if test="condition.defaultVisibilityType != null and condition.defaultVisibilityType != ''">
+                and default_visibility_type = #{condition.defaultVisibilityType}
+            </if>
+            <if test="condition.allowFriendRequest != null">and allow_friend_request = #{condition.allowFriendRequest}</if>
+            <if test="condition.allowSearchByPhone != null">and allow_search_by_phone = #{condition.allowSearchByPhone}</if>
+            <if test="condition.allowSearchByEmail != null">and allow_search_by_email = #{condition.allowSearchByEmail}</if>
+        </if>
+    </sql>
+
+    <select id="selectById" resultMap="UserSettingResultMap">
+        select <include refid="BaseColumns"/>
+        from user_settings
+        where id = #{id} and is_delete = 0
+        limit 1
+    </select>
+
+    <select id="selectByBizId" resultMap="UserSettingResultMap">
+        select <include refid="BaseColumns"/>
+        from user_settings
+        where setting_id = #{settingId} and is_delete = 0
+        limit 1
+    </select>
+
+    <select id="selectListByCondition" resultMap="UserSettingResultMap">
+        select <include refid="BaseColumns"/>
+        from user_settings
+        <include refid="ConditionWhere"/>
+        order by id desc
+    </select>
+
+    <select id="selectPageByCondition" resultMap="UserSettingResultMap">
+        select <include refid="BaseColumns"/>
+        from user_settings
+        <include refid="ConditionWhere"/>
+        order by id desc
+        limit #{limit} offset #{offset}
+    </select>
+
+    <insert id="insertOne" parameterType="com.foodmap.user.infrastructure.persistence.entity.UserSettingEntity">
+        insert into user_settings
+        (created_time, updated_time, is_delete, setting_id, user_id, default_visibility_type,
+         allow_friend_request, allow_search_by_phone, allow_search_by_email)
+        values
+        (#{createdTime}, #{updatedTime}, #{isDelete}, #{settingId}, #{userId}, #{defaultVisibilityType},
+         #{allowFriendRequest}, #{allowSearchByPhone}, #{allowSearchByEmail})
+    </insert>
+
+    <insert id="insertBatch">
+        insert into user_settings
+        (created_time, updated_time, is_delete, setting_id, user_id, default_visibility_type,
+         allow_friend_request, allow_search_by_phone, allow_search_by_email)
+        values
+        <foreach collection="items" item="item" separator=",">
+            (#{item.createdTime}, #{item.updatedTime}, #{item.isDelete}, #{item.settingId}, #{item.userId},
+             #{item.defaultVisibilityType}, #{item.allowFriendRequest}, #{item.allowSearchByPhone},
+             #{item.allowSearchByEmail})
+        </foreach>
+    </insert>
+
+    <update id="updateById" parameterType="com.foodmap.user.infrastructure.persistence.entity.UserSettingEntity">
+        update user_settings
+        set user_id = #{userId},
+            default_visibility_type = #{defaultVisibilityType},
+            allow_friend_request = #{allowFriendRequest},
+            allow_search_by_phone = #{allowSearchByPhone},
+            allow_search_by_email = #{allowSearchByEmail},
+            updated_time = #{updatedTime},
+            is_delete = #{isDelete}
+        where id = #{id}
+    </update>
+
+    <update id="updateByBizId" parameterType="com.foodmap.user.infrastructure.persistence.entity.UserSettingEntity">
+        update user_settings
+        set user_id = #{userId},
+            default_visibility_type = #{defaultVisibilityType},
+            allow_friend_request = #{allowFriendRequest},
+            allow_search_by_phone = #{allowSearchByPhone},
+            allow_search_by_email = #{allowSearchByEmail},
+            updated_time = #{updatedTime},
+            is_delete = #{isDelete}
+        where setting_id = #{settingId}
+    </update>
+
+    <update id="updateBatchByBizId">
+        <foreach collection="items" item="item" separator=";">
+            update user_settings
+            set user_id = #{item.userId},
+                default_visibility_type = #{item.defaultVisibilityType},
+                allow_friend_request = #{item.allowFriendRequest},
+                allow_search_by_phone = #{item.allowSearchByPhone},
+                allow_search_by_email = #{item.allowSearchByEmail},
+                updated_time = #{item.updatedTime},
+                is_delete = #{item.isDelete}
+            where setting_id = #{item.settingId}
+        </foreach>
+    </update>
+
+    <update id="logicDeleteById">
+        update user_settings
+        set is_delete = 1, updated_time = #{updatedTime}
+        where id = #{id}
+    </update>
+
+    <update id="logicDeleteByBizIds">
+        update user_settings
+        set is_delete = 1, updated_time = #{updatedTime}
+        where setting_id in
+        <foreach collection="settingIds" item="settingId" open="(" close=")" separator=",">
+            #{settingId}
+        </foreach>
+    </update>
+</mapper>

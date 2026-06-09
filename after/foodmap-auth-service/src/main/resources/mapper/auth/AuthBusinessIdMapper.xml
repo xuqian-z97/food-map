@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.foodmap.auth.infrastructure.persistence.mapper.AuthBusinessIdMapper">
+    <select id="nextAccountId" resultType="long">
+        select nextval('auth_account_id_seq')
+    </select>
+
+    <select id="nextUserId" resultType="long">
+        select nextval('auth_user_id_seq')
+    </select>
+
+    <select id="nextCredentialId" resultType="long">
+        select nextval('auth_credential_id_seq')
+    </select>
+
+    <select id="nextRefreshTokenId" resultType="long">
+        select nextval('auth_refresh_token_id_seq')
+    </select>
+
+    <select id="nextLoginLogId" resultType="long">
+        select nextval('auth_login_log_id_seq')
+    </select>
+</mapper>

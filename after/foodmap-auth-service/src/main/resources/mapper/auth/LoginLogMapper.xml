@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.foodmap.auth.infrastructure.persistence.mapper.LoginLogMapper">
+    <resultMap id="LoginLogResultMap" type="com.foodmap.auth.infrastructure.persistence.entity.LoginLogEntity">
+        <id property="id" column="id"/>
+        <result property="createdTime" column="created_time"/>
+        <result property="updatedTime" column="updated_time"/>
+        <result property="isDelete" column="is_delete"/>
+        <result property="loginLogId" column="login_log_id"/>
+        <result property="accountId" column="account_id"/>
+        <result property="loginType" column="login_type"/>
+        <result property="loginResult" column="login_result"/>
+        <result property="ipAddress" column="ip_address"/>
+        <result property="userAgent" column="user_agent"/>
+    </resultMap>
+
+    <sql id="BaseColumns">
+        id, created_time, updated_time, is_delete, login_log_id, account_id,
+        login_type, login_result, ip_address, user_agent
+    </sql>
+
+    <sql id="ConditionWhere">
+        where is_delete = 0
+        <if test="condition != null">
+            <if test="condition.id != null">and id = #{condition.id}</if>
+            <if test="condition.loginLogId != null">and login_log_id = #{condition.loginLogId}</if>
+            <if test="condition.accountId != null">and account_id = #{condition.accountId}</if>
+            <if test="condition.loginType != null and condition.loginType != ''">and login_type = #{condition.loginType}</if>
+            <if test="condition.loginResult != null and condition.loginResult != ''">
+                and login_result = #{condition.loginResult}
+            </if>
+        </if>
+    </sql>
+
+    <select id="selectById" resultMap="LoginLogResultMap">
+        select <include refid="BaseColumns"/>
+        from login_logs
+        where id = #{id} and is_delete = 0
+        limit 1
+    </select>
+
+    <select id="selectByBizId" resultMap="LoginLogResultMap">
+        select <include refid="BaseColumns"/>
+        from login_logs
+        where login_log_id = #{loginLogId} and is_delete = 0
+        limit 1
+    </select>
+
+    <select id="selectListByCondition" resultMap="LoginLogResultMap">
+        select <include refid="BaseColumns"/>
+        from login_logs
+        <include refid="ConditionWhere"/>
+        order by id desc
+    </select>
+
+    <select id="selectPageByCondition" resultMap="LoginLogResultMap">
+        select <include refid="BaseColumns"/>
+        from login_logs
+        <include refid="ConditionWhere"/>
+        order by id desc
+        limit #{limit} offset #{offset}
+    </select>
+
+    <insert id="insertOne" parameterType="com.foodmap.auth.infrastructure.persistence.entity.LoginLogEntity">
+        insert into login_logs
+        (created_time, updated_time, is_delete, login_log_id, account_id,
+         login_type, login_result, ip_address, user_agent)
+        values
+        (#{createdTime}, #{updatedTime}, #{isDelete}, #{loginLogId}, #{accountId},
+         #{loginType}, #{loginResult}, #{ipAddress}, #{userAgent})
+    </insert>
+
+    <insert id="insertBatch">
+        insert into login_logs
+        (created_time, updated_time, is_delete, login_log_id, account_id,
+         login_type, login_result, ip_address, user_agent)
+        values
+        <foreach collection="items" item="item" separator=",">
+            (#{item.createdTime}, #{item.updatedTime}, #{item.isDelete}, #{item.loginLogId}, #{item.accountId},
+             #{item.loginType}, #{item.loginResult}, #{item.ipAddress}, #{item.userAgent})
+        </foreach>
+    </insert>
+
+    <update id="updateById" parameterType="com.foodmap.auth.infrastructure.persistence.entity.LoginLogEntity">
+        update login_logs
+        set account_id = #{accountId},
+            login_type = #{loginType},
+            login_result = #{loginResult},
+            ip_address = #{ipAddress},
+            user_agent = #{userAgent},
+            updated_time = #{updatedTime},
+            is_delete = #{isDelete}
+        where id = #{id}
+    </update>
+
+    <update id="updateByBizId" parameterType="com.foodmap.auth.infrastructure.persistence.entity.LoginLogEntity">
+        update login_logs
+        set account_id = #{accountId},
+            login_type = #{loginType},
+            login_result = #{loginResult},
+            ip_address = #{ipAddress},
+            user_agent = #{userAgent},
+            updated_time = #{updatedTime},
+            is_delete = #{isDelete}
+        where login_log_id = #{loginLogId}
+    </update>
+
+    <update id="updateBatchByBizId">
+        <foreach collection="items" item="item" separator=";">
+            update login_logs
+            set account_id = #{item.accountId},
+                login_type = #{item.loginType},
+                login_result = #{item.loginResult},
+                ip_address = #{item.ipAddress},
+                user_agent = #{item.userAgent},
+                updated_time = #{item.updatedTime},
+                is_delete = #{item.isDelete}
+            where login_log_id = #{item.loginLogId}
+        </foreach>
+    </update>
+
+    <update id="logicDeleteById">
+        update login_logs
+        set is_delete = 1, updated_time = #{updatedTime}
+        where id = #{id}
+    </update>
+
+    <update id="logicDeleteByBizIds">
+        update login_logs
+        set is_delete = 1, updated_time = #{updatedTime}
+        where login_log_id in
+        <foreach collection="loginLogIds" item="loginLogId" open="(" close=")" separator=",">
+            #{loginLogId}
+        </foreach>
+    </update>
+</mapper>

@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.foodmap.user.infrastructure.persistence.mapper.UserMapper">
+    <resultMap id="UserResultMap" type="com.foodmap.user.infrastructure.persistence.entity.UserEntity">
+        <id property="id" column="id"/>
+        <result property="createdTime" column="created_time"/>
+        <result property="updatedTime" column="updated_time"/>
+        <result property="isDelete" column="is_delete"/>
+        <result property="userId" column="user_id"/>
+        <result property="accountId" column="account_id"/>
+        <result property="nickname" column="nickname"/>
+        <result property="avatarMediaId" column="avatar_media_id"/>
+        <result property="userStatus" column="user_status"/>
+        <result property="searchable" column="searchable"/>
+    </resultMap>
+
+    <sql id="BaseColumns">
+        id, created_time, updated_time, is_delete, user_id, account_id,
+        nickname, avatar_media_id, user_status, searchable
+    </sql>
+
+    <sql id="ConditionWhere">
+        where is_delete = 0
+        <if test="condition != null">
+            <if test="condition.id != null">and id = #{condition.id}</if>
+            <if test="condition.userId != null">and user_id = #{condition.userId}</if>
+            <if test="condition.accountId != null">and account_id = #{condition.accountId}</if>
+            <if test="condition.nickname != null and condition.nickname != ''">
+                and nickname like concat('%', #{condition.nickname}, '%')
+            </if>
+            <if test="condition.userStatus != null and condition.userStatus != ''">
+                and user_status = #{condition.userStatus}
+            </if>
+            <if test="condition.searchable != null">and searchable = #{condition.searchable}</if>
+        </if>
+    </sql>
+
+    <select id="selectById" resultMap="UserResultMap">
+        select <include refid="BaseColumns"/>
+        from users
+        where id = #{id} and is_delete = 0
+        limit 1
+    </select>
+
+    <select id="selectByBizId" resultMap="UserResultMap">
+        select <include refid="BaseColumns"/>
+        from users
+        where user_id = #{userId} and is_delete = 0
+        limit 1
+    </select>
+
+    <select id="selectListByCondition" resultMap="UserResultMap">
+        select <include refid="BaseColumns"/>
+        from users
+        <include refid="ConditionWhere"/>
+        order by id desc
+    </select>
+
+    <select id="selectPageByCondition" resultMap="UserResultMap">
+        select <include refid="BaseColumns"/>
+        from users
+        <include refid="ConditionWhere"/>
+        order by id desc
+        limit #{limit} offset #{offset}
+    </select>
+
+    <insert id="insertOne" parameterType="com.foodmap.user.infrastructure.persistence.entity.UserEntity">
+        insert into users
+        (created_time, updated_time, is_delete, user_id, account_id, nickname,
+         avatar_media_id, user_status, searchable)
+        values
+        (#{createdTime}, #{updatedTime}, #{isDelete}, #{userId}, #{accountId}, #{nickname},
+         #{avatarMediaId}, #{userStatus}, #{searchable})
+    </insert>
+
+    <insert id="insertBatch">
+        insert into users
+        (created_time, updated_time, is_delete, user_id, account_id, nickname,
+         avatar_media_id, user_status, searchable)
+        values
+        <foreach collection="items" item="item" separator=",">
+            (#{item.createdTime}, #{item.updatedTime}, #{item.isDelete}, #{item.userId}, #{item.accountId},
+             #{item.nickname}, #{item.avatarMediaId}, #{item.userStatus}, #{item.searchable})
+        </foreach>
+    </insert>
+
+    <update id="updateById" parameterType="com.foodmap.user.infrastructure.persistence.entity.UserEntity">
+        update users
+        set account_id = #{accountId},
+            nickname = #{nickname},
+            avatar_media_id = #{avatarMediaId},
+            user_status = #{userStatus},
+            searchable = #{searchable},
+            updated_time = #{updatedTime},
+            is_delete = #{isDelete}
+        where id = #{id}
+    </update>
+
+    <update id="updateByBizId" parameterType="com.foodmap.user.infrastructure.persistence.entity.UserEntity">
+        update users
+        set account_id = #{accountId},
+            nickname = #{nickname},
+            avatar_media_id = #{avatarMediaId},
+            user_status = #{userStatus},
+            searchable = #{searchable},
+            updated_time = #{updatedTime},
+            is_delete = #{isDelete}
+        where user_id = #{userId}
+    </update>
+
+    <update id="updateBatchByBizId">
+        <foreach collection="items" item="item" separator=";">
+            update users
+            set account_id = #{item.accountId},
+                nickname = #{item.nickname},
+                avatar_media_id = #{item.avatarMediaId},
+                user_status = #{item.userStatus},
+                searchable = #{item.searchable},
+                updated_time = #{item.updatedTime},
+                is_delete = #{item.isDelete}
+            where user_id = #{item.userId}
+        </foreach>
+    </update>
+
+    <update id="logicDeleteById">
+        update users
+        set is_delete = 1, updated_time = #{updatedTime}
+        where id = #{id}
+    </update>
+
+    <update id="logicDeleteByBizIds">
+        update users
+        set is_delete = 1, updated_time = #{updatedTime}
+        where user_id in
+        <foreach collection="userIds" item="userId" open="(" close=")" separator=",">
+            #{userId}
+        </foreach>
+    </update>
+</mapper>

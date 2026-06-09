@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.foodmap.user.infrastructure.persistence.mapper.UserProfileMapper">
+    <resultMap id="UserProfileResultMap" type="com.foodmap.user.infrastructure.persistence.entity.UserProfileEntity">
+        <id property="id" column="id"/>
+        <result property="createdTime" column="created_time"/>
+        <result property="updatedTime" column="updated_time"/>
+        <result property="isDelete" column="is_delete"/>
+        <result property="profileId" column="profile_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="cityCode" column="city_code"/>
+        <result property="cityName" column="city_name"/>
+        <result property="bio" column="bio"/>
+        <result property="gender" column="gender"/>
+        <result property="birthday" column="birthday"/>
+    </resultMap>
+
+    <sql id="BaseColumns">
+        id, created_time, updated_time, is_delete, profile_id, user_id,
+        city_code, city_name, bio, gender, birthday
+    </sql>
+
+    <sql id="ConditionWhere">
+        where is_delete = 0
+        <if test="condition != null">
+            <if test="condition.id != null">and id = #{condition.id}</if>
+            <if test="condition.profileId != null">and profile_id = #{condition.profileId}</if>
+            <if test="condition.userId != null">and user_id = #{condition.userId}</if>
+            <if test="condition.cityCode != null and condition.cityCode != ''">and city_code = #{condition.cityCode}</if>
+            <if test="condition.cityName != null and condition.cityName != ''">
+                and city_name like concat('%', #{condition.cityName}, '%')
+            </if>
+            <if test="condition.gender != null and condition.gender != ''">and gender = #{condition.gender}</if>
+        </if>
+    </sql>
+
+    <select id="selectById" resultMap="UserProfileResultMap">
+        select <include refid="BaseColumns"/>
+        from user_profiles
+        where id = #{id} and is_delete = 0
+        limit 1
+    </select>
+
+    <select id="selectByBizId" resultMap="UserProfileResultMap">
+        select <include refid="BaseColumns"/>
+        from user_profiles
+        where profile_id = #{profileId} and is_delete = 0
+        limit 1
+    </select>
+
+    <select id="selectListByCondition" resultMap="UserProfileResultMap">
+        select <include refid="BaseColumns"/>
+        from user_profiles
+        <include refid="ConditionWhere"/>
+        order by id desc
+    </select>
+
+    <select id="selectPageByCondition" resultMap="UserProfileResultMap">
+        select <include refid="BaseColumns"/>
+        from user_profiles
+        <include refid="ConditionWhere"/>
+        order by id desc
+        limit #{limit} offset #{offset}
+    </select>
+
+    <insert id="insertOne" parameterType="com.foodmap.user.infrastructure.persistence.entity.UserProfileEntity">
+        insert into user_profiles
+        (created_time, updated_time, is_delete, profile_id, user_id, city_code, city_name, bio, gender, birthday)
+        values
+        (#{createdTime}, #{updatedTime}, #{isDelete}, #{profileId}, #{userId}, #{cityCode}, #{cityName},
+         #{bio}, #{gender}, #{birthday})
+    </insert>
+
+    <insert id="insertBatch">
+        insert into user_profiles
+        (created_time, updated_time, is_delete, profile_id, user_id, city_code, city_name, bio, gender, birthday)
+        values
+        <foreach collection="items" item="item" separator=",">
+            (#{item.createdTime}, #{item.updatedTime}, #{item.isDelete}, #{item.profileId}, #{item.userId},
+             #{item.cityCode}, #{item.cityName}, #{item.bio}, #{item.gender}, #{item.birthday})
+        </foreach>
+    </insert>
+
+    <update id="updateById" parameterType="com.foodmap.user.infrastructure.persistence.entity.UserProfileEntity">
+        update user_profiles
+        set user_id = #{userId},
+            city_code = #{cityCode},
+            city_name = #{cityName},
+            bio = #{bio},
+            gender = #{gender},
+            birthday = #{birthday},
+            updated_time = #{updatedTime},
+            is_delete = #{isDelete}
+        where id = #{id}
+    </update>
+
+    <update id="updateByBizId" parameterType="com.foodmap.user.infrastructure.persistence.entity.UserProfileEntity">
+        update user_profiles
+        set user_id = #{userId},
+            city_code = #{cityCode},
+            city_name = #{cityName},
+            bio = #{bio},
+            gender = #{gender},
+            birthday = #{birthday},
+            updated_time = #{updatedTime},
+            is_delete = #{isDelete}
+        where profile_id = #{profileId}
+    </update>
+
+    <update id="updateBatchByBizId">
+        <foreach collection="items" item="item" separator=";">
+            update user_profiles
+            set user_id = #{item.userId},
+                city_code = #{item.cityCode},
+                city_name = #{item.cityName},
+                bio = #{item.bio},
+                gender = #{item.gender},
+                birthday = #{item.birthday},
+                updated_time = #{item.updatedTime},
+                is_delete = #{item.isDelete}
+            where profile_id = #{item.profileId}
+        </foreach>
+    </update>
+
+    <update id="logicDeleteById">
+        update user_profiles
+        set is_delete = 1, updated_time = #{updatedTime}
+        where id = #{id}
+    </update>
+
+    <update id="logicDeleteByBizIds">
+        update user_profiles
+        set is_delete = 1, updated_time = #{updatedTime}
+        where profile_id in
+        <foreach collection="profileIds" item="profileId" open="(" close=")" separator=",">
+            #{profileId}
+        </foreach>
+    </update>
+</mapper>
