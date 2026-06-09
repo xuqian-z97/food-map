@@ -103,6 +103,7 @@ Stage 1：后端认证用户基础能力与 iOS 认证测试壳已完成
 - 持久化实体、DTO、VO 必须分离，Controller 不直接暴露 Entity。
 - 应用层通过仓储端口访问持久化能力，运行时统一使用 MyBatis Mapper + Mapper.xml，内存仓储仅用于测试。
 - 每张业务表生成标准 Mapper/XML，复杂业务 SQL 单独放入 DefineMapper/XML。
+- 后端 Spring Bean 依赖注入按场景取舍：普通业务类允许优先使用 `@Autowired` 字段注入；强必需依赖、不可变依赖、易测性要求高或需要尽早暴露循环依赖的类优先使用构造器注入。
 
 当前 B1 后续目标：
 

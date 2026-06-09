@@ -1800,6 +1800,10 @@ controller -> application -> domain -> infrastructure / mapper
 - 重复出现 2 次以上的基础校验、值判断、脱敏、时间处理逻辑，应优先沉淀到 `foodmap-common` 中有明确边界的项目级工具类。
 - 项目级工具类必须按职责命名和分包，例如 `common.validation.Check`、`common.logging.LogMasker`，禁止创建无明确边界的万能类，如 `CommonUtils`、`StringUtils`、`DateUtils`。
 - 构造 record、Command、事件信封和中间件命令时，基础参数校验应优先复用 `common.validation.Check`，避免每个类重复编写 `requireText`、`requirePositive` 等私有方法。
+- Spring Bean 依赖注入默认允许使用 `@Autowired` 字段注入，便于本项目后续人工接手和快速阅读；字段必须保持 `private`，不能暴露为 `public` 或 `protected`。
+- 当依赖是类的强必需依赖、需要 `final` 保证不可变、需要脱离 Spring 容器单元测试，或需要在启动阶段尽早暴露循环依赖时，优先使用构造器注入。
+- 当存在多个同类型 Bean、必须按名称选择实现、兼容第三方框架生命周期，或需要与非 Spring 标准注入保持一致时，可以使用 `@Resource` 或 `@Qualifier` 明确注入目标。
+- 禁止在同一个类中混用多种注入方式，除非有清晰注释说明框架约束或兼容原因。
 - 所有公共类、跨模块复用类、接口、枚举、异常、事件、配置类和中间件封装类必须提供类级 Javadoc 注释。
 - 常量类和枚举类中的每一个常量、每一个枚举项都必须提供 Javadoc 注释，说明业务含义、使用场景和排查价值。
 - 对外暴露的公共方法、静态工厂方法、复杂业务判断、脱敏规则、幂等规则、权限规则和状态流转必须提供方法级注释。

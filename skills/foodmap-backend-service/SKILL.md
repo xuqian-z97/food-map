@@ -84,6 +84,10 @@ MVP 服务：
 - 重复出现 2 次以上的基础校验、值判断、脱敏、时间处理逻辑，应优先沉淀到 `foodmap-common` 中有明确边界的项目级工具类。
 - 禁止创建无明确边界的万能工具类，如 `CommonUtils`、`StringUtils`、`DateUtils`。
 - record、Command、事件信封和中间件命令中的基础参数校验应优先复用 `common.validation.Check`。
+- Spring Bean 依赖注入默认允许使用 `@Autowired` 字段注入，便于用户接手和快速开发；字段必须保持 `private`。
+- 强必需依赖、需要 `final` 不可变、需要脱离 Spring 容器测试、或需要尽早暴露循环依赖的类，优先使用构造器注入。
+- 多个同类型 Bean 或需要按名称选择实现时，可以使用 `@Resource`、`@Qualifier` 或等价方式明确注入目标。
+- 同一个类中不要混用多种注入方式，确有框架原因时必须补充说明。
 - 数据库结构对应 Java 类必须放在服务内 `infrastructure.persistence.entity` 包中，并与 DTO、VO 明确区分。
 - `foodmap-common` 的 `BaseEntity` 只承载 `id / created_time / updated_time / is_delete` 固定字段，不承载业务主键。
 - Controller 只能使用 DTO 作为请求和响应契约，不能直接暴露数据库持久化实体。
