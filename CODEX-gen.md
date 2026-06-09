@@ -101,7 +101,8 @@ Stage 1：后端认证用户基础能力与 iOS 认证测试壳已完成
 - 数据库结构对应 Java 类作为持久化实体存放在 `infrastructure.persistence.entity` 中。
 - 固定字段由 `foodmap-common` 的 `BaseEntity` 承载。
 - 持久化实体、DTO、VO 必须分离，Controller 不直接暴露 Entity。
-- 应用层通过仓储端口访问持久化能力，运行时使用 JDBC 或 MyBatis 实现，内存仓储仅用于测试。
+- 应用层通过仓储端口访问持久化能力，运行时统一使用 MyBatis Mapper + Mapper.xml，内存仓储仅用于测试。
+- 每张业务表生成标准 Mapper/XML，复杂业务 SQL 单独放入 DefineMapper/XML。
 
 当前 B1 后续目标：
 
@@ -476,6 +477,6 @@ MVP 阶段使用 Docker Compose 部署到 ECS2，ECS1 作为辅助节点。
 
 1. 使用 Maven 还是 Gradle。当前建议：Maven。
 2. 使用 RocketMQ 还是 RabbitMQ。当前建议：如果采用 Spring Cloud Alibaba，优先 RocketMQ；如果优先简化本地环境，使用 RabbitMQ。
-3. 使用 MyBatis 还是 MyBatis-Plus。当前建议：MyBatis-Plus 提升开发速度，复杂 SQL 使用 MyBatis XML 控制。
+3. 使用 MyBatis 还是 MyBatis-Plus。已决策：统一使用 MyBatis + Mapper.xml，项目内建设标准 CRUD 模板能力，复杂 SQL 使用 DefineMapper/XML 控制。
 4. 最低支持 iOS 版本。
 5. MVP 是否展示社区 Tab。

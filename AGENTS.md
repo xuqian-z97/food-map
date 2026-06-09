@@ -422,7 +422,7 @@ front/FoodMapApp
 - 数据库结构对应 Java 类必须放在服务内 `infrastructure.persistence.entity` 包中，并与 DTO、VO 明确区分。
 - `foodmap-common` 的 `BaseEntity` 只承载 `id / created_time / updated_time / is_delete` 固定字段，不承载业务主键。
 - Controller 只能使用 DTO 作为请求和响应契约，不能直接暴露数据库持久化实体。
-- application 层只能依赖仓储端口接口，不能直接依赖内存仓储、JDBC 仓储、MyBatis Mapper 等基础设施实现。
+- application 层只能依赖仓储端口接口，不能直接依赖内存仓储、MyBatis Mapper 等基础设施实现。
 - 内存仓储只允许作为单元测试或本地替身，不作为生产 profile 默认持久化实现。
 - 外部请求通过 API Gateway 进入。
 - 推荐内容的可见范围由服务端强制校验。
@@ -439,7 +439,7 @@ front/FoodMapApp
 | 注册中心 | Nacos |
 | 配置中心 | Nacos |
 | 鉴权 | Spring Security + JWT |
-| ORM | MyBatis 或 MyBatis-Plus |
+| ORM | MyBatis + Mapper.xml |
 | 数据库 | PostgreSQL |
 | 地理能力 | PostgreSQL + PostGIS |
 | 数据库迁移 | Flyway |
@@ -774,8 +774,12 @@ service-name
 - 禁止跨服务直接访问数据库表。
 - Controller 使用 DTO，不直接暴露数据库实体。
 - 数据库持久化实体、DTO、VO 必须分层存放并显式转换，不能互相替代。
+- 数据库访问统一使用 MyBatis Mapper + Mapper.xml。
+- 每张业务表必须生成标准 `{EntityName}Mapper.java` / `{EntityName}Mapper.xml`，只放单表模板 SQL。
+- 每张业务表需要复杂 SQL 时，必须新增 `{EntityName}DefineMapper.java` / `{EntityName}DefineMapper.xml`，标准 Mapper 不写复杂业务 SQL。
+- 标准 Mapper 至少覆盖有限动态查询、单条新增、批量新增、单条编辑、批量编辑和批量逻辑删除。
 - Controller 不能直接调用 Mapper，事务边界放在 application 层。
-- application 层依赖仓储端口接口，JDBC/MyBatis/内存仓储等实现不能向上穿透。
+- application 层依赖仓储端口接口，MyBatis/内存仓储等实现不能向上穿透。
 - 所有入参必须使用 Bean Validation 或等价方式校验。
 - 写接口从 Token 获取当前用户身份。
 - 权限、归属、可见范围必须由后端校验。

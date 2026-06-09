@@ -39,7 +39,7 @@
 | 注册中心 | Nacos |
 | 配置中心 | Nacos |
 | 认证鉴权 | Spring Security + JWT |
-| ORM | MyBatis 或 MyBatis-Plus |
+| ORM | MyBatis + Mapper.xml |
 | 数据库 | PostgreSQL |
 | 地理数据库 | PostgreSQL + PostGIS |
 | 缓存 | Redis |
@@ -523,11 +523,86 @@ foodmap_admin_db
 - DTO 用于后端 HTTP/API 入参和响应，必须放在各服务的 `dto` 包中。
 - VO 用于前端展示或后续 BFF 展示聚合，必须与 DTO、持久化实体分离。
 - Entity、DTO、VO 之间通过 application 层或专门转换方法显式转换，禁止在 Controller 中直接返回 Entity。
-- 应用层只能依赖仓储端口接口，不能直接依赖内存仓储、JDBC 仓储、MyBatis Mapper 等基础设施实现。
+- 应用层只能依赖仓储端口接口，不能直接依赖内存仓储、MyBatis Mapper 等基础设施实现。
 - 内存仓储只用于单元测试或本地替身，不允许作为生产 profile 的默认持久化实现。
-- 运行时数据库访问实现优先放在 `infrastructure.persistence.jdbc` 或后续 `infrastructure.persistence.mybatis` 包中。
+- 运行时数据库访问统一使用 MyBatis Mapper + Mapper.xml，基础设施实现放在 `infrastructure.persistence.mybatis` 包中。
 
-#### 6.1.3 固定字段
+#### 6.1.3 MyBatis 数据访问标准
+
+FoodMap 后端统一使用 MyBatis Mapper + Mapper.xml 作为数据库访问实现。项目不直接依赖 MyBatis-Plus 的自动 CRUD 作为运行时标准，但允许在项目内建设类似 MyBatis-Plus 的代码生成模板。
+
+分层调用链必须保持：
+
+```text
+Controller -> ApplicationService -> Repository Port -> Repository Impl -> Mapper -> Mapper.xml
+```
+
+目录约定：
+
+```text
+infrastructure
+└── persistence
+    ├── entity
+    ├── mapper
+    │   ├── AuthAccountMapper.java
+    │   ├── AuthAccountDefineMapper.java
+    │   └── xml
+    │       ├── AuthAccountMapper.xml
+    │       └── AuthAccountDefineMapper.xml
+    └── repository
+        └── MyBatisAuthAccountRepository.java
+```
+
+命名规则：
+
+- 标准单表 Mapper 使用 `{EntityName}Mapper.java` 和 `{EntityName}Mapper.xml`。
+- 自定义复杂 SQL Mapper 使用 `{EntityName}DefineMapper.java` 和 `{EntityName}DefineMapper.xml`。
+- `{EntityName}` 使用表语义的单数 PascalCase，例如 `auth_accounts` 对应 `AuthAccountEntity`、`AuthAccountMapper`、`AuthAccountDefineMapper`。
+- Repository 实现使用 `MyBatis{EntityName}Repository` 或按聚合语义命名，例如 `MyBatisAuthAccountRepository`。
+
+标准 Mapper 由数据库表结构生成，只允许承载单表模板 SQL：
+
+- `selectById`，按数据库内部主键查询，默认过滤 `is_delete = 0`。
+- `selectByBizId`，按业务主键查询，默认过滤 `is_delete = 0`。
+- `selectListByCondition`，有限动态条件查询。
+- `selectPageByCondition`，有限动态条件分页查询。
+- `insertOne`，单条新增。
+- `insertBatch`，批量新增。
+- `updateById`，按数据库内部主键单条编辑。
+- `updateByBizId`，按业务主键单条编辑。
+- `updateBatchByBizId`，按业务主键批量编辑。
+- `logicDeleteById`，按数据库内部主键逻辑删除。
+- `logicDeleteByBizIds`，按业务主键批量逻辑删除。
+
+标准动态查询只允许支持以下安全范围：
+
+- 等值查询。
+- 字符串模糊查询。
+- 时间范围查询。
+- 枚举或状态字段查询。
+- `is_delete = 0` 默认过滤。
+- 分页参数。
+- 后端白名单控制的排序字段。
+
+以下 SQL 必须放入 DefineMapper，不能塞入标准 Mapper：
+
+- 跨表关联查询。
+- 可见范围、权限、归属判断。
+- 地图边界框、距离、PostGIS 查询。
+- 聚合统计、排行榜、社区 feed 查询。
+- 动态条件复杂到影响可读性的业务查询。
+- 需要加锁、幂等校验或特殊索引提示的 SQL。
+
+生成和维护规则：
+
+- Flyway 表结构确定后，必须同步生成或更新 Entity、标准 Mapper、标准 Mapper.xml、Repository 实现。
+- 标准 Mapper 和 XML 应尽量保持可重复生成，人工业务 SQL 不得写入标准 XML。
+- 自定义 SQL 只写入 DefineMapper 和 DefineMapper.xml，避免重新生成标准 Mapper 时覆盖业务 SQL。
+- Mapper 不能被 Controller 或 ApplicationService 直接调用，只能由 Repository Impl 调用。
+- Mapper XML 中禁止直接拼接前端传入的排序字段、表名、列名；必须使用后端白名单转换。
+- 删除默认使用逻辑删除，禁止标准 Mapper 生成物理删除 SQL。
+
+#### 6.1.4 固定字段
 
 每张业务表必须包含以下固定字段：
 
@@ -560,7 +635,7 @@ is_delete smallint not null default 0
 is_delete = 0
 ```
 
-#### 6.1.3 业务主键
+#### 6.1.5 业务主键
 
 主业务表必须保留 `bigint` 类型业务主键，并设置唯一约束。
 
@@ -2098,7 +2173,7 @@ service-name
 | application | 用例和业务编排 |
 | domain | 领域模型和业务规则 |
 | infrastructure | 外部客户端、MQ、存储 |
-| mapper | MyBatis 数据访问 |
+| mapper | MyBatis Mapper 接口和 XML 数据访问 |
 | dto | 请求和响应对象 |
 | config | Spring 配置 |
 
@@ -2169,7 +2244,6 @@ service-name
 ## 19. 后端待决策问题
 
 1. MVP 使用 RocketMQ 还是 RabbitMQ。
-2. 使用 MyBatis 还是 MyBatis-Plus。
-3. Spring Cloud Alibaba 版本。
-4. 本地开发使用一个 PostgreSQL 容器多个数据库，还是多个 PostgreSQL 容器。
-5. 公开推荐是否需要审核后才进入社区接口。
+2. Spring Cloud Alibaba 版本。
+3. 本地开发使用一个 PostgreSQL 容器多个数据库，还是多个 PostgreSQL 容器。
+4. 公开推荐是否需要审核后才进入社区接口。
