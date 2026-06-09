@@ -549,8 +549,8 @@ infrastructure
     │   └── xml
     │       ├── AuthAccountMapper.xml
     │       └── AuthAccountDefineMapper.xml
-    └── repository
-        └── MyBatisAuthAccountRepository.java
+    └── mybatis
+        └── AuthAccountRepositoryImpl.java
 ```
 
 命名规则：
@@ -558,7 +558,9 @@ infrastructure
 - 标准单表 Mapper 使用 `{EntityName}Mapper.java` 和 `{EntityName}Mapper.xml`。
 - 自定义复杂 SQL Mapper 使用 `{EntityName}DefineMapper.java` 和 `{EntityName}DefineMapper.xml`。
 - `{EntityName}` 使用表语义的单数 PascalCase，例如 `auth_accounts` 对应 `AuthAccountEntity`、`AuthAccountMapper`、`AuthAccountDefineMapper`。
-- Repository 实现使用 `MyBatis{EntityName}Repository` 或按聚合语义命名，例如 `MyBatisAuthAccountRepository`。
+- Repository 实现类名禁止使用 `MyBatis`、`Jdbc`、`Redis` 等技术前缀，避免业务阅读路径被基础设施细节打断。
+- Repository 实现使用 `{EntityName}RepositoryImpl` 或按业务聚合语义命名，例如 `AuthAccountRepositoryImpl`、`UserRepositoryImpl`。
+- 技术实现差异通过包名和注释表达，例如 MyBatis 实现放在 `infrastructure.persistence.mybatis` 包中，而不是写进 Repository 类名前缀。
 
 标准 Mapper 由数据库表结构生成，只允许承载单表模板 SQL：
 

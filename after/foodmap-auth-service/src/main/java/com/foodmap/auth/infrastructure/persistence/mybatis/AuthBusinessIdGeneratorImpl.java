@@ -5,13 +5,13 @@ import com.foodmap.auth.infrastructure.persistence.mapper.AuthBusinessIdMapper;
 import org.springframework.stereotype.Component;
 
 /**
- * 基于 MyBatis 读取 PostgreSQL sequence 的认证服务业务主键生成器。
+ * 认证服务业务主键生成器，负责通过 MyBatis 适配层读取 PostgreSQL sequence。
  */
 @Component
-public class MyBatisAuthBusinessIdGenerator implements AuthBusinessIdGenerator {
+public class AuthBusinessIdGeneratorImpl implements AuthBusinessIdGenerator {
     private final AuthBusinessIdMapper authBusinessIdMapper;
 
-    public MyBatisAuthBusinessIdGenerator(AuthBusinessIdMapper authBusinessIdMapper) {
+    public AuthBusinessIdGeneratorImpl(AuthBusinessIdMapper authBusinessIdMapper) {
         this.authBusinessIdMapper = authBusinessIdMapper;
     }
 

@@ -10,14 +10,14 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 /**
- * 认证凭证 MyBatis 仓储实现，负责密码凭证的保存和读取。
+ * 认证凭证仓储实现，负责在 MyBatis 适配层完成密码凭证的保存和读取。
  */
 @Repository
-public class MyBatisAuthCredentialRepository implements AuthCredentialRepository {
+public class AuthCredentialRepositoryImpl implements AuthCredentialRepository {
     private final AuthCredentialMapper authCredentialMapper;
     private final AuthCredentialDefineMapper authCredentialDefineMapper;
 
-    public MyBatisAuthCredentialRepository(
+    public AuthCredentialRepositoryImpl(
             AuthCredentialMapper authCredentialMapper,
             AuthCredentialDefineMapper authCredentialDefineMapper
     ) {

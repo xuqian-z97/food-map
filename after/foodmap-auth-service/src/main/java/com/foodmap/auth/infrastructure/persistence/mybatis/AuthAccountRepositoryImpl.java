@@ -9,14 +9,14 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 /**
- * 认证账号 MyBatis 仓储实现，负责把应用层账号仓储语义转换为 Mapper 调用。
+ * 认证账号仓储实现，负责在 MyBatis 适配层把应用层账号仓储语义转换为 Mapper 调用。
  */
 @Repository
-public class MyBatisAuthAccountRepository implements AuthAccountRepository {
+public class AuthAccountRepositoryImpl implements AuthAccountRepository {
     private final AuthAccountMapper authAccountMapper;
     private final AuthAccountDefineMapper authAccountDefineMapper;
 
-    public MyBatisAuthAccountRepository(
+    public AuthAccountRepositoryImpl(
             AuthAccountMapper authAccountMapper,
             AuthAccountDefineMapper authAccountDefineMapper
     ) {

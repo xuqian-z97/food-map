@@ -778,6 +778,7 @@ service-name
 - 每张业务表必须生成标准 `{EntityName}Mapper.java` / `{EntityName}Mapper.xml`，只放单表模板 SQL。
 - 每张业务表需要复杂 SQL 时，必须新增 `{EntityName}DefineMapper.java` / `{EntityName}DefineMapper.xml`，标准 Mapper 不写复杂业务 SQL。
 - 标准 Mapper 至少覆盖有限动态查询、单条新增、批量新增、单条编辑、批量编辑和批量逻辑删除。
+- Repository 实现类名不使用 `MyBatis`、`Jdbc`、`Redis` 等技术前缀，统一采用 `{EntityName}RepositoryImpl` 或业务聚合语义命名；技术实现差异通过包名和注释表达。
 - Controller 不能直接调用 Mapper，事务边界放在 application 层。
 - application 层依赖仓储端口接口，MyBatis/内存仓储等实现不能向上穿透。
 - 所有入参必须使用 Bean Validation 或等价方式校验。

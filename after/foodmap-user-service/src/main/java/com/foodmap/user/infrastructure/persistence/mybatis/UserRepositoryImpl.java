@@ -8,13 +8,13 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 /**
- * 用户 MyBatis 仓储实现，负责把用户仓储端口转换为用户主表 Mapper 调用。
+ * 用户仓储实现，负责在 MyBatis 适配层把用户仓储端口转换为用户主表 Mapper 调用。
  */
 @Repository
-public class MyBatisUserRepository implements UserRepository {
+public class UserRepositoryImpl implements UserRepository {
     private final UserMapper userMapper;
 
-    public MyBatisUserRepository(UserMapper userMapper) {
+    public UserRepositoryImpl(UserMapper userMapper) {
         this.userMapper = userMapper;
     }
 

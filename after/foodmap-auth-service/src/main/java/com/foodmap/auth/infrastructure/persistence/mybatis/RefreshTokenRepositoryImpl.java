@@ -6,13 +6,13 @@ import com.foodmap.auth.infrastructure.persistence.mapper.RefreshTokenMapper;
 import org.springframework.stereotype.Repository;
 
 /**
- * Refresh Token MyBatis 仓储实现，只保存 Token 哈希和元数据。
+ * Refresh Token 仓储实现，负责在 MyBatis 适配层保存 Token 哈希和元数据。
  */
 @Repository
-public class MyBatisRefreshTokenRepository implements RefreshTokenRepository {
+public class RefreshTokenRepositoryImpl implements RefreshTokenRepository {
     private final RefreshTokenMapper refreshTokenMapper;
 
-    public MyBatisRefreshTokenRepository(RefreshTokenMapper refreshTokenMapper) {
+    public RefreshTokenRepositoryImpl(RefreshTokenMapper refreshTokenMapper) {
         this.refreshTokenMapper = refreshTokenMapper;
     }
 

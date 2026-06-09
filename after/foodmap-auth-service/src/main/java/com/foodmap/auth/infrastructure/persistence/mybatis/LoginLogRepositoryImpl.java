@@ -6,13 +6,13 @@ import com.foodmap.auth.infrastructure.persistence.mapper.LoginLogMapper;
 import org.springframework.stereotype.Repository;
 
 /**
- * 登录日志 MyBatis 仓储实现，负责写入认证安全审计数据。
+ * 登录日志仓储实现，负责在 MyBatis 适配层写入认证安全审计数据。
  */
 @Repository
-public class MyBatisLoginLogRepository implements LoginLogRepository {
+public class LoginLogRepositoryImpl implements LoginLogRepository {
     private final LoginLogMapper loginLogMapper;
 
-    public MyBatisLoginLogRepository(LoginLogMapper loginLogMapper) {
+    public LoginLogRepositoryImpl(LoginLogMapper loginLogMapper) {
         this.loginLogMapper = loginLogMapper;
     }
 
