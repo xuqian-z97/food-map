@@ -100,6 +100,7 @@ after/foodmap-common
 - Redis、MQ、对象存储、内部服务调用必须通过项目统一封装或服务内基础设施适配器访问。
 - 业务代码不得散落直接调用中间件 SDK。
 - PostgreSQL 连接池统一使用 HikariCP，Redis 需要池化时统一使用 Spring Data Redis + Lettuce pool，池化参数通过 profile 和环境变量配置。
+- 除网关外，所有后端业务服务都必须在三套 profile 中显式配置 datasource、Flyway 和 HikariCP 参数。
 - 数据库连接、Redis 连接、分布式锁和本地事务必须短持有；禁止在持有数据库连接或事务时等待 Redis 锁、调用高德、OSS、MQ 阻塞确认或跨服务慢接口。
 - 分布式锁必须先于本地数据库事务获取，事务方法只包含必要数据库读写、短计算和 Outbox 落库。
 - 后端变更必须关注 HikariCP、Redis pool 和请求线程池指标，连接等待、连接获取超时、Redis pool exhausted、看门狗续期失败都需要可排查。

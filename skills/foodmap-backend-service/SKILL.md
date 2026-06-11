@@ -127,6 +127,7 @@ MVP 服务：
 - Redis、MQ、对象存储、内部服务调用必须通过项目统一封装或服务内基础设施适配器访问，业务代码不能散落直接调用中间件 SDK。
 - Redis Key 必须遵守 `foodmap:{service}:{biz}:{version}:{key}` 格式，业务缓存必须设置 TTL。
 - PostgreSQL 连接池统一使用 HikariCP，Redis 需要池化时统一使用 Spring Data Redis + Lettuce pool；池化参数必须通过 profile 和环境变量配置，不能在业务代码中硬编码。
+- 除网关外，所有后端业务服务都必须在 `application-local.yml`、`application-orbstack.yml`、`application-prod.yml` 中显式配置 datasource、Flyway 和 HikariCP 参数。
 - 数据库连接、Redis 连接、分布式锁和本地事务都必须短持有；请求线程不能在持有数据库连接或事务时等待 Redis 锁、调用高德、OSS、MQ 阻塞确认或跨服务慢接口。
 - 分布式锁必须先于本地数据库事务获取，事务方法只包含必要数据库读写、短计算和 Outbox 落库。
 - 每个服务必须暴露并关注 HikariCP、Redis pool 和请求线程池指标；连接等待、连接获取超时、Redis pool exhausted、看门狗续期失败都必须作为排查信号。

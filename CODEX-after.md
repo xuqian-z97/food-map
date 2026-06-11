@@ -2090,6 +2090,8 @@ FoodMap 后端必须把数据库、Redis 和请求线程看成一组受限资源
 基础原则：
 
 - PostgreSQL 连接池统一使用 Spring Boot 默认的 HikariCP；每个微服务连接自己的数据库，每个数据源拥有独立连接池。
+- 除网关外，所有后端业务服务都必须在 `application-local.yml`、`application-orbstack.yml`、`application-prod.yml` 中显式配置 datasource、Flyway 和 HikariCP 参数。
+- HikariCP 参数必须支持服务级环境变量覆盖，并回退到全局 `DB_POOL_*` 变量，例如 `AUTH_DB_POOL_MAX_SIZE -> DB_POOL_MAX_SIZE -> 默认值`。
 - Redis 普通缓存客户端优先使用 Spring Data Redis + Lettuce；需要池化时必须引入 `commons-pool2` 并通过 profile 配置 Lettuce pool，业务代码仍只能依赖项目 Redis 封装接口。
 - 分布式锁客户端使用 Redisson 适配器时，必须单独配置 Redisson 连接池、连接超时、命令超时和重试参数，不能复用业务缓存的 Lettuce 池假设。
 - 数据库连接池大小必须按“数据库最大连接数、微服务数量、服务副本数、接口耗时和峰值并发”综合分配，禁止所有微服务机械配置成较大的 `maximum-pool-size`。

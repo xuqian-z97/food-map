@@ -1,4 +1,19 @@
 spring:
+  datasource:
+    url: ${RECOMMENDATION_DB_URL:jdbc:postgresql://127.0.0.1:${POSTGRES_PORT:5432}/${RECOMMENDATION_DB_NAME:foodmap_recommendation_db}}
+    username: ${RECOMMENDATION_DB_USERNAME:${POSTGRES_USER:foodmap}}
+    password: ${RECOMMENDATION_DB_PASSWORD:${POSTGRES_PASSWORD:foodmap_dev_pwd}}
+    hikari:
+      pool-name: ${RECOMMENDATION_DB_POOL_NAME:foodmap-recommendation-hikari}
+      maximum-pool-size: ${RECOMMENDATION_DB_POOL_MAX_SIZE:${DB_POOL_MAX_SIZE:5}}
+      minimum-idle: ${RECOMMENDATION_DB_POOL_MIN_IDLE:${DB_POOL_MIN_IDLE:1}}
+      connection-timeout: ${RECOMMENDATION_DB_POOL_CONNECTION_TIMEOUT_MS:${DB_POOL_CONNECTION_TIMEOUT_MS:3000}}
+      idle-timeout: ${RECOMMENDATION_DB_POOL_IDLE_TIMEOUT_MS:${DB_POOL_IDLE_TIMEOUT_MS:600000}}
+      max-lifetime: ${RECOMMENDATION_DB_POOL_MAX_LIFETIME_MS:${DB_POOL_MAX_LIFETIME_MS:1800000}}
+      leak-detection-threshold: ${RECOMMENDATION_DB_POOL_LEAK_DETECTION_MS:${DB_POOL_LEAK_DETECTION_MS:10000}}
+  flyway:
+    enabled: ${RECOMMENDATION_FLYWAY_ENABLED:true}
+    locations: classpath:db/migration
   cloud:
     nacos:
       discovery:
