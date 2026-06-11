@@ -15,6 +15,8 @@ public class InMemoryUserRepository implements UserRepository {
 
     /**
      * 保存用户主表实体。调用方必须传入用户业务主键。
+     *
+     * @param entity 待保存的用户主表实体。
      */
     @Override
     public void save(UserEntity entity) {
@@ -23,6 +25,9 @@ public class InMemoryUserRepository implements UserRepository {
 
     /**
      * 根据用户业务主键查找用户资料。
+     *
+     * @param userId 用户业务主键。
+     * @return 查询到的用户主表实体，未命中时返回空 Optional。
      */
     @Override
     public Optional<UserEntity> findByUserId(Long userId) {

@@ -12,6 +12,10 @@ public final class Check {
 
     /**
      * 校验文本不为空并返回 trim 后的值，适合对象存储 Key、事件类型、缓存片段等基础字段。
+     *
+     * @param fieldName 字段名，用于异常信息和排查定位。
+     * @param value 待校验文本。
+     * @return 去除首尾空白后的有效文本。
      */
     public static String notBlank(String fieldName, String value) {
         if (value == null || value.isBlank()) {
@@ -22,6 +26,10 @@ public final class Check {
 
     /**
      * 校验文本不包含冒号，主要用于 Redis Key 分段，避免调用方污染统一 Key 层级。
+     *
+     * @param fieldName 字段名，用于异常信息和排查定位。
+     * @param value 待校验文本。
+     * @return 去除首尾空白且不包含冒号的有效文本。
      */
     public static String noColon(String fieldName, String value) {
         String checked = notBlank(fieldName, value);
@@ -33,6 +41,10 @@ public final class Check {
 
     /**
      * 校验 long 数值为正数，适合文件大小等原始数值字段。
+     *
+     * @param fieldName 字段名，用于异常信息和排查定位。
+     * @param value 待校验数值。
+     * @return 原始正数值。
      */
     public static long positive(String fieldName, long value) {
         if (value <= 0) {
@@ -43,6 +55,10 @@ public final class Check {
 
     /**
      * 校验 Long 数值不为空且为正数，适合用户业务主键、账号业务主键等可空包装类型字段。
+     *
+     * @param fieldName 字段名，用于异常信息和排查定位。
+     * @param value 待校验包装数值。
+     * @return 原始非空正数值。
      */
     public static Long positive(String fieldName, Long value) {
         if (value == null || value <= 0) {

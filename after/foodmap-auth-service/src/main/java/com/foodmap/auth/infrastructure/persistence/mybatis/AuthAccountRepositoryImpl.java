@@ -26,6 +26,8 @@ public class AuthAccountRepositoryImpl implements AuthAccountRepository {
 
     /**
      * 保存账号，先按账号业务主键更新，未命中时新增。
+     *
+     * @param entity 待保存的认证账号持久化实体。
      */
     @Override
     public void save(AuthAccountEntity entity) {
@@ -37,6 +39,9 @@ public class AuthAccountRepositoryImpl implements AuthAccountRepository {
 
     /**
      * 根据账号业务主键查询账号。
+     *
+     * @param accountId 账号业务主键。
+     * @return 查询到的认证账号实体，未命中时返回空 Optional。
      */
     @Override
     public Optional<AuthAccountEntity> findByAccountId(Long accountId) {
@@ -45,6 +50,9 @@ public class AuthAccountRepositoryImpl implements AuthAccountRepository {
 
     /**
      * 根据账号名、手机号或邮箱查询账号。
+     *
+     * @param loginIdentifier 登录标识，可以是账号名、手机号或邮箱。
+     * @return 查询到的认证账号实体，未命中时返回空 Optional。
      */
     @Override
     public Optional<AuthAccountEntity> findByLoginIdentifier(String loginIdentifier) {

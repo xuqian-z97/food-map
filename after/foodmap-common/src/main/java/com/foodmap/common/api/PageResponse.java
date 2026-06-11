@@ -16,6 +16,12 @@ public record PageResponse<T>(
 ) {
     /**
      * 根据总数和当前页参数创建分页响应，并统一计算是否还有下一页。
+     *
+     * @param items 当前页数据列表。
+     * @param total 符合查询条件的数据总数。
+     * @param pageIndex 当前页索引，后端统一从 0 开始。
+     * @param pageSize 当前页大小。
+     * @return 包含分页数据和是否存在下一页标记的统一响应。
      */
     public static <T> PageResponse<T> of(List<T> items, long total, int pageIndex, int pageSize) {
         long nextOffset = (long) (pageIndex + 1) * pageSize;

@@ -22,6 +22,8 @@ public class RefreshTokenRepositoryImpl implements RefreshTokenRepository {
 
     /**
      * 单条保存 Refresh Token 元数据。
+     *
+     * @param entity 待保存的 Refresh Token 持久化实体。
      */
     @Override
     public void save(RefreshTokenEntity entity) {
@@ -30,6 +32,9 @@ public class RefreshTokenRepositoryImpl implements RefreshTokenRepository {
 
     /**
      * 根据 Token 哈希查询未逻辑删除的 Refresh Token 记录。
+     *
+     * @param tokenHash Refresh Token 明文摘要。
+     * @return 查询到的 Refresh Token 实体，未命中时返回空 Optional。
      */
     @Override
     public Optional<RefreshTokenEntity> findByTokenHash(String tokenHash) {
@@ -44,6 +49,9 @@ public class RefreshTokenRepositoryImpl implements RefreshTokenRepository {
 
     /**
      * 撤销 Refresh Token 并按业务主键更新状态，便于排查退出登录时间。
+     *
+     * @param entity 待撤销的 Refresh Token 实体。
+     * @param revokedTime 撤销时间。
      */
     @Override
     public void revoke(RefreshTokenEntity entity, OffsetDateTime revokedTime) {

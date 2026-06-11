@@ -16,6 +16,10 @@ public final class CurrentUserResolver {
 
     /**
      * 根据网关透传的用户和账号业务主键创建当前用户上下文。
+     *
+     * @param userIdHeader 网关透传的用户业务主键请求头。
+     * @param accountIdHeader 网关透传的账号业务主键请求头。
+     * @return 当前登录用户上下文。
      */
     public static CurrentUser fromTrustedHeaders(String userIdHeader, String accountIdHeader) {
         Long userId = parsePositiveLong(FoodMapAuthHeaders.USER_ID, userIdHeader);

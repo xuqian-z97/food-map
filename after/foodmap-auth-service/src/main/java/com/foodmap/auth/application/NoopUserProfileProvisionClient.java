@@ -11,6 +11,10 @@ public class NoopUserProfileProvisionClient implements UserProfileProvisionClien
 
     /**
      * 当前不执行远程调用，仅保留注册到用户服务联动的稳定扩展点。
+     *
+     * @param accountId 认证账号业务主键。
+     * @param userId 用户业务主键。
+     * @param request 注册请求原始 DTO，用于后续创建用户资料。
      */
     @Override
     public void provision(Long accountId, Long userId, RegisterRequest request) {

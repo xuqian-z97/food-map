@@ -26,6 +26,8 @@ public class HmacTokenIssuer {
 
     /**
      * 使用指定密钥创建签发器，测试可传入固定值以便排查 Token 结构。
+     *
+     * @param secret HMAC 签名密钥。
      */
     public HmacTokenIssuer(String secret) {
         this.tokenCodec = new HmacTokenCodec(Check.notBlank("secret", secret));
@@ -33,6 +35,11 @@ public class HmacTokenIssuer {
 
     /**
      * 签发 Access Token，载荷包含账号和用户业务主键，供网关和服务端提取身份。
+     *
+     * @param accountId 账号业务主键。
+     * @param userId 用户业务主键。
+     * @param expiresTime Access Token 过期时间。
+     * @return 可返回给客户端使用的 Access Token。
      */
     public String issueAccessToken(Long accountId, Long userId, OffsetDateTime expiresTime) {
         return tokenCodec.issueAccessToken(accountId, userId, expiresTime);
@@ -40,6 +47,11 @@ public class HmacTokenIssuer {
 
     /**
      * 签发 Refresh Token，载荷包含随机 nonce，降低刷新令牌碰撞和重放排查难度。
+     *
+     * @param accountId 账号业务主键。
+     * @param userId 用户业务主键。
+     * @param expiresTime Refresh Token 过期时间。
+     * @return 可返回给客户端保存的 Refresh Token。
      */
     public String issueRefreshToken(Long accountId, Long userId, OffsetDateTime expiresTime) {
         return tokenCodec.issueRefreshToken(accountId, userId, expiresTime);
@@ -47,6 +59,9 @@ public class HmacTokenIssuer {
 
     /**
      * 对明文 Token 做哈希摘要，用于数据库保存 Refresh Token 时避免落明文。
+     *
+     * @param token 待摘要的明文 Token。
+     * @return Token 哈希摘要。
      */
     public String tokenHash(String token) {
         return tokenCodec.tokenHash(token);
@@ -54,6 +69,9 @@ public class HmacTokenIssuer {
 
     /**
      * 解析 Access Token，供认证服务的会话查询接口复用网关同款校验逻辑。
+     *
+     * @param token 客户端提交的 Access Token。
+     * @return 解析出的 Token 声明。
      */
     public TokenClaims parseAccessToken(String token) {
         return tokenCodec.parseAccessToken(token);
@@ -61,6 +79,9 @@ public class HmacTokenIssuer {
 
     /**
      * 解析 Refresh Token，供刷新和退出登录接口校验令牌类型、签名和身份声明。
+     *
+     * @param token 客户端提交的 Refresh Token。
+     * @return 解析出的 Token 声明。
      */
     public TokenClaims parseRefreshToken(String token) {
         return tokenCodec.parseRefreshToken(token);

@@ -46,6 +46,8 @@ public class GatewayAuthFilter implements GlobalFilter, Ordered {
 
     /**
      * 使用配置中的 Token 密钥创建网关认证过滤器，默认值必须与认证服务本地默认值保持一致。
+     *
+     * @param tokenSecret 网关用于校验 Access Token 的 HMAC 密钥。
      */
     public GatewayAuthFilter(
             @Value("${foodmap.security.token-secret:foodmap-local-token-secret-please-change}") String tokenSecret
@@ -55,6 +57,10 @@ public class GatewayAuthFilter implements GlobalFilter, Ordered {
 
     /**
      * 过滤外部 API 请求，公开认证接口放行，其它 `/api/**` 请求必须携带有效 Access Token。
+     *
+     * @param exchange 当前网关请求上下文。
+     * @param chain 后续网关过滤器链。
+     * @return 当前请求的响应完成信号。
      */
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {

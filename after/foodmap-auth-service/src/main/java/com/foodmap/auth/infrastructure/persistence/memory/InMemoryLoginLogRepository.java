@@ -15,6 +15,8 @@ public class InMemoryLoginLogRepository implements LoginLogRepository {
 
     /**
      * 保存登录日志。日志字段不得包含密码、Token 或完整敏感联系方式。
+     *
+     * @param entity 待保存的登录日志实体。
      */
     @Override
     public void save(LoginLogEntity entity) {

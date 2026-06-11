@@ -23,6 +23,9 @@ public class UserServiceImpl implements UserService {
 
     /**
      * 查询当前登录用户资料。返回 DTO 而非持久化实体，避免数据库字段直接泄露到前端契约。
+     *
+     * @param currentUser 网关透传并解析后的当前登录用户上下文。
+     * @return 当前登录用户资料响应。
      */
     @Override
     public CurrentUserResponse currentUser(CurrentUser currentUser) {

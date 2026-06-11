@@ -20,6 +20,8 @@ public class UserRepositoryImpl implements UserRepository {
 
     /**
      * 保存用户，先按用户业务主键更新，未命中时新增。
+     *
+     * @param entity 待保存的用户主表实体。
      */
     @Override
     public void save(UserEntity entity) {
@@ -31,6 +33,9 @@ public class UserRepositoryImpl implements UserRepository {
 
     /**
      * 根据用户业务主键读取用户主表实体。
+     *
+     * @param userId 用户业务主键。
+     * @return 查询到的用户主表实体，未命中时返回空 Optional。
      */
     @Override
     public Optional<UserEntity> findByUserId(Long userId) {

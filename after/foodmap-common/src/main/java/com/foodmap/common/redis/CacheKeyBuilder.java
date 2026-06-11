@@ -24,6 +24,8 @@ public final class CacheKeyBuilder {
 
     /**
      * 创建新的 Key 构造器实例。
+     *
+     * @return 新的 Redis Key 构造器。
      */
     public static CacheKeyBuilder builder() {
         return new CacheKeyBuilder();
@@ -31,6 +33,9 @@ public final class CacheKeyBuilder {
 
     /**
      * 设置服务名片段，例如 {@code recommendation}、{@code community}。
+     *
+     * @param service 服务名片段。
+     * @return 当前构造器实例，便于链式调用。
      */
     public CacheKeyBuilder service(String service) {
         this.service = service;
@@ -39,6 +44,9 @@ public final class CacheKeyBuilder {
 
     /**
      * 设置业务名片段，例如 {@code detail}、{@code hotStores}。
+     *
+     * @param biz 业务名片段。
+     * @return 当前构造器实例，便于链式调用。
      */
     public CacheKeyBuilder biz(String biz) {
         this.biz = biz;
@@ -47,6 +55,9 @@ public final class CacheKeyBuilder {
 
     /**
      * 设置缓存版本片段，业务结构变化时通过版本隔离旧缓存。
+     *
+     * @param version 缓存版本片段。
+     * @return 当前构造器实例，便于链式调用。
      */
     public CacheKeyBuilder version(String version) {
         this.version = version;
@@ -55,6 +66,9 @@ public final class CacheKeyBuilder {
 
     /**
      * 设置业务 Key 片段，通常是业务主键或稳定查询条件摘要。
+     *
+     * @param key 业务 Key 片段。
+     * @return 当前构造器实例，便于链式调用。
      */
     public CacheKeyBuilder key(String key) {
         this.key = key;
@@ -63,6 +77,8 @@ public final class CacheKeyBuilder {
 
     /**
      * 生成最终 Redis Key，并拒绝空片段和包含冒号的片段，避免 Key 层级被污染。
+     *
+     * @return 符合 FoodMap 统一格式的 Redis Key。
      */
     public String build() {
         return String.join(":",

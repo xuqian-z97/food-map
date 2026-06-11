@@ -11,6 +11,10 @@ public record LogField(
 ) {
     /**
      * 创建日志字段，推荐业务代码用该工厂方法减少构造细节暴露。
+     *
+     * @param name 稳定的日志字段名，用于日志检索和脱敏策略匹配。
+     * @param value 日志字段值，输出前会由 SafeLog 统一脱敏。
+     * @return 可交给 SafeLog 输出的结构化日志字段。
      */
     public static LogField of(String name, Object value) {
         return new LogField(name, value);

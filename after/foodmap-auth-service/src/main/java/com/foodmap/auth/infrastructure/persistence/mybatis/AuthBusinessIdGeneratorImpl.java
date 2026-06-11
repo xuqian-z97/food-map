@@ -17,6 +17,8 @@ public class AuthBusinessIdGeneratorImpl implements AuthBusinessIdGenerator {
 
     /**
      * 生成认证账号业务主键。
+     *
+     * @return 新的认证账号业务主键。
      */
     @Override
     public Long nextAccountId() {
@@ -25,6 +27,8 @@ public class AuthBusinessIdGeneratorImpl implements AuthBusinessIdGenerator {
 
     /**
      * 生成用户业务主键。
+     *
+     * @return 新的用户业务主键。
      */
     @Override
     public Long nextUserId() {
@@ -33,6 +37,8 @@ public class AuthBusinessIdGeneratorImpl implements AuthBusinessIdGenerator {
 
     /**
      * 生成认证凭证业务主键。
+     *
+     * @return 新的认证凭证业务主键。
      */
     @Override
     public Long nextCredentialId() {
@@ -41,6 +47,8 @@ public class AuthBusinessIdGeneratorImpl implements AuthBusinessIdGenerator {
 
     /**
      * 生成 Refresh Token 业务主键。
+     *
+     * @return 新的 Refresh Token 业务主键。
      */
     @Override
     public Long nextRefreshTokenId() {
@@ -49,6 +57,8 @@ public class AuthBusinessIdGeneratorImpl implements AuthBusinessIdGenerator {
 
     /**
      * 生成登录日志业务主键。
+     *
+     * @return 新的登录日志业务主键。
      */
     @Override
     public Long nextLoginLogId() {

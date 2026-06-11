@@ -72,6 +72,9 @@ public class AuthServiceImpl implements AuthService {
 
     /**
      * 注册账号并保存密码哈希，返回账号和用户业务主键。
+     *
+     * @param request 注册请求，包含账号标识、密码和昵称等信息。
+     * @return 注册成功后的账号和用户业务主键信息。
      */
     @Override
     public RegisterResponse register(RegisterRequest request) {
@@ -110,6 +113,9 @@ public class AuthServiceImpl implements AuthService {
 
     /**
      * 使用账号名、手机号或邮箱登录，成功后签发 Access Token 和 Refresh Token。
+     *
+     * @param request 登录请求，包含登录标识和明文密码。
+     * @return 登录成功后的 Token、过期时间和业务主键。
      */
     @Override
     public LoginResponse login(LoginRequest request) {
@@ -144,6 +150,9 @@ public class AuthServiceImpl implements AuthService {
 
     /**
      * 使用有效 Refresh Token 刷新 Access Token。MVP 阶段不轮换 Refresh Token，便于前端联调和问题排查。
+     *
+     * @param request 刷新请求，包含 Refresh Token。
+     * @return 刷新后的 Access Token 以及 Refresh Token 有效期信息。
      */
     @Override
     public LoginResponse refresh(RefreshTokenRequest request) {
@@ -175,6 +184,8 @@ public class AuthServiceImpl implements AuthService {
 
     /**
      * 退出登录并撤销 Refresh Token。重复退出不暴露令牌是否存在，降低 Token 枚举风险。
+     *
+     * @param request 退出登录请求，包含待撤销的 Refresh Token。
      */
     @Override
     public void logout(LogoutRequest request) {
@@ -190,6 +201,9 @@ public class AuthServiceImpl implements AuthService {
 
     /**
      * 解析当前 Access Token，返回账号和用户业务主键，供前端启动时确认会话状态。
+     *
+     * @param accessToken 当前客户端持有的 Access Token。
+     * @return 当前认证会话中的账号和用户业务主键信息。
      */
     @Override
     public CurrentAuthResponse current(String accessToken) {

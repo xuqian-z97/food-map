@@ -29,6 +29,9 @@ public record TokenClaims(
 
     /**
      * 判断 Token 在指定时间点是否已过期，网关和认证服务都应使用同一逻辑。
+     *
+     * @param checkedTime 用于判断过期状态的时间点，空值时使用当前时间。
+     * @return 如果 Token 已经过期则返回 true。
      */
     public boolean isExpiredAt(OffsetDateTime checkedTime) {
         OffsetDateTime effectiveCheckedTime = checkedTime == null ? OffsetDateTime.now() : checkedTime;

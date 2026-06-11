@@ -17,6 +17,8 @@ public class InMemoryAuthAccountRepository implements AuthAccountRepository {
 
     /**
      * 保存认证账号实体。调用方负责生成账号业务主键。
+     *
+     * @param entity 待保存的认证账号持久化实体。
      */
     @Override
     public void save(AuthAccountEntity entity) {
@@ -25,6 +27,9 @@ public class InMemoryAuthAccountRepository implements AuthAccountRepository {
 
     /**
      * 根据账号业务主键查找账号，用于登录和 Token 续签链路。
+     *
+     * @param accountId 账号业务主键。
+     * @return 查询到的认证账号实体，未命中时返回空 Optional。
      */
     @Override
     public Optional<AuthAccountEntity> findByAccountId(Long accountId) {
@@ -33,6 +38,9 @@ public class InMemoryAuthAccountRepository implements AuthAccountRepository {
 
     /**
      * 根据账号名、手机号或邮箱查找账号，匹配时忽略邮箱大小写差异。
+     *
+     * @param loginIdentifier 登录标识，可以是账号名、手机号或邮箱。
+     * @return 查询到的认证账号实体，未命中时返回空 Optional。
      */
     @Override
     public Optional<AuthAccountEntity> findByLoginIdentifier(String loginIdentifier) {

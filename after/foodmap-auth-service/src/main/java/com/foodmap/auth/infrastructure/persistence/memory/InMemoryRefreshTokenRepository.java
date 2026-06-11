@@ -17,6 +17,8 @@ public class InMemoryRefreshTokenRepository implements RefreshTokenRepository {
 
     /**
      * 保存 Refresh Token 元数据。调用方必须传入 Token 哈希而不是明文 Token。
+     *
+     * @param entity 待保存的 Refresh Token 实体。
      */
     @Override
     public void save(RefreshTokenEntity entity) {
@@ -25,6 +27,9 @@ public class InMemoryRefreshTokenRepository implements RefreshTokenRepository {
 
     /**
      * 按 Token 哈希查找内存中的刷新令牌，便于测试刷新和退出登录流程。
+     *
+     * @param tokenHash Refresh Token 明文摘要。
+     * @return 查询到的 Refresh Token 实体，未命中时返回空 Optional。
      */
     @Override
     public Optional<RefreshTokenEntity> findByTokenHash(String tokenHash) {
@@ -35,6 +40,9 @@ public class InMemoryRefreshTokenRepository implements RefreshTokenRepository {
 
     /**
      * 撤销内存刷新令牌，测试中可直接观察实体状态变化。
+     *
+     * @param entity 待撤销的 Refresh Token 实体。
+     * @param revokedTime 撤销时间。
      */
     @Override
     public void revoke(RefreshTokenEntity entity, OffsetDateTime revokedTime) {

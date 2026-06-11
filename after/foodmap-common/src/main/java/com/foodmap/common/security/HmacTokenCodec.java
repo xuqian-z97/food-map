@@ -40,6 +40,8 @@ public class HmacTokenCodec {
 
     /**
      * 使用指定密钥创建编解码器，认证服务和网关必须配置同一个密钥。
+     *
+     * @param secret HMAC 签名密钥。
      */
     public HmacTokenCodec(String secret) {
         this.secret = Check.notBlank("secret", secret);
@@ -47,6 +49,11 @@ public class HmacTokenCodec {
 
     /**
      * 签发 Access Token，载荷包含账号和用户业务主键，供网关和服务端提取身份。
+     *
+     * @param accountId 账号业务主键。
+     * @param userId 用户业务主键。
+     * @param expiresTime Access Token 过期时间。
+     * @return 可返回给客户端使用的 Access Token。
      */
     public String issueAccessToken(Long accountId, Long userId, OffsetDateTime expiresTime) {
         return issue(TokenType.ACCESS, accountId, userId, expiresTime);
@@ -54,6 +61,11 @@ public class HmacTokenCodec {
 
     /**
      * 签发 Refresh Token，额外追加 nonce，降低刷新令牌碰撞和重放排查难度。
+     *
+     * @param accountId 账号业务主键。
+     * @param userId 用户业务主键。
+     * @param expiresTime Refresh Token 过期时间。
+     * @return 可返回给客户端保存的 Refresh Token。
      */
     public String issueRefreshToken(Long accountId, Long userId, OffsetDateTime expiresTime) {
         return issue(TokenType.REFRESH, accountId, userId, expiresTime) + "." + UUID.randomUUID();
@@ -61,6 +73,9 @@ public class HmacTokenCodec {
 
     /**
      * 对明文 Token 做哈希摘要，用于数据库保存 Refresh Token 时避免落明文。
+     *
+     * @param token 待摘要的明文 Token。
+     * @return Token 哈希摘要。
      */
     public String tokenHash(String token) {
         return sign(Check.notBlank("token", token));
@@ -68,6 +83,9 @@ public class HmacTokenCodec {
 
     /**
      * 解析并校验 Access Token，签名、类型或结构错误时抛出未认证异常。
+     *
+     * @param token 客户端提交的 Access Token。
+     * @return 解析出的 Token 声明。
      */
     public TokenClaims parseAccessToken(String token) {
         TokenClaims claims = parse(token);
@@ -79,6 +97,9 @@ public class HmacTokenCodec {
 
     /**
      * 解析并校验 Refresh Token，签名、类型或结构错误时抛出未认证异常。
+     *
+     * @param token 客户端提交的 Refresh Token。
+     * @return 解析出的 Token 声明。
      */
     public TokenClaims parseRefreshToken(String token) {
         TokenClaims claims = parse(token);

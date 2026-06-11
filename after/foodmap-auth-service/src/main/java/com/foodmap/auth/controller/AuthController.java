@@ -33,6 +33,9 @@ public class AuthController {
 
     /**
      * 注册 FoodMap 账号，返回账号和用户业务主键。
+     *
+     * @param request 注册请求，包含账号名、联系方式、昵称和密码。
+     * @return 注册后的账号业务主键、用户业务主键和账号状态。
      */
     @PostMapping("/register")
     public ApiResponse<RegisterResponse> register(@Valid @RequestBody RegisterRequest request) {
@@ -41,6 +44,9 @@ public class AuthController {
 
     /**
      * 使用账号名、手机号或邮箱登录，返回 Access Token 和 Refresh Token。
+     *
+     * @param request 登录请求，登录标识可以是账号名、手机号或邮箱。
+     * @return 登录成功后的 Token 和过期时间。
      */
     @PostMapping("/login")
     public ApiResponse<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
@@ -49,6 +55,9 @@ public class AuthController {
 
     /**
      * 使用 Refresh Token 刷新 Access Token。
+     *
+     * @param request Refresh Token 刷新请求。
+     * @return 新签发的 Access Token 和原 Refresh Token 信息。
      */
     @PostMapping("/refresh")
     public ApiResponse<LoginResponse> refresh(@Valid @RequestBody RefreshTokenRequest request) {
@@ -57,6 +66,9 @@ public class AuthController {
 
     /**
      * 退出登录并撤销 Refresh Token。
+     *
+     * @param request 退出登录请求，包含待撤销的 Refresh Token。
+     * @return 空响应体，用于表示退出登录处理完成。
      */
     @PostMapping("/logout")
     public ApiResponse<Void> logout(@Valid @RequestBody LogoutRequest request) {
@@ -66,6 +78,9 @@ public class AuthController {
 
     /**
      * 查询当前 Access Token 对应的认证会话。
+     *
+     * @param authorization HTTP Authorization 请求头。
+     * @return 当前认证会话中的账号和用户业务主键。
      */
     @GetMapping("/me")
     public ApiResponse<CurrentAuthResponse> current(@RequestHeader(value = "Authorization", required = false) String authorization) {

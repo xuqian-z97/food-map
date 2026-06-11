@@ -18,6 +18,8 @@ public class LoginLogRepositoryImpl implements LoginLogRepository {
 
     /**
      * 单条保存登录日志。
+     *
+     * @param entity 待写入的登录日志持久化实体。
      */
     @Override
     public void save(LoginLogEntity entity) {

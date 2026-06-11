@@ -16,6 +16,8 @@ public class InMemoryAuthCredentialRepository implements AuthCredentialRepositor
 
     /**
      * 保存密码凭证。该方法只保存哈希，不接收明文密码。
+     *
+     * @param entity 待保存的认证凭证持久化实体。
      */
     @Override
     public void save(AuthCredentialEntity entity) {
@@ -26,6 +28,9 @@ public class InMemoryAuthCredentialRepository implements AuthCredentialRepositor
 
     /**
      * 根据账号业务主键查找密码凭证。
+     *
+     * @param accountId 账号业务主键。
+     * @return 查询到的密码凭证实体，未命中时返回空 Optional。
      */
     @Override
     public Optional<AuthCredentialEntity> findPasswordByAccountId(Long accountId) {

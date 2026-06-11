@@ -14,6 +14,9 @@ public record ServiceInfo(
 ) {
     /**
      * 创建健康状态响应，当前只表达服务进程存活，不代表所有依赖组件都健康。
+     *
+     * @param serviceName 返回健康状态的服务名。
+     * @return 服务进程存活的健康响应。
      */
     public static ServiceInfo up(String serviceName) {
         return new ServiceInfo(serviceName, "UP", Instant.now());

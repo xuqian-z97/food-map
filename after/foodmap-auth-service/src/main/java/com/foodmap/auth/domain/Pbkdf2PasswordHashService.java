@@ -36,6 +36,8 @@ public class Pbkdf2PasswordHashService {
 
     /**
      * 使用指定 pepper 创建服务实例，测试可传入固定值以降低排查复杂度。
+     *
+     * @param pepper 密码哈希 pepper，生产环境应来自安全配置。
      */
     public Pbkdf2PasswordHashService(String pepper) {
         this.pepper = Check.notBlank("pepper", pepper);
@@ -43,6 +45,9 @@ public class Pbkdf2PasswordHashService {
 
     /**
      * 对明文密码进行 PBKDF2 哈希，返回包含算法、迭代次数、盐和哈希值的稳定格式。
+     *
+     * @param plainPassword 用户提交的明文密码，仅在内存中短暂参与哈希。
+     * @return 可持久化保存的 PBKDF2 哈希文本。
      */
     public String hash(String plainPassword) {
         String password = Check.notBlank("plainPassword", plainPassword);
@@ -56,6 +61,10 @@ public class Pbkdf2PasswordHashService {
 
     /**
      * 校验明文密码是否匹配已保存哈希，校验失败只返回 false，不泄露具体差异。
+     *
+     * @param plainPassword 用户提交的明文密码。
+     * @param storedHash 数据库中保存的密码哈希文本。
+     * @return 如果明文密码与保存哈希匹配则返回 true。
      */
     public boolean matches(String plainPassword, String storedHash) {
         String password = Check.notBlank("plainPassword", plainPassword);

@@ -21,6 +21,11 @@ public record DomainEventEnvelope<T>(
 ) {
     /**
      * 创建默认 v1 事件信封，适合当前 MVP 阶段的领域事件发布。
+     *
+     * @param eventType 领域事件类型。
+     * @param sourceService 发布事件的服务名。
+     * @param payload 事件业务载荷。
+     * @return 带事件元数据和业务载荷的事件信封。
      */
     public static <T> DomainEventEnvelope<T> of(String eventType, String sourceService, T payload) {
         return new DomainEventEnvelope<>(
