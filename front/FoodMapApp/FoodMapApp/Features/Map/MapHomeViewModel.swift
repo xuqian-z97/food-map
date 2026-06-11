@@ -7,11 +7,48 @@ final class MapHomeViewModel: ObservableObject {
     @Published var contentState: MapHomeContentState = .loaded
     @Published var markers: [MapStoreMarker] = MapHomeViewModel.sampleMarkers
     @Published var selectedMarker: MapStoreMarker? = MapHomeViewModel.sampleMarkers.first
+    @Published var selectedCity: FoodMapCity
+    @Published var offlineMapRecords: [OfflineMapCityRecord]
+    @Published var allowsCellularOfflineMapDownload: Bool
+    @Published var isCityPickerPresented = false
+    @Published var selectedSummaryMarker: MapStoreMarker?
     @Published var keyword = ""
+
+    private let session: AuthSession
+    private let cityPreferenceStore: CityPreferenceStore
+    private let offlineMapStateStore: OfflineMapStateStore
+    private let cacheStore: MapBusinessCacheStore
+
+    /// 创建地图首页 ViewModel。
+    /// - Parameters:
+    ///   - session: 当前认证会话，用于隔离业务缓存。
+    ///   - cityPreferenceStore: 城市偏好存储。
+    ///   - offlineMapStateStore: 离线地图元数据存储。
+    ///   - cacheStore: 地图业务缓存存储。
+    init(
+        session: AuthSession,
+        cityPreferenceStore: CityPreferenceStore = CityPreferenceStore(),
+        offlineMapStateStore: OfflineMapStateStore = OfflineMapStateStore(),
+        cacheStore: MapBusinessCacheStore = MapBusinessCacheStore()
+    ) {
+        self.session = session
+        self.cityPreferenceStore = cityPreferenceStore
+        self.offlineMapStateStore = offlineMapStateStore
+        self.cacheStore = cacheStore
+        self.selectedCity = cityPreferenceStore.loadSelectedCity()
+        self.offlineMapRecords = offlineMapStateStore.loadRecords()
+        self.allowsCellularOfflineMapDownload = cityPreferenceStore.allowsCellularOfflineMapDownload()
+        ensureOfflineMapPrepared()
+    }
 
     /// 根据范围切换首页展示内容，当前不做本地权限推断，只切换 UI 样例状态。
     func selectScope(_ scope: MapScope) {
         selectedScope = scope
+
+        if contentState == .offlineCache || markers.contains(where: \.isOfflineCache) {
+            loadCachedStores()
+            return
+        }
 
         switch scope {
         case .mine:
@@ -33,7 +70,73 @@ final class MapHomeViewModel: ObservableObject {
 
     /// 重新加载当前地图视野内的数据，后续替换为 API 调用。
     func reloadVisibleStores() {
+        loadCachedStores()
+    }
+
+    /// 切换当前城市并触发离线底图准备。
+    /// - Parameter city: 用户选择的城市。
+    func selectCity(_ city: FoodMapCity) {
+        selectedCity = city
+        cityPreferenceStore.saveSelectedCity(city)
+        ensureOfflineMapPrepared()
         selectScope(selectedScope)
+    }
+
+    /// 设置蜂窝网络离线地图下载偏好。
+    /// - Parameter isAllowed: 是否允许蜂窝网络下载。
+    func setAllowsCellularOfflineMapDownload(_ isAllowed: Bool) {
+        allowsCellularOfflineMapDownload = isAllowed
+        cityPreferenceStore.setAllowsCellularOfflineMapDownload(isAllowed)
+    }
+
+    /// 打开选中门店摘要。
+    /// - Parameter marker: 地图点位摘要。
+    func openSummary(for marker: MapStoreMarker) {
+        selectedSummaryMarker = marker
+    }
+
+    /// 当前城市离线地图状态。
+    var currentOfflineMapRecord: OfflineMapCityRecord? {
+        offlineMapRecords.first { $0.city.cityCode == selectedCity.cityCode }
+    }
+
+    /// 当前城市离线地图的简短状态文案。
+    var offlineMapStatusText: String {
+        guard let record = currentOfflineMapRecord else {
+            return "离线底图待下载"
+        }
+        return "\(record.city.cityName)离线底图\(record.status.title)"
+    }
+
+    private func ensureOfflineMapPrepared() {
+        offlineMapRecords = offlineMapStateStore.upsert(city: selectedCity, status: .downloaded)
+    }
+
+    private func loadCachedStores() {
+        let cachedSummaries = cacheStore.loadStoreSummaries(
+            accountId: session.accountId,
+            cityCode: selectedCity.cityCode
+        )
+
+        markers = cachedSummaries.compactMap { summary in
+            guard let scope = MapScope(rawValue: summary.scopeRawValue) else {
+                return nil
+            }
+            return MapStoreMarker(
+                id: summary.storeId,
+                name: summary.storeName,
+                dishName: summary.dishName,
+                area: summary.area,
+                visibleRecommendationCount: summary.visibleRecommendationCount,
+                scope: scope,
+                position: CGPoint(x: summary.positionX, y: summary.positionY),
+                isOfflineCache: true
+            )
+        }
+        .filter { selectedScope == .mine ? $0.scope == .mine : $0.scope == selectedScope }
+
+        contentState = markers.isEmpty ? .networkUnavailable : .offlineCache
+        selectedMarker = markers.first
     }
 
     private static let sampleMarkers: [MapStoreMarker] = [

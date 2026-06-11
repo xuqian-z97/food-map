@@ -55,6 +55,29 @@ struct MapStoreMarker: Identifiable, Equatable {
     let scope: MapScope
     /// 地图占位图中的相对位置，接入高德后替换为经纬度渲染。
     let position: CGPoint
+    /// 是否来自本地缓存，用于离线摘要页提示。
+    let isOfflineCache: Bool
+
+    /// 创建地图点位摘要。
+    init(
+        id: Int64,
+        name: String,
+        dishName: String,
+        area: String,
+        visibleRecommendationCount: Int,
+        scope: MapScope,
+        position: CGPoint,
+        isOfflineCache: Bool = false
+    ) {
+        self.id = id
+        self.name = name
+        self.dishName = dishName
+        self.area = area
+        self.visibleRecommendationCount = visibleRecommendationCount
+        self.scope = scope
+        self.position = position
+        self.isOfflineCache = isOfflineCache
+    }
 }
 
 /// 地图首页可视状态，保证加载、空、错误和无权限状态可明确表达。
@@ -63,6 +86,7 @@ enum MapHomeContentState: Equatable {
     case loaded
     case empty
     case noPermission
+    case offlineCache
     case networkUnavailable
     case failed(String)
 }

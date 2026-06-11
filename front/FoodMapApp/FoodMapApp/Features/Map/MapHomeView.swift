@@ -5,7 +5,17 @@ struct MapHomeView: View {
     let session: AuthSession
     let onSignOut: () -> Void
 
-    @StateObject private var viewModel = MapHomeViewModel()
+    @StateObject private var viewModel: MapHomeViewModel
+
+    /// 创建地图首页。
+    /// - Parameters:
+    ///   - session: 当前认证会话。
+    ///   - onSignOut: 退出登录动作。
+    init(session: AuthSession, onSignOut: @escaping () -> Void) {
+        self.session = session
+        self.onSignOut = onSignOut
+        _viewModel = StateObject(wrappedValue: MapHomeViewModel(session: session))
+    }
 
     var body: some View {
         NavigationStack {
@@ -18,6 +28,7 @@ struct MapHomeView: View {
 
                 VStack(spacing: 12) {
                     topBar
+                    offlineMapBar
                     scopePicker
                     Spacer()
                     bottomContent
@@ -39,6 +50,20 @@ struct MapHomeView: View {
             .background(FoodMapTheme.ricePaper)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar(.hidden, for: .navigationBar)
+            .sheet(isPresented: $viewModel.isCityPickerPresented) {
+                CityPickerView(
+                    selectedCity: viewModel.selectedCity,
+                    allowsCellularDownload: viewModel.allowsCellularOfflineMapDownload,
+                    onToggleCellular: viewModel.setAllowsCellularOfflineMapDownload,
+                    onSelectCity: { city in
+                        viewModel.selectCity(city)
+                        viewModel.isCityPickerPresented = false
+                    }
+                )
+            }
+            .sheet(item: $viewModel.selectedSummaryMarker) { marker in
+                OfflineStoreSummaryView(marker: marker)
+            }
         }
     }
 
@@ -57,8 +82,17 @@ struct MapHomeView: View {
 
             Spacer()
 
+            Button {
+                viewModel.isCityPickerPresented = true
+            } label: {
+                Label(viewModel.selectedCity.cityName, systemImage: "mappin.and.ellipse")
+                    .labelStyle(.iconOnly)
+            }
+            .buttonStyle(FoodMapIconButtonStyle())
+            .accessibilityLabel("切换城市")
+
             Button(action: viewModel.reloadVisibleStores) {
-                Image(systemName: "location.fill")
+                Image(systemName: "arrow.clockwise")
             }
             .buttonStyle(FoodMapIconButtonStyle())
             .accessibilityLabel("刷新当前地图范围")
@@ -70,6 +104,33 @@ struct MapHomeView: View {
             .accessibilityLabel("退出登录")
         }
         .foodMapCard(padding: 14)
+    }
+
+    private var offlineMapBar: some View {
+        HStack(spacing: 10) {
+            Image(systemName: "arrow.down.circle.fill")
+                .font(.headline.weight(.semibold))
+                .foregroundStyle(FoodMapTheme.teaGreen)
+                .frame(width: 30, height: 30)
+                .background(FoodMapTheme.teaGreen.opacity(0.12))
+                .clipShape(RoundedRectangle(cornerRadius: 7, style: .continuous))
+
+            VStack(alignment: .leading, spacing: 3) {
+                Text(viewModel.offlineMapStatusText)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(FoodMapTheme.ink)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
+                Text(viewModel.allowsCellularOfflineMapDownload ? "Wi-Fi 自动更新，蜂窝网络已允许" : "Wi-Fi 自动静默更新，蜂窝网络默认关闭")
+                    .font(.caption)
+                    .foregroundStyle(FoodMapTheme.mutedInk)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.78)
+            }
+
+            Spacer(minLength: 0)
+        }
+        .foodMapCard(padding: 12)
     }
 
     private var scopePicker: some View {
@@ -124,11 +185,15 @@ struct MapHomeView: View {
                 title: "当前内容不可见",
                 message: "FoodMap 只展示后端返回给你的授权内容。"
             )
+        case .offlineCache:
+            if let selectedMarker = viewModel.selectedMarker {
+                StoreMarkerPreviewView(marker: selectedMarker, onOpenSummary: viewModel.openSummary)
+            }
         case .networkUnavailable:
             MapStatusPanel(
                 systemImage: "wifi.slash",
                 title: "网络暂时不可用",
-                message: "地图和推荐内容需要联网加载。"
+                message: "高德离线底图可继续查看，门店和推荐内容联网后更新。"
             )
         case .failed(let message):
             MapStatusPanel(
@@ -269,6 +334,12 @@ private struct MapMarkerPin: View {
 
 private struct StoreMarkerPreviewView: View {
     let marker: MapStoreMarker
+    let onOpenSummary: (MapStoreMarker) -> Void
+
+    init(marker: MapStoreMarker, onOpenSummary: @escaping (MapStoreMarker) -> Void = { _ in }) {
+        self.marker = marker
+        self.onOpenSummary = onOpenSummary
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -291,7 +362,12 @@ private struct StoreMarkerPreviewView: View {
 
                 Spacer()
 
-                ScopeBadge(scope: marker.scope)
+                VStack(alignment: .trailing, spacing: 6) {
+                    if marker.isOfflineCache {
+                        OfflineCacheBadge()
+                    }
+                    ScopeBadge(scope: marker.scope)
+                }
             }
 
             HStack(spacing: 8) {
@@ -307,8 +383,29 @@ private struct StoreMarkerPreviewView: View {
                     .font(.callout.weight(.semibold))
                     .foregroundStyle(FoodMapTheme.teaGreen)
             }
+
+            Button {
+                onOpenSummary(marker)
+            } label: {
+                Label("查看摘要", systemImage: "chevron.right.circle.fill")
+                    .font(.callout.weight(.semibold))
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(FoodMapSecondaryButtonStyle())
         }
         .foodMapCard(padding: 16)
+    }
+}
+
+private struct OfflineCacheBadge: View {
+    var body: some View {
+        Text("离线缓存")
+            .font(.caption2.weight(.bold))
+            .foregroundStyle(FoodMapTheme.persimmon)
+            .padding(.horizontal, 7)
+            .padding(.vertical, 5)
+            .background(FoodMapTheme.persimmon.opacity(0.12))
+            .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
     }
 }
 
@@ -352,6 +449,113 @@ private struct MapStatusPanel: View {
             Spacer(minLength: 0)
         }
         .foodMapCard(padding: 16)
+    }
+}
+
+private struct CityPickerView: View {
+    let selectedCity: FoodMapCity
+    let allowsCellularDownload: Bool
+    let onToggleCellular: (Bool) -> Void
+    let onSelectCity: (FoodMapCity) -> Void
+
+    var body: some View {
+        NavigationStack {
+            List {
+                Section {
+                    Toggle(isOn: Binding(get: {
+                        allowsCellularDownload
+                    }, set: { newValue in
+                        onToggleCellular(newValue)
+                    })) {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("允许蜂窝网络下载离线底图")
+                                .font(.body.weight(.semibold))
+                            Text("默认关闭；Wi-Fi 自动更新始终开启。")
+                                .font(.caption)
+                                .foregroundStyle(FoodMapTheme.mutedInk)
+                        }
+                    }
+                }
+
+                Section("城市") {
+                    ForEach(FoodMapCity.supportedCities) { city in
+                        Button {
+                            onSelectCity(city)
+                        } label: {
+                            HStack {
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(city.cityName)
+                                        .font(.body.weight(.semibold))
+                                        .foregroundStyle(FoodMapTheme.ink)
+                                    Text(city.provinceName)
+                                        .font(.caption)
+                                        .foregroundStyle(FoodMapTheme.mutedInk)
+                                }
+                                Spacer()
+                                if city == selectedCity {
+                                    Image(systemName: "checkmark.circle.fill")
+                                        .foregroundStyle(FoodMapTheme.teaGreen)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            .navigationTitle("切换城市")
+            .navigationBarTitleDisplayMode(.inline)
+        }
+    }
+}
+
+private struct OfflineStoreSummaryView: View {
+    let marker: MapStoreMarker
+
+    var body: some View {
+        NavigationStack {
+            VStack(alignment: .leading, spacing: 16) {
+                if marker.isOfflineCache {
+                    HStack(spacing: 8) {
+                        Image(systemName: "wifi.slash")
+                        Text("离线缓存")
+                    }
+                    .font(.subheadline.weight(.bold))
+                    .foregroundStyle(FoodMapTheme.persimmon)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 8)
+                    .background(FoodMapTheme.persimmon.opacity(0.12))
+                    .clipShape(RoundedRectangle(cornerRadius: FoodMapTheme.cardCornerRadius, style: .continuous))
+                }
+
+                VStack(alignment: .leading, spacing: 10) {
+                    Text(marker.name)
+                        .font(.title2.weight(.bold))
+                        .foregroundStyle(FoodMapTheme.ink)
+                    Text(marker.area)
+                        .font(.subheadline)
+                        .foregroundStyle(FoodMapTheme.mutedInk)
+                    Divider()
+                    Label(marker.dishName, systemImage: "fork.knife")
+                        .font(.headline)
+                        .foregroundStyle(FoodMapTheme.ink)
+                    Label("\(marker.visibleRecommendationCount) 条可见摘要", systemImage: "text.bubble.fill")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(FoodMapTheme.teaGreen)
+                }
+                .foodMapCard(padding: 16)
+
+                MapStatusPanel(
+                    systemImage: "lock.fill",
+                    title: "只读摘要",
+                    message: "离线状态下不能新增、编辑、评论或上传图片；好友、情侣和指定用户内容联网后查看最新授权结果。"
+                )
+
+                Spacer()
+            }
+            .padding(16)
+            .background(FoodMapTheme.ricePaper.ignoresSafeArea())
+            .navigationTitle("门店摘要")
+            .navigationBarTitleDisplayMode(.inline)
+        }
     }
 }
 

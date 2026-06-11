@@ -33,6 +33,7 @@ struct APIClient {
         let url = try makeURL(path: path)
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
+        request.timeoutInterval = APIRequestTimeout.submit
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = try JSONEncoder().encode(body)
 

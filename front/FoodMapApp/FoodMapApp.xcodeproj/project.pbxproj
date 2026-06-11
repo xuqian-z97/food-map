@@ -25,6 +25,13 @@
 		111111111111111111111110 /* MapHomeModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 111111111111111111111211 /* MapHomeModels.swift */; };
 		111111111111111111111111 /* MapHomeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 111111111111111111111212 /* MapHomeViewModel.swift */; };
 		111111111111111111111112 /* MapHomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 111111111111111111111213 /* MapHomeView.swift */; };
+		111111111111111111111113 /* APIRequestTimeout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 111111111111111111111214 /* APIRequestTimeout.swift */; };
+		111111111111111111111114 /* FoodMapCity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 111111111111111111111215 /* FoodMapCity.swift */; };
+		111111111111111111111115 /* CityPreferenceStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 111111111111111111111216 /* CityPreferenceStore.swift */; };
+		111111111111111111111116 /* OfflineMapModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 111111111111111111111217 /* OfflineMapModels.swift */; };
+		111111111111111111111117 /* OfflineMapStateStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 111111111111111111111218 /* OfflineMapStateStore.swift */; };
+		111111111111111111111118 /* BusinessCacheModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 111111111111111111111219 /* BusinessCacheModels.swift */; };
+		111111111111111111111119 /* MapBusinessCacheStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11111111111111111111121A /* MapBusinessCacheStore.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -48,6 +55,13 @@
 		111111111111111111111211 /* MapHomeModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapHomeModels.swift; sourceTree = "<group>"; };
 		111111111111111111111212 /* MapHomeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapHomeViewModel.swift; sourceTree = "<group>"; };
 		111111111111111111111213 /* MapHomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapHomeView.swift; sourceTree = "<group>"; };
+		111111111111111111111214 /* APIRequestTimeout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIRequestTimeout.swift; sourceTree = "<group>"; };
+		111111111111111111111215 /* FoodMapCity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoodMapCity.swift; sourceTree = "<group>"; };
+		111111111111111111111216 /* CityPreferenceStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CityPreferenceStore.swift; sourceTree = "<group>"; };
+		111111111111111111111217 /* OfflineMapModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineMapModels.swift; sourceTree = "<group>"; };
+		111111111111111111111218 /* OfflineMapStateStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineMapStateStore.swift; sourceTree = "<group>"; };
+		111111111111111111111219 /* BusinessCacheModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BusinessCacheModels.swift; sourceTree = "<group>"; };
+		11111111111111111111121A /* MapBusinessCacheStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapBusinessCacheStore.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -102,6 +116,9 @@
 			children = (
 				111111111111111111111405 /* Networking */,
 				111111111111111111111406 /* Auth */,
+				11111111111111111111140C /* City */,
+				11111111111111111111140D /* OfflineMap */,
+				11111111111111111111140E /* Storage */,
 				11111111111111111111140B /* DesignSystem */,
 			);
 			path = Core;
@@ -113,6 +130,7 @@
 				111111111111111111111203 /* APIClient.swift */,
 				111111111111111111111204 /* APIResponse.swift */,
 				111111111111111111111205 /* NetworkError.swift */,
+				111111111111111111111214 /* APIRequestTimeout.swift */,
 			);
 			path = Networking;
 			sourceTree = "<group>";
@@ -125,6 +143,33 @@
 				111111111111111111111208 /* KeychainTokenStore.swift */,
 			);
 			path = Auth;
+			sourceTree = "<group>";
+		};
+		11111111111111111111140C /* City */ = {
+			isa = PBXGroup;
+			children = (
+				111111111111111111111215 /* FoodMapCity.swift */,
+				111111111111111111111216 /* CityPreferenceStore.swift */,
+			);
+			path = City;
+			sourceTree = "<group>";
+		};
+		11111111111111111111140D /* OfflineMap */ = {
+			isa = PBXGroup;
+			children = (
+				111111111111111111111217 /* OfflineMapModels.swift */,
+				111111111111111111111218 /* OfflineMapStateStore.swift */,
+			);
+			path = OfflineMap;
+			sourceTree = "<group>";
+		};
+		11111111111111111111140E /* Storage */ = {
+			isa = PBXGroup;
+			children = (
+				111111111111111111111219 /* BusinessCacheModels.swift */,
+				11111111111111111111121A /* MapBusinessCacheStore.swift */,
+			);
+			path = Storage;
 			sourceTree = "<group>";
 		};
 		11111111111111111111140B /* DesignSystem */ = {
@@ -259,6 +304,13 @@
 				11111111111111111111110C /* RegisterView.swift in Sources */,
 				11111111111111111111110D /* MapHomePlaceholderView.swift in Sources */,
 				11111111111111111111110F /* FoodMapTheme.swift in Sources */,
+				111111111111111111111113 /* APIRequestTimeout.swift in Sources */,
+				111111111111111111111114 /* FoodMapCity.swift in Sources */,
+				111111111111111111111115 /* CityPreferenceStore.swift in Sources */,
+				111111111111111111111116 /* OfflineMapModels.swift in Sources */,
+				111111111111111111111117 /* OfflineMapStateStore.swift in Sources */,
+				111111111111111111111118 /* BusinessCacheModels.swift in Sources */,
+				111111111111111111111119 /* MapBusinessCacheStore.swift in Sources */,
 				111111111111111111111110 /* MapHomeModels.swift in Sources */,
 				111111111111111111111111 /* MapHomeViewModel.swift in Sources */,
 				111111111111111111111112 /* MapHomeView.swift in Sources */,
