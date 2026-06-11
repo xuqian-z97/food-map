@@ -7,7 +7,7 @@ struct AppRouter: View {
     var body: some View {
         Group {
             if let session = sessionStore.session {
-                MapHomePlaceholderView(session: session) {
+                MapHomeView(session: session) {
                     sessionStore.signOut()
                 }
             } else {

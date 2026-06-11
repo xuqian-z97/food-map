@@ -21,6 +21,10 @@
 		11111111111111111111110C /* RegisterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11111111111111111111120C /* RegisterView.swift */; };
 		11111111111111111111110D /* MapHomePlaceholderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11111111111111111111120D /* MapHomePlaceholderView.swift */; };
 		11111111111111111111110E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 11111111111111111111120E /* Assets.xcassets */; };
+		11111111111111111111110F /* FoodMapTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 111111111111111111111210 /* FoodMapTheme.swift */; };
+		111111111111111111111110 /* MapHomeModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 111111111111111111111211 /* MapHomeModels.swift */; };
+		111111111111111111111111 /* MapHomeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 111111111111111111111212 /* MapHomeViewModel.swift */; };
+		111111111111111111111112 /* MapHomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 111111111111111111111213 /* MapHomeView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -40,6 +44,10 @@
 		11111111111111111111120D /* MapHomePlaceholderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapHomePlaceholderView.swift; sourceTree = "<group>"; };
 		11111111111111111111120E /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		11111111111111111111120F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		111111111111111111111210 /* FoodMapTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoodMapTheme.swift; sourceTree = "<group>"; };
+		111111111111111111111211 /* MapHomeModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapHomeModels.swift; sourceTree = "<group>"; };
+		111111111111111111111212 /* MapHomeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapHomeViewModel.swift; sourceTree = "<group>"; };
+		111111111111111111111213 /* MapHomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapHomeView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -94,6 +102,7 @@
 			children = (
 				111111111111111111111405 /* Networking */,
 				111111111111111111111406 /* Auth */,
+				11111111111111111111140B /* DesignSystem */,
 			);
 			path = Core;
 			sourceTree = "<group>";
@@ -116,6 +125,14 @@
 				111111111111111111111208 /* KeychainTokenStore.swift */,
 			);
 			path = Auth;
+			sourceTree = "<group>";
+		};
+		11111111111111111111140B /* DesignSystem */ = {
+			isa = PBXGroup;
+			children = (
+				111111111111111111111210 /* FoodMapTheme.swift */,
+			);
+			path = DesignSystem;
 			sourceTree = "<group>";
 		};
 		111111111111111111111407 /* Features */ = {
@@ -141,6 +158,9 @@
 		111111111111111111111409 /* Map */ = {
 			isa = PBXGroup;
 			children = (
+				111111111111111111111211 /* MapHomeModels.swift */,
+				111111111111111111111212 /* MapHomeViewModel.swift */,
+				111111111111111111111213 /* MapHomeView.swift */,
 				11111111111111111111120D /* MapHomePlaceholderView.swift */,
 			);
 			path = Map;
@@ -238,6 +258,10 @@
 				11111111111111111111110B /* LoginView.swift in Sources */,
 				11111111111111111111110C /* RegisterView.swift in Sources */,
 				11111111111111111111110D /* MapHomePlaceholderView.swift in Sources */,
+				11111111111111111111110F /* FoodMapTheme.swift in Sources */,
+				111111111111111111111110 /* MapHomeModels.swift in Sources */,
+				111111111111111111111111 /* MapHomeViewModel.swift in Sources */,
+				111111111111111111111112 /* MapHomeView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
