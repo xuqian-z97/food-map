@@ -8,18 +8,24 @@ struct LoginView: View {
 
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 24) {
-                    header
-                    fields
-                    actions
-                    errorText
+            ZStack {
+                FoodMapTheme.ricePaper
+                    .ignoresSafeArea()
+
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 24) {
+                        header
+                        fields
+                        actions
+                        errorText
+                    }
+                    .padding(.horizontal, 24)
+                    .padding(.top, 44)
+                    .padding(.bottom, 24)
+                    .frame(maxWidth: 520, alignment: .leading)
                 }
-                .padding(24)
-                .frame(maxWidth: 520, alignment: .leading)
             }
             .frame(maxWidth: .infinity)
-            .background(Color(.systemGroupedBackground))
             .sheet(isPresented: $showsRegister) {
                 RegisterView(apiBaseURL: viewModel.apiBaseURL)
                     .environmentObject(sessionStore)
@@ -28,37 +34,58 @@ struct LoginView: View {
     }
 
     private var header: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("FoodMap")
-                .font(.system(size: 42, weight: .bold, design: .rounded))
-            Text("登录")
-                .font(.title2.weight(.semibold))
-                .foregroundStyle(.secondary)
+        VStack(alignment: .leading, spacing: 14) {
+            HStack(spacing: 10) {
+                Image(systemName: "fork.knife.circle.fill")
+                    .font(.system(size: 34, weight: .bold))
+                    .foregroundStyle(FoodMapTheme.persimmon)
+
+                Text("FoodMap")
+                    .font(.system(size: 42, weight: .bold, design: .rounded))
+                    .foregroundStyle(FoodMapTheme.ink)
+            }
+
+            VStack(alignment: .leading, spacing: 6) {
+                Text("登录")
+                    .font(.title.weight(.bold))
+                    .foregroundStyle(FoodMapTheme.ink)
+                Text("回到你的私房美食地图")
+                    .font(.subheadline)
+                    .foregroundStyle(FoodMapTheme.mutedInk)
+            }
         }
-        .padding(.top, 28)
     }
 
     private var fields: some View {
         VStack(spacing: 14) {
-            TextField("账号名 / 手机号 / 邮箱", text: $viewModel.loginIdentifier)
-                .textInputAutocapitalization(.never)
-                .autocorrectionDisabled()
-                .keyboardType(.emailAddress)
-                .textContentType(.username)
-                .submitLabel(.next)
-                .fieldStyle()
+            HStack(spacing: 10) {
+                fieldIcon("person.fill")
+                TextField("账号名 / 手机号 / 邮箱", text: $viewModel.loginIdentifier)
+                    .textInputAutocapitalization(.never)
+                    .autocorrectionDisabled()
+                    .keyboardType(.emailAddress)
+                    .textContentType(.username)
+                    .submitLabel(.next)
+            }
+            .foodMapInputField()
 
-            SecureField("密码", text: $viewModel.password)
-                .textContentType(.password)
-                .submitLabel(.go)
-                .fieldStyle()
+            HStack(spacing: 10) {
+                fieldIcon("lock.fill")
+                SecureField("密码", text: $viewModel.password)
+                    .textContentType(.password)
+                    .submitLabel(.go)
+            }
+            .foodMapInputField()
 
-            TextField("服务地址", text: $viewModel.apiBaseURL)
-                .textInputAutocapitalization(.never)
-                .autocorrectionDisabled()
-                .keyboardType(.URL)
-                .textContentType(.URL)
-                .fieldStyle()
+            HStack(spacing: 10) {
+                fieldIcon("server.rack")
+                TextField("服务地址", text: $viewModel.apiBaseURL)
+                    .textInputAutocapitalization(.never)
+                    .autocorrectionDisabled()
+                    .keyboardType(.URL)
+                    .textContentType(.URL)
+            }
+            .foodMapInputField()
         }
     }
 
@@ -72,15 +99,14 @@ struct LoginView: View {
                         ProgressView()
                             .tint(.white)
                     } else {
-                        Image(systemName: "arrow.right.circle.fill")
+                        Image(systemName: "arrow.right")
                     }
                     Text(viewModel.isLoading ? "登录中" : "登录")
                         .fontWeight(.semibold)
                 }
                 .frame(maxWidth: .infinity)
             }
-            .buttonStyle(.borderedProminent)
-            .controlSize(.large)
+            .buttonStyle(FoodMapPrimaryButtonStyle())
             .disabled(!viewModel.canSubmit || viewModel.isLoading)
 
             Button {
@@ -89,29 +115,28 @@ struct LoginView: View {
                 Label("注册账号", systemImage: "person.badge.plus")
                     .frame(maxWidth: .infinity)
             }
-            .buttonStyle(.bordered)
-            .controlSize(.large)
+            .buttonStyle(FoodMapSecondaryButtonStyle())
         }
     }
 
     @ViewBuilder
     private var errorText: some View {
         if let errorMessage = viewModel.errorMessage {
-            Text(errorMessage)
+            Label(errorMessage, systemImage: "exclamationmark.triangle.fill")
                 .font(.callout)
-                .foregroundStyle(.red)
+                .foregroundStyle(FoodMapTheme.persimmon)
+                .padding(12)
+                .background(FoodMapTheme.persimmon.opacity(0.10))
+                .clipShape(RoundedRectangle(cornerRadius: FoodMapTheme.cardCornerRadius, style: .continuous))
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
-}
 
-private extension View {
-    func fieldStyle() -> some View {
-        self
-            .padding(.horizontal, 14)
-            .frame(height: 48)
-            .background(Color(.secondarySystemGroupedBackground))
-            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+    private func fieldIcon(_ systemName: String) -> some View {
+        Image(systemName: systemName)
+            .font(.system(size: 15, weight: .semibold))
+            .foregroundStyle(FoodMapTheme.teaGreen)
+            .frame(width: 22)
     }
 }
 

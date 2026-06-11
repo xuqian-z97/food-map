@@ -25,15 +25,40 @@ enum FoodMapTheme {
 
 /// FoodMap 主按钮样式，适合提交、添加推荐等核心动作。
 struct FoodMapPrimaryButtonStyle: ButtonStyle {
+    @Environment(\.isEnabled) private var isEnabled
+
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(.headline)
-            .foregroundStyle(.white)
+            .foregroundStyle(isEnabled ? .white : FoodMapTheme.mutedInk.opacity(0.58))
             .padding(.horizontal, 18)
             .frame(minHeight: 48)
-            .background(FoodMapTheme.persimmon.opacity(configuration.isPressed ? 0.82 : 1))
+            .background(
+                isEnabled
+                ? FoodMapTheme.persimmon.opacity(configuration.isPressed ? 0.82 : 1)
+                : FoodMapTheme.hairline.opacity(0.42)
+            )
             .clipShape(RoundedRectangle(cornerRadius: FoodMapTheme.cardCornerRadius, style: .continuous))
-            .shadow(color: FoodMapTheme.persimmon.opacity(configuration.isPressed ? 0.10 : 0.22), radius: 12, x: 0, y: 6)
+            .shadow(color: isEnabled ? FoodMapTheme.persimmon.opacity(configuration.isPressed ? 0.10 : 0.22) : .clear, radius: 12, x: 0, y: 6)
+    }
+}
+
+/// FoodMap 次级按钮样式，用于注册、关闭等低优先级动作。
+struct FoodMapSecondaryButtonStyle: ButtonStyle {
+    @Environment(\.isEnabled) private var isEnabled
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(.headline)
+            .foregroundStyle(isEnabled ? FoodMapTheme.persimmon : FoodMapTheme.mutedInk.opacity(0.62))
+            .padding(.horizontal, 18)
+            .frame(minHeight: 48)
+            .background(FoodMapTheme.card.opacity(configuration.isPressed ? 0.76 : 0.96))
+            .clipShape(RoundedRectangle(cornerRadius: FoodMapTheme.cardCornerRadius, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: FoodMapTheme.cardCornerRadius, style: .continuous)
+                    .stroke(FoodMapTheme.hairline.opacity(0.55), lineWidth: 1)
+            )
     }
 }
 
@@ -54,6 +79,22 @@ struct FoodMapIconButtonStyle: ButtonStyle {
 }
 
 extension View {
+    /// 认证页输入框样式。
+    func foodMapInputField() -> some View {
+        self
+            .font(.body)
+            .foregroundStyle(FoodMapTheme.ink)
+            .tint(FoodMapTheme.persimmon)
+            .padding(.horizontal, 14)
+            .frame(minHeight: 52)
+            .background(FoodMapTheme.card)
+            .clipShape(RoundedRectangle(cornerRadius: FoodMapTheme.cardCornerRadius, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: FoodMapTheme.cardCornerRadius, style: .continuous)
+                    .stroke(FoodMapTheme.hairline.opacity(0.54), lineWidth: 1)
+            )
+    }
+
     /// 首页浮层卡片样式。
     func foodMapCard(padding: CGFloat = 14) -> some View {
         self
