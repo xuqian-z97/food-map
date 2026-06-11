@@ -29,6 +29,24 @@ for service in $services; do
   [ -d "after/$service" ] || printf 'WARN: missing planned service: %s\n' "$service"
 done
 
+entity_files=$(find after -type f \( \
+  -path "*/src/main/java/*/infrastructure/persistence/entity/*Entity.java" \
+  -o -path "*/src/main/java/com/foodmap/common/persistence/BaseEntity.java" \
+\))
+
+for file in $entity_files; do
+  awk '
+    /^[[:space:]]*private[[:space:]].*;[[:space:]]*$/ {
+      if (previous_line !~ /^[[:space:]]*\*\/[[:space:]]*$/) {
+        printf "FAIL: entity field in %s:%d must have field-level Javadoc.\n", FILENAME, FNR > "/dev/stderr"
+        failed = 1
+      }
+    }
+    { previous_line = $0 }
+    END { exit failed ? 1 : 0 }
+  ' "$file"
+done
+
 if command -v mvn >/dev/null 2>&1; then
   (cd after && mvn -q -DskipTests validate)
 else

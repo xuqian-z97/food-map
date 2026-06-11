@@ -8,13 +8,44 @@ import java.time.OffsetDateTime;
  * 认证账号持久化实体，对应 `auth_accounts` 表，不能作为 API 响应直接返回。
  */
 public class AuthAccountEntity extends BaseEntity {
+    /**
+     * 账号业务主键，用于认证服务对外引用账号。
+     */
     private Long accountId;
+
+    /**
+     * 用户业务主键，关联用户服务的用户身份。
+     */
     private Long userId;
+
+    /**
+     * 账号名，可用于账号名登录。
+     */
     private String accountName;
+
+    /**
+     * 手机号，可用于手机号登录。
+     */
     private String phone;
+
+    /**
+     * 邮箱，可用于邮箱登录。
+     */
     private String email;
+
+    /**
+     * 账号状态，如 NORMAL、DISABLED、LOCKED。
+     */
     private String accountStatus;
+
+    /**
+     * 注册来源，如 IOS、WEB、ADMIN。
+     */
     private String registeredChannel;
+
+    /**
+     * 最近一次登录成功时间。
+     */
     private OffsetDateTime lastLoginTime;
 
     public Long getAccountId() {

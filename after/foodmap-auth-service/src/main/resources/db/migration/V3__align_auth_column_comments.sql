@@ -1,0 +1,44 @@
+comment on column auth_accounts.id is '数据库内部自增主键，仅用于本服务库内关联和 ORM 标识，不对外暴露';
+comment on column auth_accounts.created_time is '数据创建时间，暂定由业务层或 ORM 统一写入';
+comment on column auth_accounts.updated_time is '数据最后更新时间，暂定由业务层或 ORM 统一写入';
+comment on column auth_accounts.is_delete is '逻辑删除标记，0 表示未删除，1 表示已删除';
+comment on column auth_accounts.account_id is '账号业务主键，用于认证服务对外引用账号';
+comment on column auth_accounts.user_id is '用户业务主键，关联用户服务的用户身份';
+comment on column auth_accounts.account_name is '账号名，可用于账号名登录';
+comment on column auth_accounts.phone is '手机号，可用于手机号登录';
+comment on column auth_accounts.email is '邮箱，可用于邮箱登录';
+comment on column auth_accounts.account_status is '账号状态，如 NORMAL、DISABLED、LOCKED';
+comment on column auth_accounts.registered_channel is '注册来源，如 IOS、WEB、ADMIN';
+comment on column auth_accounts.last_login_time is '最近一次登录成功时间';
+
+comment on column auth_credentials.id is '数据库内部自增主键，仅用于本服务库内关联和 ORM 标识，不对外暴露';
+comment on column auth_credentials.created_time is '数据创建时间，暂定由业务层或 ORM 统一写入';
+comment on column auth_credentials.updated_time is '数据最后更新时间，暂定由业务层或 ORM 统一写入';
+comment on column auth_credentials.is_delete is '逻辑删除标记，0 表示未删除，1 表示已删除';
+comment on column auth_credentials.credential_id is '凭证业务主键';
+comment on column auth_credentials.account_id is '账号业务主键，关联 auth_accounts.account_id';
+comment on column auth_credentials.credential_type is '凭证类型，如 PASSWORD';
+comment on column auth_credentials.password_hash is '密码哈希值，禁止保存明文密码';
+comment on column auth_credentials.hash_algorithm is '密码哈希算法标识，如 PBKDF2WithHmacSHA256';
+
+comment on column refresh_tokens.id is '数据库内部自增主键，仅用于本服务库内关联和 ORM 标识，不对外暴露';
+comment on column refresh_tokens.created_time is '数据创建时间，暂定由业务层或 ORM 统一写入';
+comment on column refresh_tokens.updated_time is '数据最后更新时间，暂定由业务层或 ORM 统一写入';
+comment on column refresh_tokens.is_delete is '逻辑删除标记，0 表示未删除，1 表示已删除';
+comment on column refresh_tokens.token_id is '刷新令牌业务主键';
+comment on column refresh_tokens.account_id is '账号业务主键，关联 auth_accounts.account_id';
+comment on column refresh_tokens.token_hash is 'Refresh Token 哈希值，禁止保存明文 Token';
+comment on column refresh_tokens.expires_time is 'Refresh Token 过期时间';
+comment on column refresh_tokens.revoked_time is 'Refresh Token 被撤销时间';
+comment on column refresh_tokens.token_status is 'Token 状态，如 ACTIVE、REVOKED、EXPIRED';
+
+comment on column login_logs.id is '数据库内部自增主键，仅用于本服务库内关联和 ORM 标识，不对外暴露';
+comment on column login_logs.created_time is '数据创建时间，暂定由业务层或 ORM 统一写入';
+comment on column login_logs.updated_time is '数据最后更新时间，暂定由业务层或 ORM 统一写入';
+comment on column login_logs.is_delete is '逻辑删除标记，0 表示未删除，1 表示已删除';
+comment on column login_logs.login_log_id is '登录日志业务主键';
+comment on column login_logs.account_id is '账号业务主键，登录失败且账号不存在时可为空';
+comment on column login_logs.login_type is '登录方式，如 PHONE、EMAIL、ACCOUNT_NAME';
+comment on column login_logs.login_result is '登录结果，如 SUCCESS、FAILED';
+comment on column login_logs.ip_address is '登录请求 IP 地址';
+comment on column login_logs.user_agent is '登录设备或浏览器 User-Agent';

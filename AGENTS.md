@@ -471,6 +471,7 @@ front/FoodMapApp
 - 固定字段统一为 `created_time timestamptz`、`updated_time timestamptz`、`is_delete smallint default 0`。
 - 数据库表结构设计必须先在 `CODEX-after.md` 中补充表中文名、表用途、字段类型和字段中文注释。
 - 后续生成 Flyway SQL 时，表和字段必须使用 PostgreSQL `comment on table` / `comment on column` 固化中文注释。
+- 持久化实体字段必须提供字段级 Javadoc；如果字段对应数据库字段，注释必须与表字段中文注释一一对应。
 - 展示型金额字段使用 PostgreSQL `numeric(10,2)`，Java 使用 `BigDecimal`。
 - 真实交易金额如后续出现订单或钱包，再使用 `bigint` 保存最小货币单位。
 - 门店地理位置由门店服务负责，地理查询使用 PostGIS `geography(Point, 4326)`。
@@ -775,6 +776,7 @@ service-name
 - 禁止跨服务直接访问数据库表。
 - Controller 使用 DTO，不直接暴露数据库实体。
 - 数据库持久化实体、DTO、VO 必须分层存放并显式转换，不能互相替代。
+- 数据库表字段、Flyway 字段注释和持久化实体字段 Javadoc 必须保持一致。
 - 数据库访问统一使用 MyBatis Mapper + Mapper.xml。
 - 每张业务表必须生成标准 `{EntityName}Mapper.java` / `{EntityName}Mapper.xml`，只放单表模板 SQL。
 - 每张业务表需要复杂 SQL 时，必须新增 `{EntityName}DefineMapper.java` / `{EntityName}DefineMapper.xml`，标准 Mapper 不写复杂业务 SQL。

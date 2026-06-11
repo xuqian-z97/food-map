@@ -518,6 +518,9 @@ foodmap_admin_db
 
 - 数据库结构对应的 Java 类统一称为持久化实体，必须放在各服务的 `infrastructure.persistence.entity` 包中。
 - 持久化实体只表达数据库表结构和持久化映射，不允许作为 Controller 请求体、响应体或前端展示模型直接暴露。
+- 每张业务表的每个字段都必须在数据库结构文档中提供中文注释，说明字段业务含义、使用场景和排查价值。
+- Flyway 建表脚本必须为每张表生成 `comment on table`，并为每个字段生成 `comment on column`；禁止新增无中文注释的表字段。
+- 持久化实体的每个字段都必须提供字段级 Javadoc 注释；如果字段对应数据库表字段，Javadoc 必须与数据库字段中文注释一一对应。
 - 所有业务表固定字段 `id / created_time / updated_time / is_delete` 由 `foodmap-common` 中的 `BaseEntity` 承载。
 - `BaseEntity` 只承载固定字段，不承载 `user_id`、`account_id`、`store_id` 等业务主键。
 - DTO 用于后端 HTTP/API 入参和响应，必须放在各服务的 `dto` 包中。
@@ -599,6 +602,7 @@ infrastructure
 生成和维护规则：
 
 - Flyway 表结构确定后，必须同步生成或更新 Entity、标准 Mapper、标准 Mapper.xml、Repository 实现。
+- Flyway 字段中文注释、`CODEX-after.md` 表字段中文注释和 Entity 字段 Javadoc 必须保持一致。
 - 标准 Mapper 和 XML 应尽量保持可重复生成，人工业务 SQL 不得写入标准 XML。
 - 自定义 SQL 只写入 DefineMapper 和 DefineMapper.xml，避免重新生成标准 Mapper 时覆盖业务 SQL。
 - Mapper 不能被 Controller、XxxService 或 XxxServiceImpl 直接调用，只能由 Repository Impl 调用。
@@ -810,7 +814,7 @@ foodmap_auth_db
 | account_id | bigint not null | 账号业务主键，关联 auth_accounts.account_id |
 | credential_type | varchar(32) not null | 凭证类型，如 PASSWORD |
 | password_hash | varchar(255) | 密码哈希值，禁止保存明文密码 |
-| hash_algorithm | varchar(64) | 密码哈希算法标识，如 BCrypt、Argon2 |
+| hash_algorithm | varchar(64) | 密码哈希算法标识，如 PBKDF2WithHmacSHA256 |
 
 表：`refresh_tokens`
 

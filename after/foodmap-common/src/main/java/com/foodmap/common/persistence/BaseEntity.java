@@ -10,9 +10,24 @@ import java.time.OffsetDateTime;
  */
 public abstract class BaseEntity {
 
+    /**
+     * 数据库内部自增主键，仅用于本服务库内关联和 ORM 标识，不对外暴露。
+     */
     private Long id;
+
+    /**
+     * 数据创建时间，暂定由业务层或 ORM 统一写入。
+     */
     private OffsetDateTime createdTime;
+
+    /**
+     * 数据最后更新时间，暂定由业务层或 ORM 统一写入。
+     */
     private OffsetDateTime updatedTime;
+
+    /**
+     * 逻辑删除标记，0 表示未删除，1 表示已删除。
+     */
     private Short isDelete;
 
     /**

@@ -1,0 +1,33 @@
+comment on column users.id is '数据库内部自增主键，仅用于本服务库内关联和 ORM 标识，不对外暴露';
+comment on column users.created_time is '数据创建时间，暂定由业务层或 ORM 统一写入';
+comment on column users.updated_time is '数据最后更新时间，暂定由业务层或 ORM 统一写入';
+comment on column users.is_delete is '逻辑删除标记，0 表示未删除，1 表示已删除';
+comment on column users.user_id is '用户业务主键，用于跨服务引用用户';
+comment on column users.account_id is '认证账号业务主键，来源于认证服务';
+comment on column users.nickname is '用户昵称';
+comment on column users.avatar_media_id is '头像媒体业务主键，关联媒体服务 media_id';
+comment on column users.user_status is '用户状态，如 NORMAL、DISABLED';
+comment on column users.searchable is '是否允许被搜索，1 表示允许，0 表示不允许';
+
+comment on column user_profiles.id is '数据库内部自增主键，仅用于本服务库内关联和 ORM 标识，不对外暴露';
+comment on column user_profiles.created_time is '数据创建时间，暂定由业务层或 ORM 统一写入';
+comment on column user_profiles.updated_time is '数据最后更新时间，暂定由业务层或 ORM 统一写入';
+comment on column user_profiles.is_delete is '逻辑删除标记，0 表示未删除，1 表示已删除';
+comment on column user_profiles.profile_id is '用户资料业务主键';
+comment on column user_profiles.user_id is '用户业务主键，关联 users.user_id';
+comment on column user_profiles.city_code is '用户所在城市编码';
+comment on column user_profiles.city_name is '用户所在城市名称';
+comment on column user_profiles.bio is '用户个人简介';
+comment on column user_profiles.gender is '性别，可选字段';
+comment on column user_profiles.birthday is '生日，可选字段';
+
+comment on column user_settings.id is '数据库内部自增主键，仅用于本服务库内关联和 ORM 标识，不对外暴露';
+comment on column user_settings.created_time is '数据创建时间，暂定由业务层或 ORM 统一写入';
+comment on column user_settings.updated_time is '数据最后更新时间，暂定由业务层或 ORM 统一写入';
+comment on column user_settings.is_delete is '逻辑删除标记，0 表示未删除，1 表示已删除';
+comment on column user_settings.setting_id is '用户设置业务主键';
+comment on column user_settings.user_id is '用户业务主键，关联 users.user_id';
+comment on column user_settings.default_visibility_type is '默认推荐可见范围，如 PRIVATE、FRIENDS、PUBLIC';
+comment on column user_settings.allow_friend_request is '是否允许收到好友申请，1 表示允许，0 表示不允许';
+comment on column user_settings.allow_search_by_phone is '是否允许通过手机号搜索到本人';
+comment on column user_settings.allow_search_by_email is '是否允许通过邮箱搜索到本人';

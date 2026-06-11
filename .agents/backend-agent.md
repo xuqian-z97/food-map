@@ -68,6 +68,7 @@ after/foodmap-common
 - 同一个类中不要混用多种注入方式，确有框架原因时必须补充说明。
 - 数据库结构对应 Java 类必须放在服务内 `infrastructure.persistence.entity` 包中，并与 DTO、VO 明确区分。
 - `foodmap-common` 的 `BaseEntity` 只承载 `id / created_time / updated_time / is_delete` 固定字段，不承载业务主键。
+- 持久化实体字段必须提供字段级 Javadoc；如果字段对应数据库字段，注释必须与表字段中文注释一一对应。
 - Controller 只能使用 DTO 作为请求和响应契约，不能直接暴露数据库持久化实体。
 - 数据库访问统一使用 MyBatis Mapper + Mapper.xml。
 - 每张业务表必须生成 `{EntityName}Mapper.java` / `{EntityName}Mapper.xml` 标准单表 SQL。

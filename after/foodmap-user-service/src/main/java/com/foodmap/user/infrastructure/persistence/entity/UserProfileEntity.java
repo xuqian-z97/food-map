@@ -8,12 +8,39 @@ import java.time.LocalDate;
  * 用户资料持久化实体，对应 `user_profiles` 表，承载城市、简介等展示扩展字段。
  */
 public class UserProfileEntity extends BaseEntity {
+    /**
+     * 用户资料业务主键。
+     */
     private Long profileId;
+
+    /**
+     * 用户业务主键，关联 users.user_id。
+     */
     private Long userId;
+
+    /**
+     * 用户所在城市编码。
+     */
     private String cityCode;
+
+    /**
+     * 用户所在城市名称。
+     */
     private String cityName;
+
+    /**
+     * 用户个人简介。
+     */
     private String bio;
+
+    /**
+     * 性别，可选字段。
+     */
     private String gender;
+
+    /**
+     * 生日，可选字段。
+     */
     private LocalDate birthday;
 
     public Long getProfileId() {
