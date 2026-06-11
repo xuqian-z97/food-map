@@ -104,7 +104,8 @@ Stage 1：后端认证用户基础能力与 iOS 认证测试壳已完成
 - 数据库结构对应 Java 类作为持久化实体存放在 `infrastructure.persistence.entity` 中。
 - 固定字段由 `foodmap-common` 的 `BaseEntity` 承载。
 - 持久化实体、DTO、VO 必须分离，Controller 不直接暴露 Entity。
-- 应用层通过仓储端口访问持久化能力，运行时统一使用 MyBatis Mapper + Mapper.xml，内存仓储仅用于测试。
+- 业务层统一使用 `XxxService` 接口 + `XxxServiceImpl` 实现类，Controller 只能依赖 Service 接口。
+- ServiceImpl 通过仓储端口访问持久化能力，运行时统一使用 MyBatis Mapper + Mapper.xml，内存仓储仅用于测试。
 - 每张业务表生成标准 Mapper/XML，复杂业务 SQL 单独放入 DefineMapper/XML。
 - Repository 实现类名不再使用 `MyBatis` 等技术前缀，统一采用 `{EntityName}RepositoryImpl` 或业务聚合语义命名。
 - 后端 Spring Bean 依赖注入按场景取舍：普通业务类允许优先使用 `@Autowired` 字段注入；强必需依赖、不可变依赖、易测性要求高或需要尽早暴露循环依赖的类优先使用构造器注入。

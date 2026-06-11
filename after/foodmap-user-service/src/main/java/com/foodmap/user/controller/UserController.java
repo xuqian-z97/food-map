@@ -4,8 +4,8 @@ import com.foodmap.common.api.ApiResponse;
 import com.foodmap.common.security.CurrentUser;
 import com.foodmap.common.security.CurrentUserResolver;
 import com.foodmap.common.security.FoodMapAuthHeaders;
-import com.foodmap.user.application.UserApplicationService;
 import com.foodmap.user.dto.CurrentUserResponse;
+import com.foodmap.user.service.UserService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,10 +17,10 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
-    private final UserApplicationService userApplicationService;
+    private final UserService userService;
 
-    public UserController(UserApplicationService userApplicationService) {
-        this.userApplicationService = userApplicationService;
+    public UserController(UserService userService) {
+        this.userService = userService;
     }
 
     /**
@@ -32,6 +32,6 @@ public class UserController {
             @RequestHeader(FoodMapAuthHeaders.ACCOUNT_ID) String accountId
     ) {
         CurrentUser currentUser = CurrentUserResolver.fromTrustedHeaders(userId, accountId);
-        return ApiResponse.ok(userApplicationService.currentUser(currentUser));
+        return ApiResponse.ok(userService.currentUser(currentUser));
     }
 }

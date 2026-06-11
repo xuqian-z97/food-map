@@ -1,4 +1,4 @@
-package com.foodmap.auth.application;
+package com.foodmap.auth.service;
 
 import com.foodmap.auth.application.port.AuthBusinessIdGenerator;
 

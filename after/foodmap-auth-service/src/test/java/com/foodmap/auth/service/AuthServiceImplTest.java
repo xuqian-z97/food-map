@@ -1,5 +1,6 @@
-package com.foodmap.auth.application;
+package com.foodmap.auth.service;
 
+import com.foodmap.auth.application.NoopUserProfileProvisionClient;
 import com.foodmap.auth.domain.HmacTokenIssuer;
 import com.foodmap.auth.domain.Pbkdf2PasswordHashService;
 import com.foodmap.auth.dto.CurrentAuthResponse;
@@ -13,17 +14,18 @@ import com.foodmap.auth.infrastructure.persistence.memory.InMemoryAuthAccountRep
 import com.foodmap.auth.infrastructure.persistence.memory.InMemoryAuthCredentialRepository;
 import com.foodmap.auth.infrastructure.persistence.memory.InMemoryLoginLogRepository;
 import com.foodmap.auth.infrastructure.persistence.memory.InMemoryRefreshTokenRepository;
+import com.foodmap.auth.service.impl.AuthServiceImpl;
 import com.foodmap.common.exception.FoodMapException;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-class AuthApplicationServiceTest {
+class AuthServiceImplTest {
 
     @Test
     void registersAccountAndLogsInWithAccountName() {
-        AuthApplicationService service = new AuthApplicationService(
+        AuthService service = new AuthServiceImpl(
                 new TestAuthBusinessIdGenerator(),
                 new InMemoryAuthAccountRepository(),
                 new InMemoryAuthCredentialRepository(),

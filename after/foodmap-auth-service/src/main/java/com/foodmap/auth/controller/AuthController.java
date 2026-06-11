@@ -1,6 +1,5 @@
 package com.foodmap.auth.controller;
 
-import com.foodmap.auth.application.AuthApplicationService;
 import com.foodmap.auth.dto.CurrentAuthResponse;
 import com.foodmap.auth.dto.LoginRequest;
 import com.foodmap.auth.dto.LoginResponse;
@@ -8,6 +7,7 @@ import com.foodmap.auth.dto.LogoutRequest;
 import com.foodmap.auth.dto.RefreshTokenRequest;
 import com.foodmap.auth.dto.RegisterRequest;
 import com.foodmap.auth.dto.RegisterResponse;
+import com.foodmap.auth.service.AuthService;
 import com.foodmap.common.api.ApiResponse;
 import com.foodmap.common.exception.CommonErrorCode;
 import com.foodmap.common.exception.FoodMapException;
@@ -25,10 +25,10 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
-    private final AuthApplicationService authApplicationService;
+    private final AuthService authService;
 
-    public AuthController(AuthApplicationService authApplicationService) {
-        this.authApplicationService = authApplicationService;
+    public AuthController(AuthService authService) {
+        this.authService = authService;
     }
 
     /**
@@ -36,7 +36,7 @@ public class AuthController {
      */
     @PostMapping("/register")
     public ApiResponse<RegisterResponse> register(@Valid @RequestBody RegisterRequest request) {
-        return ApiResponse.ok(authApplicationService.register(request));
+        return ApiResponse.ok(authService.register(request));
     }
 
     /**
@@ -44,7 +44,7 @@ public class AuthController {
      */
     @PostMapping("/login")
     public ApiResponse<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
-        return ApiResponse.ok(authApplicationService.login(request));
+        return ApiResponse.ok(authService.login(request));
     }
 
     /**
@@ -52,7 +52,7 @@ public class AuthController {
      */
     @PostMapping("/refresh")
     public ApiResponse<LoginResponse> refresh(@Valid @RequestBody RefreshTokenRequest request) {
-        return ApiResponse.ok(authApplicationService.refresh(request));
+        return ApiResponse.ok(authService.refresh(request));
     }
 
     /**
@@ -60,7 +60,7 @@ public class AuthController {
      */
     @PostMapping("/logout")
     public ApiResponse<Void> logout(@Valid @RequestBody LogoutRequest request) {
-        authApplicationService.logout(request);
+        authService.logout(request);
         return ApiResponse.ok(null);
     }
 
@@ -69,7 +69,7 @@ public class AuthController {
      */
     @GetMapping("/me")
     public ApiResponse<CurrentAuthResponse> current(@RequestHeader(value = "Authorization", required = false) String authorization) {
-        return ApiResponse.ok(authApplicationService.current(extractBearerToken(authorization)));
+        return ApiResponse.ok(authService.current(extractBearerToken(authorization)));
     }
 
     private String extractBearerToken(String authorization) {

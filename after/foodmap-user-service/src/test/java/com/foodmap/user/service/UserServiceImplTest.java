@@ -1,15 +1,16 @@
-package com.foodmap.user.application;
+package com.foodmap.user.service;
 
 import com.foodmap.common.security.CurrentUser;
 import com.foodmap.user.domain.UserStatus;
 import com.foodmap.user.dto.CurrentUserResponse;
 import com.foodmap.user.infrastructure.persistence.entity.UserEntity;
 import com.foodmap.user.infrastructure.persistence.memory.InMemoryUserRepository;
+import com.foodmap.user.service.impl.UserServiceImpl;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class UserApplicationServiceTest {
+class UserServiceImplTest {
 
     @Test
     void returnsCurrentUserProfileFromPersistenceEntityWithoutExposingEntity() {
@@ -22,7 +23,7 @@ class UserApplicationServiceTest {
         entity.setUserStatus(UserStatus.NORMAL.name());
         entity.setSearchable((short) 1);
         repository.save(entity);
-        UserApplicationService service = new UserApplicationService(repository);
+        UserService service = new UserServiceImpl(repository);
 
         CurrentUserResponse response = service.currentUser(new CurrentUser(1001L, 2001L, "foodie_01"));
 

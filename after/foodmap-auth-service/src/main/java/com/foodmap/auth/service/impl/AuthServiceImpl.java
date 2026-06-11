@@ -1,5 +1,6 @@
-package com.foodmap.auth.application;
+package com.foodmap.auth.service.impl;
 
+import com.foodmap.auth.application.UserProfileProvisionClient;
 import com.foodmap.auth.domain.AccountStatus;
 import com.foodmap.auth.domain.CredentialType;
 import com.foodmap.auth.domain.HmacTokenIssuer;
@@ -20,6 +21,7 @@ import com.foodmap.auth.dto.CurrentAuthResponse;
 import com.foodmap.auth.dto.RefreshTokenRequest;
 import com.foodmap.auth.dto.RegisterRequest;
 import com.foodmap.auth.dto.RegisterResponse;
+import com.foodmap.auth.service.AuthService;
 import com.foodmap.auth.infrastructure.persistence.entity.AuthAccountEntity;
 import com.foodmap.auth.infrastructure.persistence.entity.AuthCredentialEntity;
 import com.foodmap.auth.infrastructure.persistence.entity.LoginLogEntity;
@@ -32,13 +34,13 @@ import org.springframework.stereotype.Service;
 import java.time.OffsetDateTime;
 
 /**
- * 认证应用服务，编排注册、登录、密码校验和 Token 签发用例。
+ * 认证业务服务实现，编排注册、登录、密码校验和 Token 签发用例。
  *
  * <p>Controller 只与本服务交换 DTO，不接触持久化实体。业务主键必须通过 AuthBusinessIdGenerator 生成，
  * 不能使用服务内存计数器，避免服务重启后与数据库已有业务主键冲突。</p>
  */
 @Service
-public class AuthApplicationService {
+public class AuthServiceImpl implements AuthService {
     private final AuthBusinessIdGenerator businessIdGenerator;
     private final AuthAccountRepository accountRepository;
     private final AuthCredentialRepository credentialRepository;
@@ -48,7 +50,7 @@ public class AuthApplicationService {
     private final HmacTokenIssuer tokenIssuer;
     private final UserProfileProvisionClient userProfileProvisionClient;
 
-    public AuthApplicationService(
+    public AuthServiceImpl(
             AuthBusinessIdGenerator businessIdGenerator,
             AuthAccountRepository accountRepository,
             AuthCredentialRepository credentialRepository,
@@ -71,6 +73,7 @@ public class AuthApplicationService {
     /**
      * 注册账号并保存密码哈希，返回账号和用户业务主键。
      */
+    @Override
     public RegisterResponse register(RegisterRequest request) {
         ensureLoginIdentifierAvailable(request.accountName(), request.phone(), request.email());
         Long accountId = businessIdGenerator.nextAccountId();
@@ -108,6 +111,7 @@ public class AuthApplicationService {
     /**
      * 使用账号名、手机号或邮箱登录，成功后签发 Access Token 和 Refresh Token。
      */
+    @Override
     public LoginResponse login(LoginRequest request) {
         AuthAccountEntity account = accountRepository.findByLoginIdentifier(request.loginIdentifier())
                 .orElseThrow(() -> {
@@ -141,6 +145,7 @@ public class AuthApplicationService {
     /**
      * 使用有效 Refresh Token 刷新 Access Token。MVP 阶段不轮换 Refresh Token，便于前端联调和问题排查。
      */
+    @Override
     public LoginResponse refresh(RefreshTokenRequest request) {
         OffsetDateTime now = OffsetDateTime.now();
         TokenClaims claims = tokenIssuer.parseRefreshToken(request.refreshToken());
@@ -171,6 +176,7 @@ public class AuthApplicationService {
     /**
      * 退出登录并撤销 Refresh Token。重复退出不暴露令牌是否存在，降低 Token 枚举风险。
      */
+    @Override
     public void logout(LogoutRequest request) {
         OffsetDateTime now = OffsetDateTime.now();
         tokenIssuer.parseRefreshToken(request.refreshToken());
@@ -185,6 +191,7 @@ public class AuthApplicationService {
     /**
      * 解析当前 Access Token，返回账号和用户业务主键，供前端启动时确认会话状态。
      */
+    @Override
     public CurrentAuthResponse current(String accessToken) {
         OffsetDateTime now = OffsetDateTime.now();
         TokenClaims claims = tokenIssuer.parseAccessToken(accessToken);

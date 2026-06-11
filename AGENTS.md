@@ -422,7 +422,8 @@ front/FoodMapApp
 - 数据库结构对应 Java 类必须放在服务内 `infrastructure.persistence.entity` 包中，并与 DTO、VO 明确区分。
 - `foodmap-common` 的 `BaseEntity` 只承载 `id / created_time / updated_time / is_delete` 固定字段，不承载业务主键。
 - Controller 只能使用 DTO 作为请求和响应契约，不能直接暴露数据库持久化实体。
-- application 层只能依赖仓储端口接口，不能直接依赖内存仓储、MyBatis Mapper 等基础设施实现。
+- service 层必须使用 `XxxService` 接口 + `XxxServiceImpl` 实现类，Controller 只能依赖 `XxxService` 接口。
+- ServiceImpl 只能依赖仓储端口接口，不能直接依赖内存仓储、MyBatis Mapper 等基础设施实现。
 - 内存仓储只允许作为单元测试或本地替身，不作为生产 profile 默认持久化实现。
 - 外部请求通过 API Gateway 进入。
 - 推荐内容的可见范围由服务端强制校验。
@@ -779,8 +780,8 @@ service-name
 - 每张业务表需要复杂 SQL 时，必须新增 `{EntityName}DefineMapper.java` / `{EntityName}DefineMapper.xml`，标准 Mapper 不写复杂业务 SQL。
 - 标准 Mapper 至少覆盖有限动态查询、单条新增、批量新增、单条编辑、批量编辑和批量逻辑删除。
 - Repository 实现类名不使用 `MyBatis`、`Jdbc`、`Redis` 等技术前缀，统一采用 `{EntityName}RepositoryImpl` 或业务聚合语义命名；技术实现差异通过包名和注释表达。
-- Controller 不能直接调用 Mapper，事务边界放在 application 层。
-- application 层依赖仓储端口接口，MyBatis/内存仓储等实现不能向上穿透。
+- Controller 不能直接调用 Mapper，事务边界放在 ServiceImpl 层。
+- ServiceImpl 层依赖仓储端口接口，MyBatis/内存仓储等实现不能向上穿透。
 - 所有入参必须使用 Bean Validation 或等价方式校验。
 - 写接口从 Token 获取当前用户身份。
 - 权限、归属、可见范围必须由后端校验。
