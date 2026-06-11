@@ -1957,7 +1957,140 @@ sequenceDiagram
 - 同一业务主键或唯一性数据可能被并发操作，例如手机号注册、情侣绑定、推荐去重。
 - 需要短时间保护临界区时使用固定租约锁；执行时间不稳定且必须串行时才使用看门狗。
 
-#### 16.6.2 跨服务最终一致性架构图
+#### 16.6.2 DistributedLock 类结构图
+
+`DistributedLock*` 是 FoodMap 后端统一分布式锁抽象。业务代码只允许依赖 `DistributedLockClient`，不能直接依赖 Redisson、RedisTemplate 或 Lua 脚本。Redisson 只作为基础设施适配器存在，用于执行 Redis 原子加锁、续期和释放。
+
+```mermaid
+flowchart TD
+    Service["业务代码 / ServiceImpl"]
+    KeyBuilder["DistributedLockKeyBuilder<br/>生成统一锁 Key"]
+    Command["DistributedLockCommand<br/>一次加锁请求"]
+    Client["DistributedLockClient<br/>业务只依赖这个接口"]
+    Result["DistributedLockAcquireResult<br/>tryAcquire 返回结果"]
+    Token["DistributedLockToken<br/>锁持有凭证"]
+    WatchdogOptions["DistributedLockWatchdogOptions<br/>看门狗续期配置"]
+    WatchdogHandle["DistributedLockWatchdogHandle<br/>看门狗任务句柄"]
+    Exception["DistributedLockException<br/>锁冲突 / 锁服务不可用"]
+    RedissonAdapter["RedissonDistributedLockClient<br/>基础设施实现"]
+    Redis["Redis<br/>保存锁 Key 和 ownerToken"]
+
+    Service -->|"构造 lockKey"| KeyBuilder
+    KeyBuilder -->|"lockKey"| Command
+    Service -->|"传入 command"| Client
+
+    Command -->|"lockKey / ownerToken / waitTime / leaseTime"| Client
+    Command -->|"watchdogOptions"| WatchdogOptions
+
+    Client -->|"acquire / executeWithLock"| RedissonAdapter
+    Client -->|"tryAcquire"| Result
+    Client -->|"executeWithWatchdog"| WatchdogHandle
+
+    RedissonAdapter -->|"SET NX PX"| Redis
+    RedissonAdapter -->|"Lua 校验 ownerToken 后释放"| Redis
+    RedissonAdapter -->|"Lua 校验 ownerToken 后续期"| Redis
+
+    RedissonAdapter -->|"加锁成功"| Token
+    Token -->|"release / renew 使用"| RedissonAdapter
+
+    RedissonAdapter -->|"锁被占用或 Redis 异常"| Exception
+```
+
+类职责说明：
+
+- `DistributedLockClient`：业务层入口，封装加锁、尝试加锁、释放锁、续期和临界区执行模板。
+- `DistributedLockCommand`：描述一次加锁请求，包含 `lockKey`、`ownerToken`、`waitTime`、`leaseTime` 和 `watchdogOptions`。
+- `DistributedLockToken`：表示已经持有锁的凭证，释放锁和续期时必须携带同一个 `ownerToken`。
+- `DistributedLockAcquireResult`：用于 `tryAcquire` 场景，避免普通锁冲突直接变成系统异常。
+- `DistributedLockWatchdogOptions`：定义看门狗续期间隔、续期租约和最大续期次数。
+- `DistributedLockWatchdogHandle`：表示看门狗任务句柄，用于业务结束后停止后台续期。
+- `DistributedLockKeyBuilder`：统一生成 `foodmap:{service}:lock:{version}:{bizKey}` 格式的锁 Key。
+- `DistributedLockException`：统一表达锁冲突和锁基础设施不可用，锁冲突通常对应 `409`，Redis/Redisson 不可用对应 `503`。
+- `RedissonDistributedLockClient`：Redisson 基础设施适配器，不能被业务代码直接依赖。
+
+#### 16.6.3 普通分布式锁执行时序图
+
+```mermaid
+sequenceDiagram
+    participant Service as ServiceImpl
+    participant Builder as DistributedLockKeyBuilder
+    participant Command as DistributedLockCommand
+    participant Client as DistributedLockClient
+    participant Impl as RedissonDistributedLockClient
+    participant Redis as Redis
+
+    Service->>Builder: 生成 lockKey
+    Builder-->>Service: foodmap:{service}:lock:{version}:{bizKey}
+
+    Service->>Command: 创建加锁命令
+    Service->>Client: executeWithLock(command, business)
+
+    Client->>Impl: acquire(command)
+    Impl->>Redis: SET lockKey ownerToken NX PX leaseTime
+
+    alt 获取锁成功
+        Redis-->>Impl: OK
+        Impl-->>Client: DistributedLockToken
+        Client->>Service: 执行业务逻辑
+        Client->>Impl: release(token)
+        Impl->>Redis: Lua 校验 ownerToken 后 DEL
+        Redis-->>Impl: released
+    else 锁已被占用
+        Redis-->>Impl: lock exists
+        Impl-->>Client: DistributedLockException 409
+        Client-->>Service: 稍后重试 / fallback
+    else Redis 不可用
+        Impl-->>Client: DistributedLockException 503
+        Client-->>Service: 锁服务暂时不可用
+    end
+```
+
+实现要点：
+
+- `executeWithLock` 使用 `try/finally` 保证业务成功或异常时都会释放锁。
+- 释放锁必须通过 Lua 校验 `ownerToken`，禁止直接按 Key 删除。
+- `tryAcquire` 只吞掉业务型锁冲突；如果底层 Redis/Redisson 不可用，必须继续抛出 `503` 类异常。
+
+#### 16.6.4 带看门狗的分布式锁时序图
+
+```mermaid
+sequenceDiagram
+    participant Service as ServiceImpl
+    participant Client as DistributedLockClient
+    participant Impl as RedissonDistributedLockClient
+    participant Watchdog as Watchdog Task
+    participant Redis as Redis
+
+    Service->>Client: executeWithWatchdog(command, business)
+    Client->>Impl: acquire(command)
+    Impl->>Redis: SET lockKey ownerToken NX PX leaseTime
+    Redis-->>Impl: OK
+
+    Client->>Impl: startWatchdog(token, options)
+    Impl->>Watchdog: 定时任务开始
+
+    loop 未超过 maxRenewCount
+        Watchdog->>Redis: Lua 校验 ownerToken 后 PEXPIRE
+        Redis-->>Watchdog: renewed
+    end
+
+    Client->>Service: 执行业务逻辑
+
+    Service-->>Client: 业务完成
+    Client->>Impl: stopWatchdog(handle)
+    Impl->>Watchdog: 停止续期
+    Client->>Impl: release(token)
+    Impl->>Redis: Lua 校验 ownerToken 后 DEL
+```
+
+使用约束：
+
+- 看门狗只用于执行时间不稳定但必须串行的临界区，不能作为慢外部调用的常规兜底。
+- `maxRenewCount` 必须大于 0 且有限，禁止无限续期。
+- 看门狗续期失败、达到最大续期次数或业务结束时，都必须停止续期任务。
+- 使用看门狗前仍要遵守“先加锁，再进入本地事务”的顺序，不能在已持有数据库连接后等待锁。
+
+#### 16.6.5 跨服务最终一致性架构图
 
 ```mermaid
 flowchart LR
