@@ -23,6 +23,7 @@
 | ORM | MyBatis + Mapper.xml |
 | 数据库 | PostgreSQL |
 | 地理能力 | PostgreSQL + PostGIS |
+| 数据库连接池 | HikariCP |
 | 缓存 | Redis |
 | 消息队列 | RocketMQ 或 RabbitMQ |
 | 对象存储 | MinIO 或阿里云 OSS |
@@ -96,6 +97,10 @@ after/foodmap-common
 - 注释必须说明职责、边界和排查关注点，不能只重复代码字面含义。
 - Redis、MQ、对象存储、内部服务调用必须通过项目统一封装或服务内基础设施适配器访问。
 - 业务代码不得散落直接调用中间件 SDK。
+- PostgreSQL 连接池统一使用 HikariCP，Redis 需要池化时统一使用 Spring Data Redis + Lettuce pool，池化参数通过 profile 和环境变量配置。
+- 数据库连接、Redis 连接、分布式锁和本地事务必须短持有；禁止在持有数据库连接或事务时等待 Redis 锁、调用高德、OSS、MQ 阻塞确认或跨服务慢接口。
+- 分布式锁必须先于本地数据库事务获取，事务方法只包含必要数据库读写、短计算和 Outbox 落库。
+- 后端变更必须关注 HikariCP、Redis pool 和请求线程池指标，连接等待、连接获取超时、Redis pool exhausted、看门狗续期失败都需要可排查。
 - 业务代码不得随意字符串拼接打印关键业务日志。
 - 涉及用户、认证、推荐、评论、文件和中间件调用的日志必须使用通用日志方法或统一日志封装。
 - 日志不能输出 Token、密码、密钥、完整手机号、完整邮箱或私密推荐内容。

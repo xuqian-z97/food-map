@@ -42,6 +42,7 @@
 | ORM | MyBatis + Mapper.xml |
 | 数据库 | PostgreSQL |
 | 地理数据库 | PostgreSQL + PostGIS |
+| 数据库连接池 | HikariCP |
 | 缓存 | Redis |
 | 消息队列 | RocketMQ 或 RabbitMQ |
 | 对象存储 | MinIO 或阿里云 OSS |
@@ -2072,6 +2073,103 @@ foodmap-common
 - MinIO 作为本地开发默认对象存储实现，阿里云 OSS 先保留适配器接口和配置占位。
 - RabbitMQ 作为本地开发默认 MQ 实现，RocketMQ 先保留事件模型兼容空间。
 - 分布式锁阶段一可以先提供接口和明确异常，具体实现根据业务需要落地。
+
+### 16.7.2 连接池和线程持有时间规则
+
+FoodMap 后端必须把数据库、Redis 和请求线程看成一组受限资源统一设计。连接池不是“越大越好”，而是用于限制并发、复用连接、保护下游组件，并让服务在压力过大时尽早暴露等待、超时和泄漏问题。
+
+基础原则：
+
+- PostgreSQL 连接池统一使用 Spring Boot 默认的 HikariCP；每个微服务连接自己的数据库，每个数据源拥有独立连接池。
+- Redis 客户端优先使用 Spring Data Redis + Lettuce；需要池化时必须引入 `commons-pool2` 并通过 profile 配置 Lettuce pool，业务代码仍只能依赖项目 Redis 封装接口。
+- 数据库连接池大小必须按“数据库最大连接数、微服务数量、服务副本数、接口耗时和峰值并发”综合分配，禁止所有微服务机械配置成较大的 `maximum-pool-size`。
+- 本地和 MVP 生产阶段默认小池化起步，后续通过 Micrometer 指标、慢 SQL、连接等待时间和压测结果调优。
+- 请求线程不能把数据库连接、Redis 连接、锁或事务持有到慢外部调用期间，例如高德 API、OSS 上传、MQ 阻塞确认、跨服务 HTTP 调用或大文件处理。
+- 获取 Redis 分布式锁必须发生在进入数据库事务之前；禁止打开事务并占用数据库连接后再等待 Redis 锁。
+- 单个事务越长，请求线程持有数据库连接越久。ServiceImpl 中的事务方法必须只包含必要的数据库读写、短计算和 Outbox 落库，不应包含慢网络调用。
+- Redis 连接应按命令短借短还。普通缓存、Lua 加锁、Lua 释放锁、看门狗续期都必须是短命令，不能让定时续期任务长期独占连接。
+- MyBatis Mapper 调用不能缓存数据库连接对象，连接生命周期交给 Spring 事务管理和 HikariCP。
+- 大结果集查询必须分页或分批处理，避免游标、事务和连接长时间被同一个请求线程占用。
+
+推荐初始配置：
+
+| 环境 | Hikari maximum-pool-size | Hikari minimum-idle | connection-timeout | leak-detection-threshold | Redis max-active | Redis max-idle | Redis min-idle | Redis max-wait | Redis command timeout |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| local | 5 | 1 | 3000ms | 10000ms | 8 | 4 | 1 | 1000ms | 2s |
+| orbstack | 5-8 | 1 | 3000ms | 10000ms | 8-16 | 4-8 | 1 | 1000ms | 2s |
+| prod MVP | 5/服务，热点服务压测后可到 10 | 1-2 | 3000-5000ms | 30000-60000ms 或按告警策略关闭 | 16 | 8 | 1-2 | 1000-2000ms | 2s |
+
+说明：
+
+- `prod MVP` 阶段当前服务器资源有限，不能让 8 个微服务每个都默认占用 20 个数据库连接，否则 PostgreSQL 很容易先被连接数拖垮。
+- `leak-detection-threshold` 在本地建议开启，用来发现事务过长、连接未释放和慢 SQL；生产可设置为更高阈值，避免正常慢请求造成噪音。
+- Redis pool 的 `max-active` 要和 Web 请求线程、Redis 命令耗时、锁续期任务数量一起评估；锁看门狗数量增长时必须关注 Redis pool 等待时间。
+
+配置模板：
+
+```yaml
+spring:
+  datasource:
+    hikari:
+      maximum-pool-size: ${DB_POOL_MAX_SIZE:5}
+      minimum-idle: ${DB_POOL_MIN_IDLE:1}
+      connection-timeout: ${DB_POOL_CONNECTION_TIMEOUT_MS:3000}
+      idle-timeout: ${DB_POOL_IDLE_TIMEOUT_MS:600000}
+      max-lifetime: ${DB_POOL_MAX_LIFETIME_MS:1800000}
+      leak-detection-threshold: ${DB_POOL_LEAK_DETECTION_MS:10000}
+  data:
+    redis:
+      timeout: ${REDIS_COMMAND_TIMEOUT:2s}
+      lettuce:
+        pool:
+          max-active: ${REDIS_POOL_MAX_ACTIVE:8}
+          max-idle: ${REDIS_POOL_MAX_IDLE:4}
+          min-idle: ${REDIS_POOL_MIN_IDLE:1}
+          max-wait: ${REDIS_POOL_MAX_WAIT:1s}
+```
+
+推荐执行链路：
+
+```mermaid
+sequenceDiagram
+    participant Request as Request Thread
+    participant RedisPool as Redis Pool
+    participant Lock as DistributedLockClient
+    participant Tx as ServiceImpl Transaction
+    participant DbPool as HikariCP Pool
+    participant Db as PostgreSQL
+
+    Request->>RedisPool: Borrow Redis connection
+    RedisPool->>Lock: Execute lock Lua
+    Lock-->>RedisPool: Return Redis connection
+    Request->>Tx: Enter local transaction
+    Tx->>DbPool: Borrow DB connection
+    Tx->>Db: Execute SQL
+    Db-->>Tx: Result
+    Tx->>DbPool: Return DB connection after commit
+    Request->>RedisPool: Borrow Redis connection
+    RedisPool->>Lock: Release lock Lua
+    Lock-->>RedisPool: Return Redis connection
+```
+
+禁止链路：
+
+```text
+打开数据库事务 -> 持有数据库连接 -> 等待 Redis 锁 -> 调用外部服务 -> 再提交事务
+```
+
+原因：
+
+- 等待 Redis 锁期间数据库连接被无意义占用。
+- 外部服务抖动会放大数据库连接池耗尽风险。
+- 事务时间变长会增加锁等待、行锁冲突和慢 SQL 排查难度。
+
+监控和告警要求：
+
+- 每个服务必须暴露 HikariCP 指标：活跃连接数、空闲连接数、等待线程数、连接获取耗时、连接使用耗时和连接超时次数。
+- Redis 必须关注命令耗时、连接池活跃数、等待时间、超时次数和锁续期失败次数。
+- Tomcat/Netty 请求线程池必须关注活跃线程、队列长度和请求耗时，避免请求线程数远大于数据库/Redis 池容量后形成大量等待。
+- 连接池等待线程持续大于 0、连接获取超时、Redis pool exhausted、看门狗续期失败、数据库连接泄漏日志都必须进入排查。
 
 ### 16.8 消息和事件规则
 
