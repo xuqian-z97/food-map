@@ -31,6 +31,18 @@ public class FoodMapException extends RuntimeException {
     }
 
     /**
+     * 使用业务自定义提示和根因创建异常，适合中间件或外部依赖异常被统一包装的场景。
+     *
+     * @param errorCode 稳定错误码。
+     * @param message 可展示业务错误提示。
+     * @param cause 原始异常根因，不能直接暴露给接口响应。
+     */
+    public FoodMapException(ErrorCode errorCode, String message, Throwable cause) {
+        super(message, cause);
+        this.errorCode = errorCode;
+    }
+
+    /**
      * 返回原始错误码对象，供全局异常处理读取默认提示和稳定错误码。
      *
      * @return 原始错误码对象。

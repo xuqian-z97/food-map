@@ -1,1 +1,2 @@
 com.foodmap.common.web.FoodMapWebExceptionAutoConfiguration
+com.foodmap.common.redis.redisson.FoodMapRedissonAutoConfiguration

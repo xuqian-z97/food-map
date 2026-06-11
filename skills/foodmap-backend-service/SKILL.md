@@ -37,6 +37,7 @@ description: Use when creating, updating, testing, or reviewing FoodMap Java Spr
 - PostgreSQL / PostGIS
 - HikariCP
 - Redis
+- Redisson，限定在 `DistributedLockClient` 基础设施实现内使用
 - RocketMQ 或 RabbitMQ
 - MinIO 或阿里云 OSS
 - Maven
@@ -85,6 +86,8 @@ MVP 服务：
 - Redis 分布式锁只能通过统一封装访问，锁必须有 owner token、lease time，并通过原子脚本释放。
 - Redis 锁看门狗只用于耗时不稳定但必须串行的临界区，必须设置续期间隔、续期租约和最大续期次数，禁止无限续期。
 - 业务代码使用分布式锁时优先使用 `DistributedLockClient` 的 `executeWithLock`、`tryExecuteWithLock` 或 `executeWithWatchdog` 公共方法。
+- Redisson 只允许作为 `DistributedLockClient` 的基础设施适配器使用；业务代码不能直接依赖 `RedissonClient`、`RLock` 或其他 Redisson API。
+- Redisson 适配器必须保留 FoodMap owner token、lease time、最大续期次数和原子释放语义。
 - API 正常和异常响应使用统一结构：`success`、`status`、`code`、`message`、`data`。
 - `status` 必须使用 HTTP 数字状态码语义，`code` 必须使用稳定可枚举业务码。
 - 后端必须通过统一异常拦截机制处理业务异常、参数校验异常、JSON 解析异常、请求方法错误和未预期异常。

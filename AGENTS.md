@@ -446,6 +446,7 @@ front/FoodMapApp
 | 数据库连接池 | HikariCP |
 | 数据库迁移 | Flyway |
 | 缓存 | Redis |
+| 分布式锁适配器 | Redisson，限定在 `DistributedLockClient` 基础设施实现内使用 |
 | 消息队列 | RocketMQ 或 RabbitMQ |
 | 对象存储 | MinIO 或阿里云 OSS |
 | API 文档 | OpenAPI + Knife4j |
@@ -791,6 +792,8 @@ service-name
 - Redis 分布式锁只能通过统一封装访问，锁必须有 owner token、lease time，并通过原子脚本释放。
 - Redis 锁看门狗只用于耗时不稳定但必须串行的临界区，必须设置续期间隔、续期租约和最大续期次数，禁止无限续期。
 - 业务代码使用分布式锁时优先使用 `DistributedLockClient` 的 `executeWithLock`、`tryExecuteWithLock` 或 `executeWithWatchdog` 公共方法。
+- Redisson 只允许作为 `DistributedLockClient` 的基础设施适配器使用；业务代码、ServiceImpl、Controller、Repository 和领域对象都不能直接依赖 `RedissonClient`、`RLock` 或其他 Redisson API。
+- Redisson 适配器必须保留 FoodMap owner token、lease time、最大续期次数和原子释放语义。
 - ServiceImpl 层依赖仓储端口接口，MyBatis/内存仓储等实现不能向上穿透。
 - 所有入参必须使用 Bean Validation 或等价方式校验。
 - 写接口从 Token 获取当前用户身份。

@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class DistributedLockClientTest {
 
@@ -44,6 +45,16 @@ class DistributedLockClientTest {
     }
 
     @Test
+    void shouldRethrowInfrastructureFailureWhenTryAcquireFailsWithServerError() {
+        RecordingLockClient client = new RecordingLockClient();
+        client.infrastructureFailure = true;
+
+        assertThatThrownBy(() -> client.tryAcquire(command()))
+                .isInstanceOf(DistributedLockException.class)
+                .hasMessageContaining("分布式锁服务暂时不可用");
+    }
+
+    @Test
     void shouldExecuteWithWatchdogAndStopRenewalBeforeRelease() {
         RecordingLockClient client = new RecordingLockClient();
         DistributedLockCommand command = new DistributedLockCommand(
@@ -71,9 +82,15 @@ class DistributedLockClientTest {
 
         private final List<String> events = new ArrayList<>();
         private boolean acquireSuccess = true;
+        private boolean infrastructureFailure;
 
         @Override
         public DistributedLockToken acquire(DistributedLockCommand command) {
+            if (infrastructureFailure) {
+                throw new DistributedLockException(
+                        com.foodmap.common.exception.CommonErrorCode.SERVICE_UNAVAILABLE,
+                        "分布式锁服务暂时不可用");
+            }
             if (!acquireSuccess) {
                 events.add("try-failed");
                 throw new DistributedLockException("锁已被其他请求持有");

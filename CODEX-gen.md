@@ -108,6 +108,7 @@ Stage 1：后端认证用户基础能力与 iOS 认证测试壳已完成
 - API 响应生成规则统一为 `success`、`status`、`code`、`message`、`data`；异常必须通过统一异常拦截转换，不能由 Controller 手写零散错误响应。
 - 后端生成写接口时必须先判断事务和并发控制：单服务多表写使用本地事务，跨服务写使用 Saga/补偿事务 + Outbox + 幂等消费，唯一性或业务主键并发冲突场景评估数据库约束、乐观锁、悲观锁或 Redis 分布式锁。
 - 后端生成数据库或 Redis 访问代码时必须同步考虑连接池：PostgreSQL 使用 HikariCP，Redis 需要池化时使用 Lettuce pool；连接池参数通过 profile 和环境变量配置，事务和连接必须短持有，禁止在事务中等待 Redis 锁或调用慢外部依赖。
+- 后端生成分布式锁相关代码时可以使用 Redisson 适配器实现 watchdog，但业务代码只能依赖 `DistributedLockClient`，不能直接调用 Redisson API。
 - 持久化实体、DTO、VO 必须分离，Controller 不直接暴露 Entity。
 - 业务层统一使用 `XxxService` 接口 + `XxxServiceImpl` 实现类，Controller 只能依赖 Service 接口。
 - ServiceImpl 通过仓储端口访问持久化能力，运行时统一使用 MyBatis Mapper + Mapper.xml，内存仓储仅用于测试。

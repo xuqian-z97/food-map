@@ -1,6 +1,7 @@
 package com.foodmap.common.redis;
 
 import com.foodmap.common.exception.CommonErrorCode;
+import com.foodmap.common.exception.ErrorCode;
 import com.foodmap.common.exception.FoodMapException;
 
 /**
@@ -17,5 +18,26 @@ public class DistributedLockException extends FoodMapException {
      */
     public DistributedLockException(String message) {
         super(CommonErrorCode.CONFLICT, message);
+    }
+
+    /**
+     * 使用指定错误码创建分布式锁异常，适合区分锁冲突和 Redis 依赖不可用。
+     *
+     * @param errorCode 稳定错误码。
+     * @param message 可展示错误提示。
+     */
+    public DistributedLockException(ErrorCode errorCode, String message) {
+        super(errorCode, message);
+    }
+
+    /**
+     * 使用指定错误码和根因创建分布式锁异常，原始异常只用于日志排查。
+     *
+     * @param errorCode 稳定错误码。
+     * @param message 可展示错误提示。
+     * @param cause 原始异常根因。
+     */
+    public DistributedLockException(ErrorCode errorCode, String message, Throwable cause) {
+        super(errorCode, message, cause);
     }
 }

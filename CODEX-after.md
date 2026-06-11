@@ -44,6 +44,7 @@
 | 地理数据库 | PostgreSQL + PostGIS |
 | 数据库连接池 | HikariCP |
 | 缓存 | Redis |
+| 分布式锁适配器 | Redisson，限定在 `DistributedLockClient` 基础设施实现内使用 |
 | 消息队列 | RocketMQ 或 RabbitMQ |
 | 对象存储 | MinIO 或阿里云 OSS |
 | API 文档 | OpenAPI + Knife4j |
@@ -1914,6 +1915,8 @@ controller -> application -> domain -> infrastructure / mapper
 - 看门狗续期只允许用于执行时间不稳定但必须串行的临界区；必须设置 `renewInterval`、`renewLeaseTime` 和 `maxRenewCount`，禁止无限续期。
 - 看门狗续期和释放锁都必须校验 owner token，后续 Redis 实现优先使用 Lua 脚本保证“校验归属 + 续期/释放”的原子性。
 - 业务代码使用分布式锁时必须优先依赖 `DistributedLockClient` 的公共方法，例如 `acquire`、`tryAcquire`、`executeWithLock`、`tryExecuteWithLock`、`executeWithWatchdog`，不能直接操作 Redis SDK。
+- Redisson 只允许作为 `DistributedLockClient` 的基础设施适配器使用；业务代码、ServiceImpl、Controller、Repository 和领域对象都不能直接依赖 `RedissonClient`、`RLock` 或其他 Redisson API。
+- Redisson 适配器必须保留 FoodMap 自己的 owner token 语义，通过 Lua 或等价原子命令完成加锁、续期和释放，不能绕过 `DistributedLockCommand`、`DistributedLockToken` 和最大续期次数限制。
 
 建议逐步补齐：
 
@@ -2027,6 +2030,7 @@ flowchart LR
 必须遵守：
 
 - 业务代码不能直接散落使用 `RedisTemplate`、`StringRedisTemplate`、`RabbitTemplate`、`MinioClient`、OSS SDK 或其他中间件原始客户端。
+- 业务代码不能直接使用 `RedissonClient`、`RLock`、`RBucket` 或其他 Redisson API；Redisson API 只能出现在 `foodmap-common` 的锁适配器或服务内基础设施适配器中。
 - 所有 Redis Key 必须通过统一 Key 规则生成，格式为 `foodmap:{service}:{biz}:{version}:{key}`。
 - Redis 缓存写入必须显式设置 TTL，不能创建无过期时间的业务缓存。
 - Redis 分布式锁必须通过统一 `DistributedLockClient` 或服务内基础设施适配器访问，业务代码不能直接拼 Lua 或直接操作 `RedisTemplate`。
@@ -2048,7 +2052,11 @@ foodmap-common
 │   ├── DistributedLockCommand
 │   ├── DistributedLockToken
 │   ├── DistributedLockWatchdogOptions
-│   └── DistributedLockKeyBuilder
+│   ├── DistributedLockKeyBuilder
+│   └── redisson
+│       ├── FoodMapRedissonAutoConfiguration
+│       ├── FoodMapRedissonProperties
+│       └── RedissonDistributedLockClient
 ├── storage
 │   ├── ObjectStorageClient
 │   ├── ObjectStorageCommand
@@ -2070,6 +2078,7 @@ foodmap-common
 阶段一实现策略：
 
 - Redis、MQ、对象存储先定义稳定接口和轻量默认实现，避免业务服务直接绑定具体 SDK。
+- 分布式锁真实 Redis 实现优先使用 Redisson 适配器，但业务层只能依赖 `DistributedLockClient`。
 - MinIO 作为本地开发默认对象存储实现，阿里云 OSS 先保留适配器接口和配置占位。
 - RabbitMQ 作为本地开发默认 MQ 实现，RocketMQ 先保留事件模型兼容空间。
 - 分布式锁阶段一可以先提供接口和明确异常，具体实现根据业务需要落地。
@@ -2081,7 +2090,8 @@ FoodMap 后端必须把数据库、Redis 和请求线程看成一组受限资源
 基础原则：
 
 - PostgreSQL 连接池统一使用 Spring Boot 默认的 HikariCP；每个微服务连接自己的数据库，每个数据源拥有独立连接池。
-- Redis 客户端优先使用 Spring Data Redis + Lettuce；需要池化时必须引入 `commons-pool2` 并通过 profile 配置 Lettuce pool，业务代码仍只能依赖项目 Redis 封装接口。
+- Redis 普通缓存客户端优先使用 Spring Data Redis + Lettuce；需要池化时必须引入 `commons-pool2` 并通过 profile 配置 Lettuce pool，业务代码仍只能依赖项目 Redis 封装接口。
+- 分布式锁客户端使用 Redisson 适配器时，必须单独配置 Redisson 连接池、连接超时、命令超时和重试参数，不能复用业务缓存的 Lettuce 池假设。
 - 数据库连接池大小必须按“数据库最大连接数、微服务数量、服务副本数、接口耗时和峰值并发”综合分配，禁止所有微服务机械配置成较大的 `maximum-pool-size`。
 - 本地和 MVP 生产阶段默认小池化起步，后续通过 Micrometer 指标、慢 SQL、连接等待时间和压测结果调优。
 - 请求线程不能把数据库连接、Redis 连接、锁或事务持有到慢外部调用期间，例如高德 API、OSS 上传、MQ 阻塞确认、跨服务 HTTP 调用或大文件处理。
@@ -2126,6 +2136,19 @@ spring:
           max-idle: ${REDIS_POOL_MAX_IDLE:4}
           min-idle: ${REDIS_POOL_MIN_IDLE:1}
           max-wait: ${REDIS_POOL_MAX_WAIT:1s}
+foodmap:
+  redis:
+    redisson:
+      enabled: ${FOODMAP_REDISSON_ENABLED:false}
+      address: ${FOODMAP_REDISSON_ADDRESS:redis://127.0.0.1:6379}
+      password: ${FOODMAP_REDISSON_PASSWORD:}
+      database: ${FOODMAP_REDISSON_DATABASE:0}
+      connection-pool-size: ${FOODMAP_REDISSON_POOL_SIZE:8}
+      connection-minimum-idle-size: ${FOODMAP_REDISSON_MIN_IDLE:1}
+      connect-timeout: ${FOODMAP_REDISSON_CONNECT_TIMEOUT_MS:3000}
+      timeout: ${FOODMAP_REDISSON_TIMEOUT_MS:2000}
+      retry-attempts: ${FOODMAP_REDISSON_RETRY_ATTEMPTS:2}
+      retry-interval: ${FOODMAP_REDISSON_RETRY_INTERVAL_MS:500}
 ```
 
 推荐执行链路：

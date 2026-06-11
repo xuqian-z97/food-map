@@ -25,6 +25,7 @@
 | 地理能力 | PostgreSQL + PostGIS |
 | 数据库连接池 | HikariCP |
 | 缓存 | Redis |
+| 分布式锁适配器 | Redisson，限定在 `DistributedLockClient` 基础设施实现内使用 |
 | 消息队列 | RocketMQ 或 RabbitMQ |
 | 对象存储 | MinIO 或阿里云 OSS |
 | 构建 | Maven |
@@ -80,6 +81,7 @@ after/foodmap-common
 - 单服务内多表写操作必须使用本地事务，跨服务写流程必须使用 Saga/补偿事务 + Outbox + 幂等消费。
 - 并发冲突场景必须评估数据库唯一约束、乐观锁、悲观锁或 Redis 分布式锁；Redis 锁必须通过统一封装访问。
 - Redis 锁看门狗只用于耗时不稳定但必须串行的临界区，必须设置续期间隔、续期租约和最大续期次数，禁止无限续期。
+- Redisson 只允许作为 `DistributedLockClient` 的基础设施适配器使用；业务代码不能直接依赖 `RedissonClient`、`RLock` 或其他 Redisson API。
 - 每张业务表必须生成 `{EntityName}Mapper.java` / `{EntityName}Mapper.xml` 标准单表 SQL。
 - 复杂业务 SQL 必须放入 `{EntityName}DefineMapper.java` / `{EntityName}DefineMapper.xml`。
 - Repository 实现类名不使用 `MyBatis`、`Jdbc`、`Redis` 等技术前缀，统一采用 `{EntityName}RepositoryImpl` 或业务聚合语义命名；技术实现差异通过包名和注释表达。

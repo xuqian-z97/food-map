@@ -27,6 +27,9 @@ public interface DistributedLockClient {
         try {
             return DistributedLockAcquireResult.locked(acquire(command));
         } catch (DistributedLockException ex) {
+            if (ex.status() >= 500) {
+                throw ex;
+            }
             return DistributedLockAcquireResult.notLocked(ex.getMessage());
         }
     }
