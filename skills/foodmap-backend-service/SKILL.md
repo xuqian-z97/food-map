@@ -77,6 +77,13 @@ MVP 服务：
 - 写接口必须从 Token 获取当前用户身份。
 - Controller 使用 DTO，不直接暴露实体。
 - Controller 不能直接调用 Mapper，事务边界放在 ServiceImpl 层。
+- 单服务内出现多张表新增、编辑、删除时，必须在 ServiceImpl 用例方法上使用本地事务，优先 `@Transactional(rollbackFor = Exception.class)`。
+- 跨服务写流程不默认使用强分布式事务，必须采用 Saga/补偿事务 + Outbox + 幂等消费实现最终一致性。
+- 跨服务数据交互失败时，必须有失败状态、补偿任务、重试或人工处理入口，不能静默失败。
+- 可能并发冲突的业务主键或唯一性数据操作，必须优先判断数据库唯一约束、乐观锁、悲观锁或 Redis 分布式锁是否需要引入。
+- Redis 分布式锁只能通过统一封装访问，锁必须有 owner token、lease time，并通过原子脚本释放。
+- Redis 锁看门狗只用于耗时不稳定但必须串行的临界区，必须设置续期间隔、续期租约和最大续期次数，禁止无限续期。
+- 业务代码使用分布式锁时优先使用 `DistributedLockClient` 的 `executeWithLock`、`tryExecuteWithLock` 或 `executeWithWatchdog` 公共方法。
 - API 正常和异常响应使用统一结构：`success`、`status`、`code`、`message`、`data`。
 - `status` 必须使用 HTTP 数字状态码语义，`code` 必须使用稳定可枚举业务码。
 - 后端必须通过统一异常拦截机制处理业务异常、参数校验异常、JSON 解析异常、请求方法错误和未预期异常。

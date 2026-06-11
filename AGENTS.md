@@ -783,6 +783,13 @@ service-name
 - 标准 Mapper 至少覆盖有限动态查询、单条新增、批量新增、单条编辑、批量编辑和批量逻辑删除。
 - Repository 实现类名不使用 `MyBatis`、`Jdbc`、`Redis` 等技术前缀，统一采用 `{EntityName}RepositoryImpl` 或业务聚合语义命名；技术实现差异通过包名和注释表达。
 - Controller 不能直接调用 Mapper，事务边界放在 ServiceImpl 层。
+- 单服务内出现多张表新增、编辑、删除时，必须在 ServiceImpl 用例方法上使用本地事务，优先 `@Transactional(rollbackFor = Exception.class)`。
+- 跨服务写流程不默认使用强分布式事务，必须采用 Saga/补偿事务 + Outbox + 幂等消费实现最终一致性。
+- 跨服务数据交互失败时，必须有失败状态、补偿任务、重试或人工处理入口，不能静默失败。
+- 可能并发冲突的业务主键或唯一性数据操作，必须优先判断数据库唯一约束、乐观锁、悲观锁或 Redis 分布式锁是否需要引入。
+- Redis 分布式锁只能通过统一封装访问，锁必须有 owner token、lease time，并通过原子脚本释放。
+- Redis 锁看门狗只用于耗时不稳定但必须串行的临界区，必须设置续期间隔、续期租约和最大续期次数，禁止无限续期。
+- 业务代码使用分布式锁时优先使用 `DistributedLockClient` 的 `executeWithLock`、`tryExecuteWithLock` 或 `executeWithWatchdog` 公共方法。
 - ServiceImpl 层依赖仓储端口接口，MyBatis/内存仓储等实现不能向上穿透。
 - 所有入参必须使用 Bean Validation 或等价方式校验。
 - 写接口从 Token 获取当前用户身份。

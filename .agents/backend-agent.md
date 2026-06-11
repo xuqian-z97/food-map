@@ -76,6 +76,9 @@ after/foodmap-common
 - 异常响应不能暴露异常类名、堆栈、SQL、Token、密码或内部依赖地址。
 - `401` 用于未认证或登录状态失效，`403` 用于已认证但权限不足，不能混用。
 - 数据库访问统一使用 MyBatis Mapper + Mapper.xml。
+- 单服务内多表写操作必须使用本地事务，跨服务写流程必须使用 Saga/补偿事务 + Outbox + 幂等消费。
+- 并发冲突场景必须评估数据库唯一约束、乐观锁、悲观锁或 Redis 分布式锁；Redis 锁必须通过统一封装访问。
+- Redis 锁看门狗只用于耗时不稳定但必须串行的临界区，必须设置续期间隔、续期租约和最大续期次数，禁止无限续期。
 - 每张业务表必须生成 `{EntityName}Mapper.java` / `{EntityName}Mapper.xml` 标准单表 SQL。
 - 复杂业务 SQL 必须放入 `{EntityName}DefineMapper.java` / `{EntityName}DefineMapper.xml`。
 - Repository 实现类名不使用 `MyBatis`、`Jdbc`、`Redis` 等技术前缀，统一采用 `{EntityName}RepositoryImpl` 或业务聚合语义命名；技术实现差异通过包名和注释表达。

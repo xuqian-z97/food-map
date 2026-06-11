@@ -1898,17 +1898,109 @@ controller -> application -> domain -> infrastructure / mapper
 必须遵守：
 
 - 事务边界放在 ServiceImpl 层。
-- 单服务内写操作必须保证本地事务一致性。
-- 不使用跨服务分布式事务。
-- 跨服务状态变更使用事件最终一致性，消费端必须支持重复消息。
+- 单服务内出现多张表新增、编辑、删除时，必须使用 Spring 声明式事务控制，优先在 ServiceImpl 用例方法上标注 `@Transactional(rollbackFor = Exception.class)`。
+- 单服务内同一个用例既写数据库又发布领域事件时，必须优先采用“本地事务写业务表 + Outbox 表记录待发布事件”的模式，禁止在本地事务未提交前直接把事件发送到 MQ 当作成功事实。
+- 不使用跨服务强分布式事务框架作为默认方案；跨服务状态变更采用 Saga/补偿事务 + Outbox + 幂等消费实现最终一致性。
+- 跨服务写流程必须有明确的业务状态机，例如 `PENDING`、`PROCESSING`、`SUCCESS`、`FAILED`、`COMPENSATING`、`COMPENSATED`，不能只依赖一次远程调用成功与否判断最终结果。
+- 跨服务数据交互失败时，发起方必须记录失败状态或补偿任务，消费方必须支持重复消息和幂等处理，必要时进入死信队列或人工处理列表。
 - 事务内避免发起慢外部调用；如无法避免，必须设置超时。
 - Spring 声明式事务默认只对运行时异常回滚，业务代码需要 checked exception 回滚时必须显式配置。
+- 操作业务主键、唯一性字段、关系绑定、推荐创建、评论发布、媒体确认等可能并发冲突的场景，必须在设计阶段判断是否需要数据库唯一约束、乐观锁、悲观锁或 Redis 分布式锁。
+- Redis 分布式锁只能用于降低并发冲突和保护临界区，不能替代数据库唯一约束、事务和幂等校验。
+- Redis 锁必须使用唯一 owner token、明确 lease time、原子加锁和原子释放；释放锁必须校验 token，后续 Redis 实现优先使用 Lua 脚本保证原子性。
+- 锁 Key 必须使用统一格式 `foodmap:{service}:lock:{version}:{bizKey}`，`bizKey` 应包含业务主键或唯一性数据，例如 `user:{userId}:couple`、`store:{storeId}:recommendation:{dishNameHash}`。
+- 事务和锁的顺序必须固定：优先短时间持有分布式锁，再进入本地事务；锁内禁止执行慢外部调用，避免长时间占用锁。
+- 看门狗续期只允许用于执行时间不稳定但必须串行的临界区；必须设置 `renewInterval`、`renewLeaseTime` 和 `maxRenewCount`，禁止无限续期。
+- 看门狗续期和释放锁都必须校验 owner token，后续 Redis 实现优先使用 Lua 脚本保证“校验归属 + 续期/释放”的原子性。
+- 业务代码使用分布式锁时必须优先依赖 `DistributedLockClient` 的公共方法，例如 `acquire`、`tryAcquire`、`executeWithLock`、`tryExecuteWithLock`、`executeWithWatchdog`，不能直接操作 Redis SDK。
 
 建议逐步补齐：
 
-- 需要“本地事务成功后再发消息”的场景，后续引入 Outbox 表。
+- 需要“本地事务成功后再发消息”的场景，优先引入 Outbox 表，并由后台任务或消息中继可靠发布。
 - 事件消费者使用业务唯一键做幂等处理。
 - 对状态机类业务使用明确的状态流转校验，避免非法状态跳转。
+- 高频并发写接口可使用 `Idempotency-Key`、业务唯一索引和 Redis 锁组合，避免重复提交。
+- 跨服务补偿流程优先设计为可重试、可幂等、可观测，补偿失败需要记录原因和下一次重试时间。
+
+#### 16.6.1 单服务事务和并发锁流程图
+
+```mermaid
+sequenceDiagram
+    participant Client as Client
+    participant Service as ServiceImpl
+    participant Lock as DistributedLockClient
+    participant Redis as Redis
+    participant Database as PostgreSQL
+
+    Client->>Service: Submit write request
+    Service->>Lock: Build lockKey and ownerToken
+    Lock->>Redis: SET lockKey ownerToken NX PX leaseTime
+    alt Lock acquired
+        Service->>Database: Begin local transaction
+        Service->>Database: Insert or update multiple tables
+        Service->>Database: Commit transaction
+        Service->>Lock: Release token
+        Lock->>Redis: Lua check ownerToken and DEL
+        Service-->>Client: Success response
+    else Lock rejected
+        Service-->>Client: Conflict or retry response
+    end
+```
+
+适用场景：
+
+- 同一服务内多表写操作，例如认证注册同时写账号、凭证、登录审计。
+- 同一业务主键或唯一性数据可能被并发操作，例如手机号注册、情侣绑定、推荐去重。
+- 需要短时间保护临界区时使用固定租约锁；执行时间不稳定且必须串行时才使用看门狗。
+
+#### 16.6.2 跨服务最终一致性架构图
+
+```mermaid
+flowchart LR
+    subgraph client ["Client Apps"]
+        iosApp["iOS App"]
+    end
+    subgraph gateway ["API Layer"]
+        apiGateway["FoodMap Gateway"]
+    end
+    subgraph service ["Core Services"]
+        sourceService["Source Service"]
+        outboxRelay["Outbox Relay"]
+        consumerService["Consumer Service"]
+        compensationWorker["Compensation Worker"]
+    end
+    subgraph datastore ["Data Stores"]
+        sourceDb["Source DB"]
+        consumerDb["Consumer DB"]
+        redisLock["Redis Lock"]
+    end
+    subgraph async ["Event Streaming"]
+        mq["RabbitMQ or RocketMQ"]
+        dlq["Dead Letter Queue"]
+    end
+    subgraph external ["External"]
+        ops["Ops Alerting"]
+    end
+
+    iosApp -->|"HTTPS"| apiGateway
+    apiGateway -->|"Route write"| sourceService
+    sourceService -->|"Acquire lock"| redisLock
+    sourceService -->|"Local transaction and Outbox"| sourceDb
+    outboxRelay -->|"Read unpublished events"| sourceDb
+    outboxRelay -.->|"Produce event"| mq
+    mq -.->|"Consume event"| consumerService
+    consumerService -->|"Idempotent update"| consumerDb
+    consumerService -.->|"Failure after retries"| dlq
+    compensationWorker -.->|"Consume failed events"| dlq
+    compensationWorker -->|"Mark or compensate"| sourceDb
+    compensationWorker -.->|"Compensation alert"| ops
+```
+
+适用场景：
+
+- 推荐服务创建 PUBLIC 推荐后，社区服务异步统计公开热门门店和菜品。
+- 媒体服务确认图片后，推荐服务更新媒体引用状态。
+- 关系服务变更好友或情侣关系后，其他服务异步更新本地索引或缓存。
 
 ### 16.7 服务间调用和韧性规则
 
@@ -1936,6 +2028,7 @@ controller -> application -> domain -> infrastructure / mapper
 - 业务代码不能直接散落使用 `RedisTemplate`、`StringRedisTemplate`、`RabbitTemplate`、`MinioClient`、OSS SDK 或其他中间件原始客户端。
 - 所有 Redis Key 必须通过统一 Key 规则生成，格式为 `foodmap:{service}:{biz}:{version}:{key}`。
 - Redis 缓存写入必须显式设置 TTL，不能创建无过期时间的业务缓存。
+- Redis 分布式锁必须通过统一 `DistributedLockClient` 或服务内基础设施适配器访问，业务代码不能直接拼 Lua 或直接操作 `RedisTemplate`。
 - MQ 事件发布必须通过统一事件发布接口，例如 `DomainEventPublisher`，不能直接在业务服务里调用 MQ 客户端。
 - MQ 事件必须使用统一事件信封，至少包含 `eventId`、`eventType`、`eventVersion`、`sourceService`、`occurredAt` 和业务载荷。
 - 对象存储访问必须通过统一对象存储接口，例如 `ObjectStorageClient`，不能把 MinIO 或 OSS SDK 调用散落到业务代码。
@@ -1950,7 +2043,11 @@ foodmap-common
 │   ├── CacheKeyBuilder
 │   ├── CacheKeyNames
 │   ├── CacheClient
-│   └── DistributedLockClient
+│   ├── DistributedLockClient
+│   ├── DistributedLockCommand
+│   ├── DistributedLockToken
+│   ├── DistributedLockWatchdogOptions
+│   └── DistributedLockKeyBuilder
 ├── storage
 │   ├── ObjectStorageClient
 │   ├── ObjectStorageCommand

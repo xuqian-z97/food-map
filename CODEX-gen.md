@@ -106,6 +106,7 @@ Stage 1：后端认证用户基础能力与 iOS 认证测试壳已完成
 - 数据库表字段、Flyway 字段注释和持久化实体字段 Javadoc 必须保持一致。
 - 后端生成或修改业务方法时，方法级 Javadoc 必须说明业务作用，并按入参补齐 `@param`；非 `void` 方法必须补齐 `@return`，`void` 方法不需要 `@return`，JavaBean getter / setter 不纳入强制范围。
 - API 响应生成规则统一为 `success`、`status`、`code`、`message`、`data`；异常必须通过统一异常拦截转换，不能由 Controller 手写零散错误响应。
+- 后端生成写接口时必须先判断事务和并发控制：单服务多表写使用本地事务，跨服务写使用 Saga/补偿事务 + Outbox + 幂等消费，唯一性或业务主键并发冲突场景评估数据库约束、乐观锁、悲观锁或 Redis 分布式锁。
 - 持久化实体、DTO、VO 必须分离，Controller 不直接暴露 Entity。
 - 业务层统一使用 `XxxService` 接口 + `XxxServiceImpl` 实现类，Controller 只能依赖 Service 接口。
 - ServiceImpl 通过仓储端口访问持久化能力，运行时统一使用 MyBatis Mapper + Mapper.xml，内存仓储仅用于测试。
