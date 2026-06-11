@@ -28,6 +28,9 @@
 | 分布式锁适配器 | Redisson，限定在 `DistributedLockClient` 基础设施实现内使用 |
 | 消息队列 | RocketMQ 或 RabbitMQ |
 | 对象存储 | MinIO 或阿里云 OSS |
+| 日志热查询 | Elasticsearch |
+| 日志缓冲管道 | Kafka |
+| 日志归档 | OSS + 独立日志 PostgreSQL |
 | 构建 | Maven |
 
 ## 3. 负责服务
@@ -107,6 +110,13 @@ after/foodmap-common
 - 业务代码不得随意字符串拼接打印关键业务日志。
 - 涉及用户、认证、推荐、评论、文件和中间件调用的日志必须使用通用日志方法或统一日志封装。
 - 日志不能输出 Token、密码、密钥、完整手机号、完整邮箱或私密推荐内容。
+- 日志等级统一为 `DEBUG`、`INFO`、`WARN`、`ERROR`，所有结构化日志必须包含 `requestId`、`traceId`、`serviceName`。
+- 网关、业务服务、内部调用客户端和 MQ 事件必须透传 `traceId`；单次 HTTP 请求必须支持通过 `requestId` 查询本次调用全部日志。
+- Kafka 作为日志缓冲管道引入，日志 topic 至少区分 application、api-access、sql、audit、security。
+- Elasticsearch 保存全量热日志 7 天；接口访问摘要写入独立日志 PostgreSQL 并保留 15 天；7 天后的全量日志压缩归档到 OSS。
+- SQL 日志按 `DEBUG` 语义设计，生产环境通过动态配置按服务、Mapper、traceId/requestId、慢 SQL 阈值或采样率开启，禁止长期全局开启。
+- 慢 SQL 和异常 SQL 即使 DEBUG 关闭，也必须以 `WARN` 输出脱敏摘要。
+- 关键业务动作必须记录审计日志，审计日志只保存动作事实、业务主键和脱敏摘要，不保存敏感正文。
 
 ## 6. 验收标准
 
@@ -122,6 +132,8 @@ after/foodmap-common
 - 重复基础校验和值判断已沉淀到明确边界的 common 工具类，未新增万能 Utils。
 - 公共 API、复杂业务逻辑、中间件封装、常量项和枚举项已补充必要注释。
 - 中间件访问和日志打印符合 `CODEX-after.md` 的阶段一封装规则。
+- 新增接口具备访问日志留痕；新增关键业务动作已评估是否需要审计日志。
+- SQL 日志、业务日志和异常日志都能通过 `requestId` 或 `traceId` 串联查询。
 - 列表接口支持分页。
 - 地图接口支持边界框查询。
 - 关键业务规则有测试。

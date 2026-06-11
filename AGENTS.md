@@ -449,6 +449,9 @@ front/FoodMapApp
 | 分布式锁适配器 | Redisson，限定在 `DistributedLockClient` 基础设施实现内使用 |
 | 消息队列 | RocketMQ 或 RabbitMQ |
 | 对象存储 | MinIO 或阿里云 OSS |
+| 日志热查询 | Elasticsearch |
+| 日志缓冲管道 | Kafka |
+| 日志归档 | OSS + 独立日志 PostgreSQL |
 | API 文档 | OpenAPI + Knife4j |
 | 构建 | Maven |
 | 容器 | Docker |
@@ -834,6 +837,14 @@ service-name
 - 业务代码不得随意字符串拼接打印关键业务日志。
 - 涉及用户、认证、推荐、评论、文件和中间件调用的日志必须使用通用日志方法或统一日志封装。
 - 日志不能输出 Token、密码、密钥、完整手机号、完整邮箱或私密推荐内容。
+- 后端日志等级统一为 `DEBUG`、`INFO`、`WARN`、`ERROR`，所有结构化日志必须包含 `requestId`、`traceId`、`serviceName`，具备通过流水号查询一次接口调用全部日志的能力。
+- 网关和业务服务必须生成、校验并透传 `requestId`、`traceId`；服务间同步调用和 MQ 事件必须继续透传 `traceId`。
+- Kafka 从当前阶段开始作为日志缓冲管道引入，日志 topic 至少规划 `application`、`api-access`、`sql`、`audit`、`security` 五类。
+- Elasticsearch 保存全量热日志 7 天；7 天内后台按 `requestId` 或 `traceId` 查询完整日志优先查 Elasticsearch。
+- 接口访问摘要必须写入独立日志 PostgreSQL，保留 15 天，用于后台统计和最近调用查询；7 天后的全量日志压缩归档到 OSS。
+- SQL 日志统一按 `DEBUG` 语义设计，生产环境默认不全量记录，必须通过动态配置按服务、Mapper、traceId/requestId、慢 SQL 阈值或采样率开启。
+- 慢 SQL 和异常 SQL 即使 SQL DEBUG 关闭，也必须以 `WARN` 输出脱敏摘要。
+- 每次业务接口调用必须记录结构化访问日志，关键业务动作必须记录审计日志；审计日志只保存动作事实、业务主键和脱敏摘要，不保存敏感正文。
 - 列表接口支持分页。
 - 地图接口支持边界框查询。
 - 关键业务规则有单元测试或集成测试。

@@ -116,11 +116,16 @@ Stage 1：后端认证用户基础能力与 iOS 认证测试壳已完成
 - 每张业务表生成标准 Mapper/XML，复杂业务 SQL 单独放入 DefineMapper/XML。
 - Repository 实现类名不再使用 `MyBatis` 等技术前缀，统一采用 `{EntityName}RepositoryImpl` 或业务聚合语义命名。
 - 后端 Spring Bean 依赖注入按场景取舍：普通业务类允许优先使用 `@Autowired` 字段注入；强必需依赖、不可变依赖、易测性要求高或需要尽早暴露循环依赖的类优先使用构造器注入。
+- 后端日志平台按 `DEBUG / INFO / WARN / ERROR` 四级设计，所有日志必须带 `requestId`、`traceId`、`serviceName`，并支持通过流水号查询一次接口调用的全部日志。
+- Kafka 从当前阶段开始纳入日志链路基础设施；Elasticsearch 保存全量热日志 7 天；接口访问摘要写入独立日志 PostgreSQL 并保留 15 天；7 天后的全量日志压缩归档到 OSS。
+- SQL 日志语义上统一属于 `DEBUG`，生产环境默认不记录全量 SQL DEBUG，必须通过 Nacos 等动态配置按服务、Mapper、traceId/requestId、慢 SQL 阈值或采样率开启；慢 SQL 和异常 SQL 即使 DEBUG 关闭也必须以 `WARN` 输出摘要。
+- 业务接口调用必须记录结构化访问日志，关键业务动作必须记录审计日志；审计日志只保存动作事实、业务主键和脱敏摘要，不保存敏感正文。
 
 当前 B1 后续目标：
 
 - iOS 登录页联调本地认证服务，并在登录后进入真实地图首页。
 - 生成高德地图首页壳、门店查询 API 契约和门店服务基础能力。
+- 在继续大规模业务能力前，优先完成日志平台基础规划和第一阶段代码骨架，避免后续服务重复补日志能力。
 
 ## 6. 计划中的仓库结构
 
@@ -235,6 +240,21 @@ food-map
 - Refresh Token 持久化。
 - 用户资料接口。
 - 服务独立数据库。
+
+### B1.5：日志平台基础能力
+
+交付物：
+
+- `requestId`、`traceId`、`spanId` 生成、校验和跨服务透传规则。
+- `LogMdcFilter` 或 WebFlux 等价过滤器。
+- 统一 JSON 日志格式和 `SafeLog` 增强。
+- 接口访问日志 Filter，记录 `api.access.completed`、`api.access.slow`、`api.access.rejected`。
+- MyBatis SQL 日志拦截器，支持实际参数替换、脱敏、慢 SQL `WARN` 和动态 DEBUG 开关。
+- Kafka 日志 topic 规划和本地 Docker Compose 配置。
+- Elasticsearch 7 天热查询索引规划。
+- 独立日志 PostgreSQL 的 `api_access_log` 表设计，接口访问摘要保留 15 天。
+- 业务审计日志定义和首批覆盖动作清单。
+- OSS 全量日志归档策略文档。
 
 ### B2：门店
 
@@ -476,6 +496,8 @@ MVP 阶段使用 Docker Compose 部署到 ECS2，ECS1 作为辅助节点。
 | 阶段一 foodmap-common 首批基线代码 | 已完成 |
 | 后端代码注释规则和首批注释补齐 | 已完成 |
 | 阶段一 common.validation.Check 校验工具 | 已完成 |
+| 后端日志平台设计规划 | 已完成 |
+| 后端日志平台基础能力 | 未开始 |
 | iOS App 壳 | 未开始 |
 | 认证/用户接口 | 未开始 |
 | 地图壳 | 未开始 |
@@ -487,7 +509,7 @@ MVP 阶段使用 Docker Compose 部署到 ECS2，ECS1 作为辅助节点。
 ## 15. 项目待决策问题
 
 1. 使用 Maven 还是 Gradle。当前建议：Maven。
-2. 使用 RocketMQ 还是 RabbitMQ。当前建议：如果采用 Spring Cloud Alibaba，优先 RocketMQ；如果优先简化本地环境，使用 RabbitMQ。
+2. 业务事件使用 RocketMQ 还是 RabbitMQ。当前建议：如果采用 Spring Cloud Alibaba，优先 RocketMQ；如果优先简化本地环境，使用 RabbitMQ。日志链路已决策引入 Kafka，不与业务事件队列混用。
 3. 使用 MyBatis 还是 MyBatis-Plus。已决策：统一使用 MyBatis + Mapper.xml，项目内建设标准 CRUD 模板能力，复杂 SQL 使用 DefineMapper/XML 控制。
 4. 最低支持 iOS 版本。
 5. MVP 是否展示社区 Tab。

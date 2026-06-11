@@ -53,6 +53,10 @@
 | 本地开发 | Docker Compose / OrbStack / Spring Profiles |
 | 监控 | Spring Boot Actuator、Prometheus、Grafana |
 | 链路追踪 | OpenTelemetry 或 SkyWalking |
+| 日志热查询 | Elasticsearch |
+| 日志缓冲管道 | Kafka，当前阶段引入；业务消息队列不与日志 Kafka 混用 |
+| 日志采集 | OpenTelemetry Collector / Filebeat / Fluent Bit，按部署阶段选择 |
+| 日志归档 | OSS 冷存储 + 独立日志 PostgreSQL 接口摘要 |
 
 优先推荐的国内生态组合：
 
@@ -2371,6 +2375,7 @@ sequenceDiagram
 
 - 每个服务必须启用 Actuator health。
 - 生产环境 Actuator 只开放必要端点，健康详情不能无鉴权暴露。
+- 后端日志等级统一为 `DEBUG`、`INFO`、`WARN`、`ERROR`，严重程度从低到高依次提升。
 - 日志必须包含 `traceId`、`spanId`、`serviceName`、`requestId`。
 - 异常日志必须有业务上下文，但不能输出敏感数据。
 - 所有外部调用、数据库慢查询、MQ 消费失败必须可定位。
@@ -2378,12 +2383,15 @@ sequenceDiagram
 - 涉及用户、认证、推荐、评论、文件、中间件调用的日志必须通过通用日志方法或统一日志封装输出。
 - 日志字段名必须稳定，常用字段统一使用 `userId`、`accountId`、`storeId`、`recommendationId`、`commentId`、`mediaId`、`eventId`、`requestId`、`traceId`。
 - 日志参数必须先脱敏再输出，不能依赖开发者手工记忆敏感字段。
+- 所有业务接口调用必须记录访问留痕，用于后续统计各业务模块使用情况。
+- MyBatis 执行 SQL 必须具备 DEBUG 级别输出能力，输出时需要展示已经绑定实际参数后的 SQL。
 
 建议逐步补齐：
 
 - 使用 Micrometer 暴露 JVM、HTTP、数据库连接池、缓存和自定义业务指标。
 - 使用 OpenTelemetry 统一采集 traces、metrics、logs。
 - 对核心业务增加业务指标，例如注册数、登录失败数、推荐创建数、评论发布数、公开统计消费延迟。
+- 生产环境默认可关闭普通 DEBUG 控制台输出，但日志采集链路必须支持按服务、包名、Mapper 或 traceId 临时打开 DEBUG 排查。
 
 ### 16.10.1 统一日志方法规则
 
@@ -2456,6 +2464,269 @@ Bearer abc.def.ghi -> Bearer ***
 - 完整对象存储 Key。
 - 私密推荐内容。
 - 评论正文。
+
+### 16.10.2 日志平台总体设计
+
+FoodMap 日志平台采用应用内结构化日志、Kafka 缓冲、Elasticsearch 热查询、独立日志归档库和 OSS 冷存储的分层设计。Kafka 从当前阶段开始纳入后端基础设施规划，不再仅作为后续预留项。
+
+核心目标：
+
+- 开发阶段方便定位问题，尤其是 SQL、接口参数校验和服务调用失败。
+- 生产阶段保证业务接口调用可统计、错误可追踪、安全敏感信息不泄露。
+- 日志链路不反向影响主业务请求，日志投递失败不能阻塞用户请求。
+- 业务库只存业务数据，不承载全量技术日志；接口访问摘要使用独立日志库，全量日志使用 Elasticsearch 和 OSS 承载。
+
+推荐链路：
+
+```mermaid
+flowchart LR
+    app["后端微服务<br/>结构化 JSON 日志"]
+    collector["日志采集器<br/>OTel Collector / Filebeat / Fluent Bit"]
+    kafka["Kafka<br/>日志缓冲与削峰"]
+    es["Elasticsearch<br/>全量热查询 7 天"]
+    api_db["独立日志 PostgreSQL<br/>api_access_log 保留 15 天"]
+    archive_job["日志归档任务<br/>7 天后压缩归档"]
+    oss["OSS 冷存储<br/>全量日志低频查询"]
+
+    app -->|"stdout / file appender"| collector
+    collector -->|"结构化日志事件"| kafka
+    kafka -->|"近实时写入"| es
+    kafka -->|"接口访问摘要"| api_db
+    es -->|"7 天后全量归档"| archive_job
+    archive_job -->|"压缩日志文件"| oss
+```
+
+部署阶段建议：
+
+- 本地 `local`：默认控制台输出，允许打开 SQL DEBUG；不强制启动 Kafka 和 Elasticsearch。
+- 本地 `orbstack`：Docker Compose 需要增加 Kafka、Elasticsearch 和日志采集器，用于联调日志链路。
+- 生产 `prod`：应用只负责输出结构化日志；Kafka、Elasticsearch、归档任务独立部署，避免日志写入拖慢业务服务。
+
+Kafka Topic 规划：
+
+```text
+foodmap.logs.application     应用运行日志。
+foodmap.logs.api-access      接口访问日志。
+foodmap.logs.sql             SQL 执行日志。
+foodmap.logs.audit           业务审计日志。
+foodmap.logs.security        安全日志。
+```
+
+关于“DEBUG 等级以上”：
+
+- 日志等级从低到高为 `DEBUG < INFO < WARN < ERROR`。
+- 因此 `DEBUG` 及以上表示四个等级都会进入 7 天 Elasticsearch 热查询。
+- 7 天后全量日志压缩归档到 OSS；接口访问摘要单独写入独立日志 PostgreSQL 并保留 15 天。
+- 如果后续日志体量或存储成本过高，可以只对 SQL DEBUG 做采样、按 Mapper 白名单保留或缩短 SQL DEBUG 的热查询周期。
+
+### 16.10.3 日志等级设计
+
+| 等级 | 使用场景 | 默认生产策略 |
+| --- | --- | --- |
+| DEBUG | SQL 明细、动态参数绑定、缓存命中细节、内部调用请求摘要、排查用上下文 | 生产默认关闭全量输出，通过动态配置按需打开 |
+| INFO | 业务成功事件、业务接口访问留痕、关键状态流转、异步任务正常完成 | 默认开启 |
+| WARN | 参数错误、权限失败、幂等重复、限流、可恢复外部依赖失败、业务冲突 | 默认开启并可用于告警聚合 |
+| ERROR | 未预期异常、数据不一致、MQ 消费最终失败、中间件不可用、服务调用不可恢复失败 | 默认开启并触发告警 |
+
+业务代码使用规则：
+
+- `DEBUG` 只能记录排查信息，不能作为业务统计唯一来源；生产环境必须受动态配置开关控制。
+- `INFO` 用于稳定业务事件，例如注册成功、推荐创建成功、评论发布成功、接口访问完成。
+- `WARN` 用于用户可感知但系统可继续运行的问题，例如参数不合法、未授权、重复提交、访问无权限。
+- `ERROR` 用于需要研发或运维介入的问题，必须包含 `traceId`、`requestId`、`errorCode`、异常类型和关键业务主键。
+
+### 16.10.4 SQL 日志设计
+
+SQL 日志用于排查 Mapper/XML、动态条件、索引和慢查询问题，统一按 `DEBUG` 输出。
+
+生产策略：
+
+- SQL 日志在语义上统一属于 `DEBUG` 日志。
+- 生产环境默认不记录全量 SQL DEBUG，必须通过动态配置决定是否开启。
+- 动态配置至少支持按服务、Mapper、traceId/requestId、SQL 类型、慢 SQL 阈值和采样率控制。
+- 慢 SQL 和异常 SQL 即使全量 DEBUG 关闭，也必须以 `WARN` 输出摘要事件。
+- 动态配置来源优先使用 Nacos，配置变更应能在不重启服务的情况下生效。
+
+必须记录：
+
+- `traceId`、`requestId`、`serviceName`。
+- `mapperId`，例如 `AuthAccountMapper.selectByBizId`。
+- `sqlType`，例如 `SELECT`、`INSERT`、`UPDATE`、`DELETE`。
+- 已绑定实际参数后的 SQL，例如 `where account_id = 10001`。
+- 原始参数摘要，敏感字段必须脱敏。
+- 执行耗时 `elapsedMs`。
+- 更新影响行数或查询返回行数，无法准确获取时可为空。
+- 慢 SQL 标识，超过阈值时额外以 `WARN` 输出慢 SQL 事件。
+
+禁止记录：
+
+- 明文密码、Token、密钥、完整手机号、完整邮箱。
+- 私密推荐理由正文、评论正文、图片签名 URL。
+- 超大二进制字段或完整请求体。
+
+实现建议：
+
+- 优先建设 MyBatis Interceptor 或 datasource-proxy / p6spy 适配器，统一捕获 `BoundSql` 和参数映射。
+- 动态 SQL 必须输出 MyBatis 最终生成的 SQL，而不是 XML 中的模板 SQL。
+- `#{id}`、`#{userId}` 等占位参数必须替换为实际执行值，字符串和时间类型需要保留 SQL 可读性，例如 `'foodie_01'`、`'2026-06-11T15:30:00+08:00'`。
+- SQL 日志输出仍走统一日志封装和脱敏策略，不允许 Mapper、Repository 或 ServiceImpl 手写拼接 SQL 日志。
+- 生产环境全量 SQL DEBUG 会带来较大 IO 和存储成本，禁止长期全局开启；临时开启必须有明确排查窗口和关闭动作。
+
+推荐 SQL 日志字段：
+
+```text
+eventName=sql.execute.debug
+level=DEBUG
+serviceName=foodmap-auth-service
+traceId=...
+requestId=...
+mapperId=com.foodmap.auth.infrastructure.persistence.mapper.AuthAccountMapper.selectByBizId
+sqlType=SELECT
+elapsedMs=12
+rows=1
+actualSql=select ... from auth_accounts where account_id = 10001 and is_delete = 0
+```
+
+### 16.10.5 业务接口调用留痕设计
+
+每次业务接口调用必须记录一条访问日志，用于统计模块使用情况、接口耗时、错误率和用户活跃行为。
+
+记录位置：
+
+- 网关记录外部 API 总入口日志，负责统一 requestId、客户端 IP、User-Agent、路由目标、HTTP 状态和总耗时。
+- 业务服务记录服务内接口日志，负责业务模块、业务动作、登录用户、业务错误码和服务内耗时。
+- 内部服务调用日志由统一内部调用客户端记录，避免散落在业务代码中。
+
+必须记录字段：
+
+| 字段 | 含义 |
+| --- | --- |
+| requestId | 单次请求 ID，跨网关和服务透传 |
+| traceId / spanId | 链路追踪 ID |
+| serviceName | 产生日志的服务 |
+| module | 业务模块，如 auth、store、recommendation、community |
+| operation | 业务动作，如 login、createRecommendation、publishComment |
+| httpMethod | HTTP 方法 |
+| path | 请求路径，不记录完整敏感 query |
+| accountId / userId | 当前用户业务主键，未登录接口可为空 |
+| status | HTTP 数字状态码 |
+| code | FoodMap 稳定业务码 |
+| success | 是否成功 |
+| elapsedMs | 接口耗时 |
+| clientIp | 客户端 IP，生产环境需要考虑代理头可信边界 |
+| userAgent | 客户端 User-Agent 摘要 |
+
+禁止记录：
+
+- 请求体全量内容。
+- 密码、Token、Refresh Token、验证码、密钥。
+- 私密推荐理由、评论正文、完整图片 URL 或签名 URL。
+
+推荐事件名：
+
+- `api.access.completed`：接口完成，成功和失败都记录。
+- `api.access.slow`：接口耗时超过阈值。
+- `api.access.rejected`：网关拒绝、限流、认证失败。
+
+后续统计方式：
+
+- 短期通过 Elasticsearch 聚合统计模块调用量、接口耗时和错误率。
+- 15 天内通过独立日志 PostgreSQL 中的 `api_access_log` 做接口访问摘要查询、运营统计和管理后台报表。
+- 关键业务指标仍应通过 Micrometer Counter/Timer 输出，不完全依赖日志聚合。
+
+### 16.10.6 日志保留、归档和落库规则
+
+保留策略：
+
+- Elasticsearch 保存全量日志 7 天，用于近实时查询、联调和事故排查。
+- 7 天内后台管理系统按 `requestId` 或 `traceId` 查询一次接口调用的全部日志时，优先查询 Elasticsearch。
+- 7 天后全量日志压缩归档到 OSS，定位历史问题时走低频归档检索，不承诺像 Elasticsearch 一样秒级查询。
+- 接口访问摘要单独写入独立日志 PostgreSQL，保留 15 天，用于后台统计和最近调用查询。
+- 业务库不能保存全量技术日志，不能把日志写入 auth、user、recommendation 等业务库。
+- 归档任务必须幂等，按 `logId` 或 `eventId + timestamp + serviceName` 去重。
+
+推荐归档表：
+
+```text
+api_access_log      接口访问摘要，独立日志 PostgreSQL 保存 15 天。
+audit_log           关键业务审计日志，保存关键动作事实和业务主键。
+```
+```
+
+归档字段规则：
+
+- 独立日志 PostgreSQL 只保存结构化摘要和已脱敏文本，不保存完整原始敏感日志。
+- `api_access_log` 固定保留 15 天，用于产品运营统计和管理后台近 15 天查询。
+- `audit_log` 保存关键动作事实，保留周期后续根据合规和后台需求单独确定。
+- SQL DEBUG 明细不建议长期落 PostgreSQL，7 天内查 Elasticsearch，7 天后查 OSS 归档。
+- WARN/ERROR 会随全量日志进入 OSS 冷存储，后续如需要高频历史查询，可评估 OpenSearch warm/cold tier 或 ClickHouse。
+
+失败处理：
+
+- Kafka 写入失败不能阻塞业务请求，但必须保留本地 fallback 日志。
+- Elasticsearch 写入失败时，Kafka 中消息不能立即丢弃，应依赖消费重试和死信队列。
+- 归档任务失败必须可重试，并记录归档游标或批次状态。
+
+### 16.10.7 请求流水号和日志查询设计
+
+FoodMap 必须支持通过一个流水号查询一次接口调用过程中的全部日志。
+
+流水号字段定义：
+
+| 字段 | 作用 |
+| --- | --- |
+| requestId | 单次 HTTP 请求流水号，用于查询一次接口调用内的所有日志 |
+| traceId | 跨网关、微服务、MQ 的完整链路追踪号 |
+| spanId | 链路中单个调用段 ID，后续接入 OpenTelemetry 或 SkyWalking 时使用 |
+
+生成和透传规则：
+
+- 网关收到外部请求时，如果请求头没有 `X-Request-Id` 和 `traceparent`，必须生成新的 `requestId` 和 `traceId`。
+- 如果客户端或上游传入 `X-Request-Id`，网关可以透传，但必须校验长度和字符集，避免日志注入。
+- 网关向下游微服务透传 `X-Request-Id`、`X-Trace-Id`，后续接入 OpenTelemetry 后同时支持 W3C `traceparent`。
+- 业务服务通过 `LogMdcFilter` 或 WebFlux 等价过滤器把 `requestId`、`traceId`、`spanId`、`serviceName`、`accountId`、`userId` 写入 MDC。
+- `SafeLog`、接口访问日志、SQL 日志、异常日志、中间件日志都必须自动带上这些字段。
+- 服务间同步调用和 MQ 事件必须继续透传 `traceId`，MQ 消费生成新的 `requestId` 或消费批次 ID，但保留原始 `traceId`。
+
+查询规则：
+
+- 7 天内查完整明细：后台管理系统根据 `requestId` 或 `traceId` 查询 Elasticsearch。
+- 15 天内查接口摘要：后台管理系统根据 `requestId` 查询独立日志 PostgreSQL 的 `api_access_log`。
+- 7 天后查完整日志：后台管理系统可以触发 OSS 归档检索或下载归档文件，作为低频运维能力。
+
+### 16.10.8 业务审计日志设计
+
+审计日志记录“谁在什么时候对什么对象做了什么关键动作”，用于投诉追溯、安全复盘、管理后台查询和关键业务责任界定。审计日志不是普通 debug 日志，也不保存敏感正文。
+
+必须记录字段：
+
+- `auditId`，审计日志业务主键。
+- `requestId`、`traceId`。
+- `serviceName`、`module`、`operation`。
+- `actorUserId`、`actorAccountId`，操作者业务主键。
+- `targetType`、`targetId`，被操作对象类型和业务主键。
+- `actionResult`，例如 `SUCCESS`、`FAILED`。
+- `beforeSnapshot`、`afterSnapshot`，仅保存非敏感关键字段摘要。
+- `createdTime`。
+
+FoodMap MVP 和后续后台必须优先覆盖以下动作：
+
+- 注册、登录成功、连续登录失败、退出登录。
+- 修改手机号、邮箱、密码、隐私设置。
+- 创建、编辑、删除推荐。
+- 修改推荐可见范围，尤其是改为 `PUBLIC`。
+- 发布、删除评论。
+- 好友申请、接受、拒绝、删除。
+- 情侣绑定、解除。
+- 图片上传、删除。
+- 管理后台审核、下架、封禁、解封等操作。
+
+审计日志禁止保存：
+
+- 明文密码、Token、Refresh Token、验证码、密钥。
+- 完整手机号、完整邮箱。
+- 私密推荐理由、评论正文、图片签名 URL。
+- 完整请求体和完整响应体。
 
 ### 16.11 缓存规则
 
