@@ -70,6 +70,11 @@ after/foodmap-common
 - `foodmap-common` 的 `BaseEntity` 只承载 `id / created_time / updated_time / is_delete` 固定字段，不承载业务主键。
 - 持久化实体字段必须提供字段级 Javadoc；如果字段对应数据库字段，注释必须与表字段中文注释一一对应。
 - Controller 只能使用 DTO 作为请求和响应契约，不能直接暴露数据库持久化实体。
+- API 正常和异常响应使用统一结构：`success`、`status`、`code`、`message`、`data`。
+- `status` 必须使用 HTTP 数字状态码语义，`code` 必须使用稳定可枚举业务码。
+- 后端必须通过统一异常拦截机制处理业务异常、参数校验异常、JSON 解析异常、请求方法错误和未预期异常。
+- 异常响应不能暴露异常类名、堆栈、SQL、Token、密码或内部依赖地址。
+- `401` 用于未认证或登录状态失效，`403` 用于已认证但权限不足，不能混用。
 - 数据库访问统一使用 MyBatis Mapper + Mapper.xml。
 - 每张业务表必须生成 `{EntityName}Mapper.java` / `{EntityName}Mapper.xml` 标准单表 SQL。
 - 复杂业务 SQL 必须放入 `{EntityName}DefineMapper.java` / `{EntityName}DefineMapper.xml`。

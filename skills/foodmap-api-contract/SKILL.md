@@ -74,6 +74,10 @@ description: Use when designing, updating, checking, or implementing FoodMap API
 ## 强制规则
 
 - API 使用 DTO，不暴露数据库实体。
+- API 正常和异常响应使用统一结构：`success`、`status`、`code`、`message`、`data`。
+- `status` 使用 HTTP 数字状态码语义，`code` 使用稳定业务码；前端可先按 `status` 分类处理，再按 `code` 细化提示。
+- 错误响应不能暴露异常类名、堆栈、SQL、Token、密码或内部依赖地址。
+- `401` 表示未认证或登录状态失效，`403` 表示已认证但权限不足。
 - 列表接口必须支持分页。
 - 地图接口必须支持边界框查询。
 - 写接口使用 Token 中的当前用户身份。

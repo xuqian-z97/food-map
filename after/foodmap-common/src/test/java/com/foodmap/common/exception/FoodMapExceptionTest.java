@@ -11,6 +11,7 @@ class FoodMapExceptionTest {
         FoodMapException exception = new FoodMapException(CommonErrorCode.UNAUTHORIZED, "登录状态已失效");
 
         assertThat(exception.errorCode()).isEqualTo(CommonErrorCode.UNAUTHORIZED);
+        assertThat(exception.status()).isEqualTo(401);
         assertThat(exception.code()).isEqualTo("UNAUTHORIZED");
         assertThat(exception.getMessage()).isEqualTo("登录状态已失效");
     }

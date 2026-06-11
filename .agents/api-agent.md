@@ -40,6 +40,9 @@ front/FoodMapApp/**/Models
 每次接口契约子任务至少满足：
 
 - API 路径、方法、请求体、响应体清晰。
+- API 正常和异常响应统一包含 `success`、`status`、`code`、`message`、`data`。
+- `status` 使用 HTTP 数字状态码语义，`code` 使用稳定业务码。
+- 错误响应不能暴露异常类名、堆栈、SQL、Token、密码或内部依赖地址。
 - DTO 字段命名前后一致。
 - 可见范围枚举一致。
 - 错误码或错误结构清晰。

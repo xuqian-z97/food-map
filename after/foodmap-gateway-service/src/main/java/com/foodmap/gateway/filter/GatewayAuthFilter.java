@@ -113,7 +113,10 @@ public class GatewayAuthFilter implements GlobalFilter, Ordered {
 
     private Mono<Void> unauthorized(ServerWebExchange exchange, String message) {
         try {
-            byte[] body = objectMapper.writeValueAsString(ApiResponse.fail(CommonErrorCode.UNAUTHORIZED.code(), message))
+            byte[] body = objectMapper.writeValueAsString(ApiResponse.fail(
+                            CommonErrorCode.UNAUTHORIZED.status(),
+                            CommonErrorCode.UNAUTHORIZED.code(),
+                            message))
                     .getBytes(StandardCharsets.UTF_8);
             exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
             exchange.getResponse().getHeaders().setContentType(MediaType.APPLICATION_JSON);

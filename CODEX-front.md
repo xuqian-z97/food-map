@@ -208,7 +208,7 @@ ViewModel：
 - `RegisterView` 已落地测试注册入口。
 - `LoginViewModel` 负责登录表单状态、错误展示和提交状态。
 - `AuthSessionStore` 负责认证会话状态、Token 保存和退出登录。
-- `APIClient` 负责认证接口 JSON 请求和统一响应解析。
+- `APIClient` 负责认证接口 JSON 请求和统一响应解析；统一响应体包含 `success`、`status`、`code`、`message`、`data`，前端优先按 `status` 做成功、登录失效、权限不足、参数错误和服务错误分类，再按 `code` 细分业务提示。
 - `KeychainTokenStore` 负责 Token 的 Keychain 保存、读取和清理。
 - 注册成功后当前停留在注册弹窗并展示账号 ID；登录成功后进入地图占位页。
 
