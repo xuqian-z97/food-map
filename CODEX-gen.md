@@ -104,6 +104,7 @@ Stage 1：后端认证用户基础能力与 iOS 认证测试壳已完成
 - 数据库结构对应 Java 类作为持久化实体存放在 `infrastructure.persistence.entity` 中。
 - 固定字段由 `foodmap-common` 的 `BaseEntity` 承载。
 - 数据库表字段、Flyway 字段注释和持久化实体字段 Javadoc 必须保持一致。
+- 后端生成或修改业务方法时，方法级 Javadoc 必须说明业务作用，并按入参补齐 `@param`；非 `void` 方法必须补齐 `@return`，`void` 方法不需要 `@return`，JavaBean getter / setter 不纳入强制范围。
 - 持久化实体、DTO、VO 必须分离，Controller 不直接暴露 Entity。
 - 业务层统一使用 `XxxService` 接口 + `XxxServiceImpl` 实现类，Controller 只能依赖 Service 接口。
 - ServiceImpl 通过仓储端口访问持久化能力，运行时统一使用 MyBatis Mapper + Mapper.xml，内存仓储仅用于测试。

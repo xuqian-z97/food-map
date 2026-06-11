@@ -47,6 +47,103 @@ for file in $entity_files; do
   ' "$file"
 done
 
+if command -v python3 >/dev/null 2>&1; then
+  python3 - <<'PY'
+from pathlib import Path
+import os
+import re
+import sys
+
+root = Path("after")
+method_pattern = re.compile(
+    r"^\s*(public|protected)\s+"
+    r"(?:static\s+)?(?:final\s+)?(?:synchronized\s+)?"
+    r"(?:<[^>]+>\s+)?"
+    r"([\w<>\[\], ? extends super]+)\s+"
+    r"(\w+)\s*\(([^)]*)\)\s*(?:throws [^{;]+)?\s*(\{|;)\s*$"
+)
+
+
+def extract_param_names(raw_params):
+    """Extract Java parameter names for the lightweight Javadoc scan."""
+    if not raw_params.strip():
+        return []
+    names = []
+    for part in raw_params.split(","):
+        cleaned = re.sub(r"@\w+(?:\([^)]*\))?\s*", "", part.strip())
+        pieces = cleaned.split()
+        if pieces:
+            names.append(pieces[-1].replace("...", ""))
+    return names
+
+
+def javadoc_before(lines, index):
+    """Return the Javadoc block directly above annotations for a method."""
+    cursor = index - 1
+    while cursor >= 0 and lines[cursor].strip().startswith("@"):
+        cursor -= 1
+    if cursor < 0 or lines[cursor].strip() != "*/":
+        return None
+    block = []
+    while cursor >= 0:
+        block.append(lines[cursor])
+        if lines[cursor].strip() == "/**":
+            return "\n".join(reversed(block))
+        cursor -= 1
+    return None
+
+
+def should_skip_method(method_name, raw_params, path):
+    """Skip JavaBean and framework bootstrap methods that are documented elsewhere."""
+    if method_name == "main" and str(path).endswith("Application.java"):
+        return True
+    if method_name.startswith("set") and raw_params.strip():
+        return True
+    if method_name.startswith("get") and not raw_params.strip():
+        return True
+    if method_name.startswith("is") and not raw_params.strip():
+        return True
+    return False
+
+
+missing = []
+for path in sorted(root.rglob("src/main/java/**/*.java")):
+    lines = path.read_text(encoding="utf-8").splitlines()
+    for index, line in enumerate(lines):
+        match = method_pattern.match(line)
+        if not match:
+            continue
+        return_type = match.group(2).strip()
+        method_name = match.group(3)
+        raw_params = match.group(4)
+        if should_skip_method(method_name, raw_params, path):
+            continue
+        block = javadoc_before(lines, index)
+        issues = []
+        if block is None:
+            issues.append("missing method Javadoc")
+        else:
+            if return_type != "void" and "@return" not in block:
+                issues.append("missing @return")
+            for param_name in extract_param_names(raw_params):
+                if f"@param {param_name}" not in block:
+                    issues.append(f"missing @param {param_name}")
+        if issues:
+            missing.append(f"{path}:{index + 1} {method_name}: {', '.join(issues)}")
+
+if missing:
+    print("WARN: business/API method Javadoc scan found methods missing business purpose/@param/@return.", file=sys.stderr)
+    for item in missing[:80]:
+        print(f"WARN: {item}", file=sys.stderr)
+    if len(missing) > 80:
+        print(f"WARN: ... and {len(missing) - 80} more method Javadoc issues.", file=sys.stderr)
+    if os.environ.get("FOODMAP_STRICT_METHOD_JAVADOC") == "true":
+        sys.exit(1)
+PY
+else
+  printf 'INFO: python3 not found; method Javadoc scan skipped.\n'
+fi
+
 if command -v mvn >/dev/null 2>&1; then
   (cd after && mvn -q -DskipTests validate)
 else
