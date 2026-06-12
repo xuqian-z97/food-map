@@ -22,6 +22,8 @@
         <module>foodmap-recommendation-service</module>
         <module>foodmap-community-service</module>
         <module>foodmap-media-service</module>
+        <module>foodmap-admin-service</module>
+        <module>foodmap-log-service</module>
     </modules>
 
     <properties>

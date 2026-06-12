@@ -95,6 +95,33 @@ ECS1 先作为备份和辅助节点。
 
 ## 5. 后续扩展方案
 
+### 5.0 Nacos 配置中心约定
+
+B1.5-b 起后端服务接入 Nacos Config 可选导入，默认关闭，避免本地开发时依赖配置中心。日志链路在本地通过 Docker Compose `logging` profile 启动 Kafka、`kafka-init`、Fluent Bit、Elasticsearch、`elasticsearch-init`、Logstash 和 `log-postgres-migrate`；业务服务不直接依赖 Kafka SDK，后续容器化服务需要把应用日志写入共享日志卷后由 Fluent Bit 统一转发，并由 Logstash 消费 Kafka 写入 Elasticsearch 热查询索引。接口访问摘要表位于独立日志库 `foodmap_log_db.api_access_log`，由 `foodmap-log-service` 在显式开启 `LOG_SERVICE_API_ACCESS_CONSUMER_ENABLED=true` 后消费 `foodmap.logs.api-access` 并幂等写入；摘要清理任务由 `LOG_SERVICE_API_ACCESS_RETENTION_CLEANUP_ENABLED=true` 显式开启，默认保留 15 天。全量日志 OSS 归档当前已具备 `log_archive_records` 计划记录、执行状态机、`foodmap-common` 统一 Elasticsearch SearchClient、真实日志归档导出适配器、common ObjectStorageClient 上传桥接和 MinIO/S3 兼容对象存储实现，`LOG_ARCHIVE_PLANNING_ENABLED=true` 后可生成 PENDING 归档窗口；`LOG_ARCHIVE_EXECUTION_ENABLED=true` 后可驱动状态流转；`LOG_ARCHIVE_ELASTICSEARCH_ENABLED=true` 后会按窗口从 Elasticsearch 分页导出 gzip JSON Lines；`LOG_ARCHIVE_STORAGE_UPLOAD_ENABLED=true` 且 `FOODMAP_STORAGE_MINIO_ENABLED=true` 后会把归档载荷交给 common MinIO 适配器，生产 OSS 后续通过同一个 ObjectStorageClient 端口接入。
+
+启用方式：
+
+```text
+NACOS_CONFIG_ENABLED=true
+NACOS_CONFIG_GROUP=FOODMAP
+NACOS_SERVER_ADDR=nacos:8848
+```
+
+推荐 Data ID：
+
+```text
+foodmap-logging-{profile}.yml
+{spring.application.name}-{profile}.yml
+```
+
+`foodmap-logging-{profile}.yml` 用于共享日志配置，模板位于：
+
+```text
+deploy/nacos/foodmap-logging-template.yml
+```
+
+生产环境临时打开 SQL DEBUG 时，应优先按 `request-ids`、`trace-ids` 或 `mapper-includes` 定向开启，排查结束后及时清空。
+
 ### 5.1 有 VPN/WireGuard 后
 
 如果 ECS1 和 ECS2 之间建立 WireGuard 隧道，可以调整为：

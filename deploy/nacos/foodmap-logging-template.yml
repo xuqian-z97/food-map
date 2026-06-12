@@ -1,0 +1,16 @@
+foodmap:
+  logging:
+    access-log-enabled: true
+    slow-threshold-ms: 1000
+    sql:
+      enabled: true
+      debug-enabled: false
+      slow-threshold-ms: 500
+      sample-rate: 1.0
+      max-sql-length: 2000
+      mapper-includes: []
+      mapper-excludes:
+        - "*.AuthBusinessIdMapper.*"
+        - "*.AdminBusinessIdMapper.*"
+      request-ids: []
+      trace-ids: []

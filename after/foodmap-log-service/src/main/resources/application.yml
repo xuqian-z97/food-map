@@ -1,0 +1,96 @@
+server:
+  port: ${SERVER_PORT:8089}
+
+spring:
+  application:
+    name: foodmap-log-service
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:${FOODMAP_PROFILE:local}}
+  config:
+    import:
+      - optional:nacos:foodmap-logging-${SPRING_PROFILES_ACTIVE:${FOODMAP_PROFILE:local}}.yml?refreshEnabled=true
+      - optional:nacos:${spring.application.name}-${SPRING_PROFILES_ACTIVE:${FOODMAP_PROFILE:local}}.yml?refreshEnabled=true
+  cloud:
+    nacos:
+      config:
+        enabled: ${NACOS_CONFIG_ENABLED:false}
+        server-addr: ${NACOS_SERVER_ADDR:127.0.0.1:8848}
+        group: ${NACOS_CONFIG_GROUP:FOODMAP}
+        file-extension: yml
+      discovery:
+        enabled: ${NACOS_DISCOVERY_ENABLED:true}
+  kafka:
+    bootstrap-servers: ${LOG_KAFKA_BROKERS:127.0.0.1:9094}
+    consumer:
+      group-id: ${LOG_SERVICE_API_ACCESS_GROUP_ID:foodmap-log-service-api-access}
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
+        spring.json.value.default.type: java.util.LinkedHashMap
+
+foodmap:
+  env:
+    profile: ${SPRING_PROFILES_ACTIVE:${FOODMAP_PROFILE:local}}
+  search:
+    elasticsearch:
+      enabled: ${FOODMAP_SEARCH_ELASTICSEARCH_ENABLED:${LOG_ARCHIVE_ELASTICSEARCH_ENABLED:false}}
+      base-url: ${FOODMAP_SEARCH_ELASTICSEARCH_URL:${LOG_ARCHIVE_ELASTICSEARCH_URL:${LOG_ELASTICSEARCH_URL:http://127.0.0.1:9200}}}
+      connect-timeout: ${FOODMAP_SEARCH_ELASTICSEARCH_CONNECT_TIMEOUT:${LOG_ARCHIVE_ELASTICSEARCH_CONNECT_TIMEOUT:3s}}
+      request-timeout: ${FOODMAP_SEARCH_ELASTICSEARCH_REQUEST_TIMEOUT:${LOG_ARCHIVE_ELASTICSEARCH_REQUEST_TIMEOUT:30s}}
+      username: ${FOODMAP_SEARCH_ELASTICSEARCH_USERNAME:${LOG_ARCHIVE_ELASTICSEARCH_USERNAME:}}
+      password: ${FOODMAP_SEARCH_ELASTICSEARCH_PASSWORD:${LOG_ARCHIVE_ELASTICSEARCH_PASSWORD:}}
+      api-key: ${FOODMAP_SEARCH_ELASTICSEARCH_API_KEY:${LOG_ARCHIVE_ELASTICSEARCH_API_KEY:}}
+  storage:
+    minio:
+      enabled: ${FOODMAP_STORAGE_MINIO_ENABLED:false}
+      endpoint: ${FOODMAP_STORAGE_MINIO_ENDPOINT:http://127.0.0.1:9000}
+      access-key: ${FOODMAP_STORAGE_MINIO_ACCESS_KEY:}
+      secret-key: ${FOODMAP_STORAGE_MINIO_SECRET_KEY:}
+      region: ${FOODMAP_STORAGE_MINIO_REGION:us-east-1}
+      connect-timeout: ${FOODMAP_STORAGE_MINIO_CONNECT_TIMEOUT:3s}
+      request-timeout: ${FOODMAP_STORAGE_MINIO_REQUEST_TIMEOUT:60s}
+      public-url-base: ${FOODMAP_STORAGE_MINIO_PUBLIC_URL_BASE:}
+  log:
+    api-access:
+      topic: ${LOG_SERVICE_API_ACCESS_TOPIC:foodmap.logs.api-access}
+      group-id: ${LOG_SERVICE_API_ACCESS_GROUP_ID:foodmap-log-service-api-access}
+      consumer:
+        enabled: ${LOG_SERVICE_API_ACCESS_CONSUMER_ENABLED:false}
+      retention-days: ${LOG_SERVICE_API_ACCESS_RETENTION_DAYS:15}
+      retention:
+        cleanup:
+          enabled: ${LOG_SERVICE_API_ACCESS_RETENTION_CLEANUP_ENABLED:false}
+          cron: ${LOG_SERVICE_API_ACCESS_RETENTION_CLEANUP_CRON:0 20 3 * * *}
+          zone: ${LOG_SERVICE_API_ACCESS_RETENTION_CLEANUP_ZONE:Asia/Shanghai}
+    archive:
+      hot-retention-days: ${LOG_ARCHIVE_HOT_RETENTION_DAYS:7}
+      source-index-pattern: ${LOG_ARCHIVE_SOURCE_INDEX_PATTERN:foodmap-logs-*}
+      storage-provider: ${LOG_ARCHIVE_STORAGE_PROVIDER:OSS}
+      bucket-name: ${LOG_ARCHIVE_BUCKET_NAME:${ALIYUN_OSS_BUCKET:foodmap-log-archive}}
+      object-prefix: ${LOG_ARCHIVE_OBJECT_PREFIX:logs/full}
+      planning:
+        enabled: ${LOG_ARCHIVE_PLANNING_ENABLED:false}
+        cron: ${LOG_ARCHIVE_PLANNING_CRON:0 40 3 * * *}
+        zone: ${LOG_ARCHIVE_PLANNING_ZONE:Asia/Shanghai}
+      execution:
+        enabled: ${LOG_ARCHIVE_EXECUTION_ENABLED:false}
+        cron: ${LOG_ARCHIVE_EXECUTION_CRON:0 */10 * * * *}
+        zone: ${LOG_ARCHIVE_EXECUTION_ZONE:Asia/Shanghai}
+      storage:
+        enabled: ${LOG_ARCHIVE_STORAGE_UPLOAD_ENABLED:false}
+      elasticsearch:
+        enabled: ${LOG_ARCHIVE_ELASTICSEARCH_ENABLED:false}
+        page-size: ${LOG_ARCHIVE_ELASTICSEARCH_PAGE_SIZE:1000}
+        max-pages: ${LOG_ARCHIVE_ELASTICSEARCH_MAX_PAGES:1000}
+        timestamp-field: ${LOG_ARCHIVE_ELASTICSEARCH_TIMESTAMP_FIELD:@timestamp}
+
+mybatis:
+  mapper-locations: classpath*:mapper/**/*.xml
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

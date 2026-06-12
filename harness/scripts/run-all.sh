@@ -13,8 +13,8 @@ run_check() {
 run_check "validate docs" "harness/scripts/validate-docs.sh"
 run_check "validate api" "harness/scripts/validate-api.sh"
 run_check "validate backend" "harness/scripts/validate-backend.sh"
+run_check "validate logging" "harness/scripts/validate-logging.sh"
 run_check "validate ios" "harness/scripts/validate-ios.sh"
 run_check "validate git" "harness/scripts/validate-git.sh"
 
 printf '\nAll harness checks completed.\n'
-

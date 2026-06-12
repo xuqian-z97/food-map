@@ -1,0 +1,17 @@
+spring:
+  datasource:
+    url: ${LOG_DB_URL}
+    username: ${LOG_DB_USERNAME}
+    password: ${LOG_DB_PASSWORD}
+    hikari:
+      pool-name: ${LOG_DB_POOL_NAME:foodmap-log-hikari}
+      maximum-pool-size: ${LOG_DB_POOL_MAX_SIZE:${DB_POOL_MAX_SIZE:5}}
+      minimum-idle: ${LOG_DB_POOL_MIN_IDLE:${DB_POOL_MIN_IDLE:1}}
+      connection-timeout: ${LOG_DB_POOL_CONNECTION_TIMEOUT_MS:${DB_POOL_CONNECTION_TIMEOUT_MS:5000}}
+      idle-timeout: ${LOG_DB_POOL_IDLE_TIMEOUT_MS:${DB_POOL_IDLE_TIMEOUT_MS:600000}}
+      max-lifetime: ${LOG_DB_POOL_MAX_LIFETIME_MS:${DB_POOL_MAX_LIFETIME_MS:1800000}}
+      leak-detection-threshold: ${LOG_DB_POOL_LEAK_DETECTION_MS:${DB_POOL_LEAK_DETECTION_MS:60000}}
+  cloud:
+    nacos:
+      discovery:
+        server-addr: ${NACOS_SERVER_ADDR}

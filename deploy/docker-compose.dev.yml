@@ -73,6 +73,187 @@ services:
     networks:
       - foodmap-dev
 
+  kafka:
+    image: ${KAFKA_IMAGE:-bitnami/kafka:3.7}
+    container_name: foodmap-kafka
+    profiles:
+      - logging
+    environment:
+      KAFKA_ENABLE_KRAFT: "yes"
+      KAFKA_CFG_NODE_ID: 1
+      KAFKA_CFG_PROCESS_ROLES: broker,controller
+      KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_CFG_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:9094
+      KAFKA_CFG_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,EXTERNAL://localhost:${KAFKA_EXTERNAL_PORT:-9094}
+      KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_CFG_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CFG_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE: "false"
+      KAFKA_CFG_LOG_RETENTION_HOURS: ${KAFKA_LOG_RETENTION_HOURS:-24}
+      ALLOW_PLAINTEXT_LISTENER: "yes"
+    ports:
+      - "${KAFKA_EXTERNAL_PORT:-9094}:9094"
+    volumes:
+      - foodmap-kafka-data:/bitnami/kafka
+    healthcheck:
+      test: ["CMD-SHELL", "kafka-topics.sh --bootstrap-server localhost:9092 --list >/dev/null 2>&1"]
+      interval: 10s
+      timeout: 10s
+      retries: 12
+    networks:
+      - foodmap-dev
+
+  kafka-init:
+    image: ${KAFKA_IMAGE:-bitnami/kafka:3.7}
+    container_name: foodmap-kafka-init
+    profiles:
+      - logging
+    depends_on:
+      kafka:
+        condition: service_healthy
+    command:
+      - /bin/sh
+      - -c
+      - |
+        set -eu
+        for topic in \
+          foodmap.logs.application \
+          foodmap.logs.api-access \
+          foodmap.logs.sql \
+          foodmap.logs.audit \
+          foodmap.logs.security
+        do
+          kafka-topics.sh \
+            --bootstrap-server kafka:9092 \
+            --create \
+            --if-not-exists \
+            --topic "$$topic" \
+            --partitions "$${KAFKA_LOG_TOPIC_PARTITIONS:-3}" \
+            --replication-factor 1
+        done
+        kafka-topics.sh --bootstrap-server kafka:9092 --list
+    environment:
+      KAFKA_LOG_TOPIC_PARTITIONS: ${KAFKA_LOG_TOPIC_PARTITIONS:-3}
+    networks:
+      - foodmap-dev
+
+  fluent-bit:
+    image: ${FLUENT_BIT_IMAGE:-fluent/fluent-bit:3.1}
+    container_name: foodmap-fluent-bit
+    profiles:
+      - logging
+    depends_on:
+      kafka:
+        condition: service_healthy
+      kafka-init:
+        condition: service_completed_successfully
+    environment:
+      KAFKA_BROKERS: ${LOG_KAFKA_BROKERS:-kafka:9092}
+    volumes:
+      - ./logging/fluent-bit/fluent-bit.conf:/fluent-bit/etc/fluent-bit.conf:ro
+      - ./logging/fluent-bit/parsers.conf:/fluent-bit/etc/parsers.conf:ro
+      - foodmap-app-logs:/foodmap/logs:ro
+      - foodmap-fluent-bit-state:/fluent-bit/state
+    networks:
+      - foodmap-dev
+
+  elasticsearch:
+    image: ${ELASTICSEARCH_IMAGE:-docker.elastic.co/elasticsearch/elasticsearch:8.15.3}
+    container_name: foodmap-elasticsearch
+    profiles:
+      - logging
+    environment:
+      discovery.type: single-node
+      xpack.security.enabled: "false"
+      cluster.name: foodmap-logs-local
+      node.name: foodmap-elasticsearch
+      action.destructive_requires_name: "true"
+      ES_JAVA_OPTS: ${ELASTICSEARCH_JAVA_OPTS:--Xms512m -Xmx512m}
+    ports:
+      - "${ELASTICSEARCH_HTTP_PORT:-9200}:9200"
+    volumes:
+      - foodmap-elasticsearch-data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:9200/_cluster/health >/dev/null || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 18
+    networks:
+      - foodmap-dev
+
+  elasticsearch-init:
+    image: ${ELASTICSEARCH_INIT_IMAGE:-curlimages/curl:8.8.0}
+    container_name: foodmap-elasticsearch-init
+    profiles:
+      - logging
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    command:
+      - /bin/sh
+      - -c
+      - |
+        set -eu
+        curl -fsS \
+          -X PUT \
+          "http://elasticsearch:9200/_ilm/policy/foodmap-logs-hot-7d" \
+          -H "Content-Type: application/json" \
+          --data-binary "@/templates/foodmap-logs-ilm-policy.json"
+        curl -fsS \
+          -X PUT \
+          "http://elasticsearch:9200/_index_template/foodmap-logs-template" \
+          -H "Content-Type: application/json" \
+          --data-binary "@/templates/foodmap-logs-index-template.json"
+    volumes:
+      - ./logging/elasticsearch:/templates:ro
+    networks:
+      - foodmap-dev
+
+  logstash:
+    image: ${LOGSTASH_IMAGE:-docker.elastic.co/logstash/logstash:8.15.3}
+    container_name: foodmap-logstash
+    profiles:
+      - logging
+    depends_on:
+      kafka:
+        condition: service_healthy
+      kafka-init:
+        condition: service_completed_successfully
+      elasticsearch:
+        condition: service_healthy
+      elasticsearch-init:
+        condition: service_completed_successfully
+    environment:
+      LOG_KAFKA_BROKERS: ${LOG_KAFKA_BROKERS:-kafka:9092}
+      LOGSTASH_LOG_GROUP_ID: ${LOGSTASH_LOG_GROUP_ID:-foodmap-logstash-elasticsearch-local}
+      ELASTICSEARCH_URL: ${LOG_ELASTICSEARCH_URL:-http://elasticsearch:9200}
+      LS_JAVA_OPTS: ${LOGSTASH_JAVA_OPTS:--Xms256m -Xmx256m}
+    volumes:
+      - ./logging/logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml:ro
+      - ./logging/logstash/pipeline:/usr/share/logstash/pipeline:ro
+    networks:
+      - foodmap-dev
+
+  log-postgres-migrate:
+    image: ${FLYWAY_IMAGE:-flyway/flyway:10}
+    container_name: foodmap-log-postgres-migrate
+    profiles:
+      - logging
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command:
+      - -url=jdbc:postgresql://postgres:5432/${FOODMAP_LOG_DB:-foodmap_log_db}
+      - -user=${LOG_DB_USERNAME:-${POSTGRES_USER:-foodmap}}
+      - -password=${LOG_DB_PASSWORD:-${POSTGRES_PASSWORD:-foodmap_dev_pwd}}
+      - -connectRetries=60
+      - -locations=filesystem:/flyway/sql
+      - migrate
+    volumes:
+      - ./logging/postgres/migration:/flyway/sql:ro
+    networks:
+      - foodmap-dev
+
   minio:
     image: ${MINIO_IMAGE:-minio/minio:latest}
     container_name: foodmap-minio
@@ -96,4 +277,8 @@ volumes:
   foodmap-postgres-data:
   foodmap-redis-data:
   foodmap-rabbitmq-data:
+  foodmap-kafka-data:
+  foodmap-app-logs:
+  foodmap-fluent-bit-state:
+  foodmap-elasticsearch-data:
   foodmap-minio-data:

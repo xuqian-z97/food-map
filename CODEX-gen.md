@@ -96,6 +96,8 @@ Stage 1：后端认证用户基础能力与 iOS 认证测试壳已完成
 - 认证服务已补齐 Refresh Token 刷新、退出登录撤销和当前会话查询接口。
 - 网关已具备 Access Token 校验和可信用户身份请求头透传能力。
 - `foodmap-common` 已提供 Token 编解码、内部身份请求头常量和当前用户解析工具。
+- `foodmap-admin-service` 已生成首个后台服务代码切片，包含后台管理员创建用例、`admin_users` Flyway 表结构、业务主键 sequence、MyBatis Mapper/XML 和本地/profile 配置。
+- `foodmap-log-service` 已生成接口访问摘要消费落库代码切片，负责从 `foodmap.logs.api-access` 消费并幂等写入 `foodmap_log_db.api_access_log`。
 - `front/FoodMapApp` iOS SwiftUI 工程已生成。
 - iOS 登录页、注册页、认证会话状态、Keychain Token 存储和地图占位页已生成。
 
@@ -129,6 +131,7 @@ Stage 1：后端认证用户基础能力与 iOS 认证测试壳已完成
 - 在继续大规模业务能力前，优先完成日志平台基础规划和第一阶段代码骨架，避免后续服务重复补日志能力。
 - 生成高德地图首页壳、离线地图城市管理壳、门店查询 API 契约和门店服务基础能力。
 - 建立 iOS 低风险业务缓存底座，用于弱网时展示最近加载过的门店点位和门店摘要。
+- B1.5-b 已补齐 `foodmap-common` 统一 Elasticsearch SearchClient、日志归档导出适配器、common ObjectStorageClient 上传桥接、MinIO/S3 兼容对象存储实现、管理后台日志查询代理 API 和 `LOG_ACCESS_READ` 权限骨架；真实环境联调验收和阿里云 OSS 生产适配器顺延为后续部署/媒体服务阶段任务，不阻塞 B1.5 交付。
 
 ## 6. 计划中的仓库结构
 
@@ -178,6 +181,8 @@ food-map
 │   ├── foodmap-recommendation-service
 │   ├── foodmap-community-service
 │   ├── foodmap-media-service
+│   ├── foodmap-admin-service
+│   ├── foodmap-log-service
 │   └── docker-compose.yml
 ├── front
 │   └── FoodMapApp
@@ -249,16 +254,33 @@ food-map
 
 交付物：
 
+B1.5-a 已作为当前小阶段执行，目标是先让所有后端服务具备统一链路上下文和访问日志基础能力：
+
 - `requestId`、`traceId`、`spanId` 生成、校验和跨服务透传规则。
-- `LogMdcFilter` 或 WebFlux 等价过滤器。
-- 统一 JSON 日志格式和 `SafeLog` 增强。
-- 接口访问日志 Filter，记录 `api.access.completed`、`api.access.slow`、`api.access.rejected`。
-- MyBatis SQL 日志拦截器，支持实际参数替换、脱敏、慢 SQL `WARN` 和动态 DEBUG 开关。
-- Kafka 日志 topic 规划和本地 Docker Compose 配置。
-- Elasticsearch 7 天热查询索引规划。
-- 独立日志 PostgreSQL 的 `api_access_log` 表设计，接口访问摘要保留 15 天。
+- 网关 `GatewayTraceFilter`，在认证过滤器前生成或透传链路头，并写回响应头。
+- Servlet 业务服务 `LogMdcFilter`，把链路头、服务名和可信用户身份写入 MDC。
+- `ApiAccessLogFilter` 服务内接口访问摘要，记录 `api.access.completed` 和 `api.access.slow`。
+- `SafeLog` 增强，自动附带 MDC 中的 `requestId`、`traceId`、`spanId`、`serviceName`、`accountId`、`userId`。
+- 日志架构图、实现原理和阶段边界同步到 `CODEX-after.md`。
+
+B1.5-b 后续依次展开，目标是把 B1.5-a 的日志上下文接入完整日志平台：
+
+- MyBatis SQL 日志拦截器，支持实际参数替换、脱敏、慢 SQL `WARN` 和 DEBUG 配置模型。
+- SQL 日志配置已具备 Environment 动态重读层，并接入 Nacos Config 可选导入；支持按服务、Mapper、traceId/requestId 和采样率临时打开。
+- Kafka 日志 topic 规划和本地 Docker Compose `logging` profile 已落地，当前阶段作为日志缓冲管道，不要求业务服务直接写 Kafka。
+- Fluent Bit 本地采集器已纳入 Docker Compose `logging` profile，通过共享日志卷读取应用日志，并按 `api.access.*`、`sql.execute.*`、`audit.*`、`security.*` 前缀分流到 Kafka topic。
+- Elasticsearch 本地热查询基础已纳入 Docker Compose `logging` profile，并通过 `elasticsearch-init` 写入 7 天 ILM 策略和 `foodmap-logs-*` 索引模板；Logstash 本地消费器已消费五类 Kafka topic 并写入每日 `foodmap-logs-*` 索引。
+- 独立日志 PostgreSQL `foodmap_log_db`、`api_access_log` Flyway 迁移、`foodmap-log-service` 接口访问摘要消费落库、内部查询 API、15 天保留清理任务、`log_archive_records` 归档计划表、归档执行器状态机骨架、`foodmap-common` 统一 Elasticsearch SearchClient、真实日志归档导出适配器、common ObjectStorageClient 上传桥接和 MinIO/S3 兼容对象存储实现已落地。
 - 业务审计日志定义和首批覆盖动作清单。
-- OSS 全量日志归档策略文档。
+- 管理后台 `/api/admin/logs/**` 查询代理接口和 `LOG_ACCESS_READ` 权限骨架。
+- B1.5-b 收尾结论：日志平台代码骨架、后台查询代理和权限骨架已完成；真实环境联调验收需要依赖本地/测试环境 Elasticsearch、Kafka、PostgreSQL、MinIO 联合启动，顺延为部署验收任务；阿里云 OSS 具体适配器按生产部署和媒体服务节奏后移。
+
+B1.5 后续每个小阶段交付时，必须同步补齐：
+
+- 关键技术说明。
+- 实现原理说明。
+- Mermaid 架构图或流程图。
+- 运维风险、默认开关和排查入口。
 
 ### B2：门店
 
@@ -501,7 +523,8 @@ MVP 阶段使用 Docker Compose 部署到 ECS2，ECS1 作为辅助节点。
 | 后端代码注释规则和首批注释补齐 | 已完成 |
 | 阶段一 common.validation.Check 校验工具 | 已完成 |
 | 后端日志平台设计规划 | 已完成 |
-| 后端日志平台基础能力 | 未开始 |
+| 后端日志平台基础能力 B1.5-a | 已完成 |
+| 后端日志平台基础能力 B1.5-b | 已完成 |
 | iOS App 壳 | 未开始 |
 | 认证/用户接口 | 未开始 |
 | 地图壳 | 未开始 |

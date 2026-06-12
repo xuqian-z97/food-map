@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.foodmap.log.infrastructure.persistence.mapper.ApiAccessLogMapper">
+    <resultMap id="ApiAccessLogResultMap"
+               type="com.foodmap.log.infrastructure.persistence.entity.ApiAccessLogEntity">
+        <id property="id" column="id"/>
+        <result property="accessLogId" column="access_log_id"/>
+        <result property="requestId" column="request_id"/>
+        <result property="traceId" column="trace_id"/>
+        <result property="spanId" column="span_id"/>
+        <result property="serviceName" column="service_name"/>
+        <result property="eventName" column="event_name"/>
+        <result property="logLevel" column="log_level"/>
+        <result property="httpMethod" column="http_method"/>
+        <result property="requestPath" column="request_path"/>
+        <result property="httpStatus" column="http_status"/>
+        <result property="durationMs" column="duration_ms"/>
+        <result property="clientIpMasked" column="client_ip_masked"/>
+        <result property="accountId" column="account_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="gatewayRouteId" column="gateway_route_id"/>
+        <result property="errorCode" column="error_code"/>
+        <result property="occurredTime" column="occurred_time"/>
+        <result property="sourceTopic" column="source_topic"/>
+        <result property="sourcePartition" column="source_partition"/>
+        <result property="sourceOffset" column="source_offset"/>
+        <result property="createdTime" column="created_time"/>
+        <result property="updatedTime" column="updated_time"/>
+        <result property="isDelete" column="is_delete"/>
+    </resultMap>
+
+    <sql id="ApiAccessLogColumns">
+        id,
+        access_log_id,
+        request_id,
+        trace_id,
+        span_id,
+        service_name,
+        event_name,
+        log_level,
+        http_method,
+        request_path,
+        http_status,
+        duration_ms,
+        client_ip_masked,
+        account_id,
+        user_id,
+        gateway_route_id,
+        error_code,
+        occurred_time,
+        source_topic,
+        source_partition,
+        source_offset,
+        created_time,
+        updated_time,
+        is_delete
+    </sql>
+
+    <sql id="ApiAccessLogQueryWhere">
+        where is_delete = 0
+        <if test="criteria.requestId != null">
+            and request_id = #{criteria.requestId}
+        </if>
+        <if test="criteria.traceId != null">
+            and trace_id = #{criteria.traceId}
+        </if>
+        <if test="criteria.serviceName != null">
+            and service_name = #{criteria.serviceName}
+        </if>
+        <if test="criteria.logLevel != null">
+            and log_level = #{criteria.logLevel}
+        </if>
+        <if test="criteria.httpStatus != null">
+            and http_status = #{criteria.httpStatus}
+        </if>
+        <if test="criteria.occurredFrom != null">
+            and occurred_time &gt;= #{criteria.occurredFrom}
+        </if>
+        <if test="criteria.occurredTo != null">
+            and occurred_time &lt; #{criteria.occurredTo}
+        </if>
+    </sql>
+
+    <insert id="insertIgnoreDuplicate"
+            parameterType="com.foodmap.log.infrastructure.persistence.entity.ApiAccessLogEntity">
+        insert into api_access_log (
+            request_id,
+            trace_id,
+            span_id,
+            service_name,
+            event_name,
+            log_level,
+            http_method,
+            request_path,
+            http_status,
+            duration_ms,
+            client_ip_masked,
+            account_id,
+            user_id,
+            gateway_route_id,
+            error_code,
+            occurred_time,
+            source_topic,
+            source_partition,
+            source_offset
+        ) values (
+            #{requestId},
+            #{traceId},
+            #{spanId},
+            #{serviceName},
+            #{eventName},
+            #{logLevel},
+            #{httpMethod},
+            #{requestPath},
+            #{httpStatus},
+            #{durationMs},
+            #{clientIpMasked},
+            #{accountId},
+            #{userId},
+            #{gatewayRouteId},
+            #{errorCode},
+            #{occurredTime},
+            #{sourceTopic},
+            #{sourcePartition},
+            #{sourceOffset}
+        )
+        on conflict on constraint uk_api_access_log_source do nothing
+    </insert>
+
+    <delete id="deleteOccurredBefore" parameterType="java.time.OffsetDateTime">
+        delete from api_access_log
+        where occurred_time &lt; #{cutoffTime}
+    </delete>
+
+    <select id="selectByCriteria" resultMap="ApiAccessLogResultMap">
+        select
+        <include refid="ApiAccessLogColumns"/>
+        from api_access_log
+        <include refid="ApiAccessLogQueryWhere"/>
+        order by occurred_time desc, access_log_id desc
+        limit #{criteria.pageSize}
+        offset #{criteria.offset}
+    </select>
+
+    <select id="countByCriteria" resultType="long">
+        select count(1)
+        from api_access_log
+        <include refid="ApiAccessLogQueryWhere"/>
+    </select>
+</mapper>

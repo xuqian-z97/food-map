@@ -1,0 +1,87 @@
+{
+  "index_patterns": [
+    "foodmap-logs-*"
+  ],
+  "priority": 500,
+  "template": {
+    "settings": {
+      "number_of_shards": 1,
+      "number_of_replicas": 0,
+      "index.lifecycle.name": "foodmap-logs-hot-7d",
+      "index.refresh_interval": "5s"
+    },
+    "mappings": {
+      "dynamic": true,
+      "properties": {
+        "@timestamp": {
+          "type": "date"
+        },
+        "timestamp": {
+          "type": "date"
+        },
+        "logType": {
+          "type": "keyword"
+        },
+        "level": {
+          "type": "keyword"
+        },
+        "eventName": {
+          "type": "keyword"
+        },
+        "serviceName": {
+          "type": "keyword"
+        },
+        "requestId": {
+          "type": "keyword"
+        },
+        "traceId": {
+          "type": "keyword"
+        },
+        "spanId": {
+          "type": "keyword"
+        },
+        "accountId": {
+          "type": "keyword"
+        },
+        "userId": {
+          "type": "keyword"
+        },
+        "method": {
+          "type": "keyword"
+        },
+        "path": {
+          "type": "keyword"
+        },
+        "status": {
+          "type": "integer"
+        },
+        "durationMs": {
+          "type": "long"
+        },
+        "mapperId": {
+          "type": "keyword"
+        },
+        "sqlHash": {
+          "type": "keyword"
+        },
+        "message": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 512
+            }
+          }
+        },
+        "log": {
+          "type": "text"
+        }
+      }
+    }
+  },
+  "_meta": {
+    "owner": "foodmap",
+    "stage": "B1.5-b",
+    "description": "Hot log query template for FoodMap application, API access, SQL, audit, and security logs."
+  }
+}

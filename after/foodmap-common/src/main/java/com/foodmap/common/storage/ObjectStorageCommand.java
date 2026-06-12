@@ -32,4 +32,28 @@ public record ObjectStorageCommand(
                 Check.positive("ownerUserId", ownerUserId)
         );
     }
+
+    /**
+     * 创建系统级上传命令，适用于日志归档、系统导出文件等不归属于单个用户的对象。
+     *
+     * @param bucketName 存储桶名称。
+     * @param objectKey 对象 Key。
+     * @param contentType 内容类型。
+     * @param contentLength 内容长度。
+     * @return ownerUserId 为空的系统上传命令。
+     */
+    public static ObjectStorageCommand systemUpload(
+            String bucketName,
+            String objectKey,
+            String contentType,
+            long contentLength
+    ) {
+        return new ObjectStorageCommand(
+                Check.notBlank("bucketName", bucketName),
+                Check.notBlank("objectKey", objectKey),
+                Check.notBlank("contentType", contentType),
+                Check.positive("contentLength", contentLength),
+                null
+        );
+    }
 }

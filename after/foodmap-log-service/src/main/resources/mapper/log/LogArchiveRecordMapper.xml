@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.foodmap.log.infrastructure.persistence.mapper.LogArchiveRecordMapper">
+    <insert id="insertIgnoreDuplicate"
+            parameterType="com.foodmap.log.infrastructure.persistence.entity.LogArchiveRecordEntity">
+        insert into log_archive_records (
+            archive_type,
+            window_start_time,
+            window_end_time,
+            source_index_pattern,
+            storage_provider,
+            bucket_name,
+            object_key,
+            archive_status,
+            retry_count,
+            failure_reason,
+            started_time,
+            completed_time
+        ) values (
+            #{archiveType},
+            #{windowStartTime},
+            #{windowEndTime},
+            #{sourceIndexPattern},
+            #{storageProvider},
+            #{bucketName},
+            #{objectKey},
+            #{archiveStatus},
+            #{retryCount},
+            #{failureReason},
+            #{startedTime},
+            #{completedTime}
+        )
+        on conflict on constraint uk_log_archive_record_window do nothing
+    </insert>
+
+    <select id="selectNextPending"
+            resultType="com.foodmap.log.infrastructure.persistence.entity.LogArchiveRecordEntity">
+        select
+            archive_id as archiveId,
+            archive_type as archiveType,
+            window_start_time as windowStartTime,
+            window_end_time as windowEndTime,
+            source_index_pattern as sourceIndexPattern,
+            storage_provider as storageProvider,
+            bucket_name as bucketName,
+            object_key as objectKey,
+            archive_status as archiveStatus,
+            retry_count as retryCount,
+            failure_reason as failureReason,
+            started_time as startedTime,
+            completed_time as completedTime
+        from log_archive_records
+        where archive_status = 'PENDING'
+          and is_delete = 0
+        order by window_start_time asc
+        limit 1
+    </select>
+
+    <update id="markRunning">
+        update log_archive_records
+        set archive_status = 'RUNNING',
+            started_time = #{startedTime},
+            failure_reason = null,
+            updated_time = now()
+        where archive_id = #{archiveId}
+          and archive_status = 'PENDING'
+          and is_delete = 0
+    </update>
+
+    <update id="markSuccess">
+        update log_archive_records
+        set archive_status = 'SUCCESS',
+            completed_time = #{completedTime},
+            failure_reason = null,
+            updated_time = now()
+        where archive_id = #{archiveId}
+          and archive_status = 'RUNNING'
+          and is_delete = 0
+    </update>
+
+    <update id="markFailed">
+        update log_archive_records
+        set archive_status = 'FAILED',
+            retry_count = retry_count + 1,
+            failure_reason = #{failureReason},
+            completed_time = #{completedTime},
+            updated_time = now()
+        where archive_id = #{archiveId}
+          and archive_status = 'RUNNING'
+          and is_delete = 0
+    </update>
+</mapper>

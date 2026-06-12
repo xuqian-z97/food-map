@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.foodmap.admin.infrastructure.persistence.mapper.AdminUserMapper">
+    <resultMap id="AdminUserResultMap" type="com.foodmap.admin.infrastructure.persistence.entity.AdminUserEntity">
+        <id property="id" column="id"/>
+        <result property="createdTime" column="created_time"/>
+        <result property="updatedTime" column="updated_time"/>
+        <result property="isDelete" column="is_delete"/>
+        <result property="adminUserId" column="admin_user_id"/>
+        <result property="username" column="username"/>
+        <result property="passwordHash" column="password_hash"/>
+        <result property="displayName" column="display_name"/>
+        <result property="mobileMasked" column="mobile_masked"/>
+        <result property="emailMasked" column="email_masked"/>
+        <result property="adminStatus" column="admin_status"/>
+        <result property="permissionVersion" column="permission_version"/>
+        <result property="lastLoginTime" column="last_login_time"/>
+    </resultMap>
+
+    <sql id="BaseColumns">
+        id, created_time, updated_time, is_delete, admin_user_id, username,
+        password_hash, display_name, mobile_masked, email_masked,
+        admin_status, permission_version, last_login_time
+    </sql>
+
+    <sql id="ConditionWhere">
+        where is_delete = 0
+        <if test="condition != null">
+            <if test="condition.id != null">and id = #{condition.id}</if>
+            <if test="condition.adminUserId != null">and admin_user_id = #{condition.adminUserId}</if>
+            <if test="condition.username != null and condition.username != ''">and username = #{condition.username}</if>
+            <if test="condition.displayName != null and condition.displayName != ''">
+                and display_name like concat('%', #{condition.displayName}, '%')
+            </if>
+            <if test="condition.adminStatus != null and condition.adminStatus != ''">
+                and admin_status = #{condition.adminStatus}
+            </if>
+        </if>
+    </sql>
+
+    <select id="selectById" resultMap="AdminUserResultMap">
+        select <include refid="BaseColumns"/>
+        from admin_users
+        where id = #{id} and is_delete = 0
+        limit 1
+    </select>
+
+    <select id="selectByBizId" resultMap="AdminUserResultMap">
+        select <include refid="BaseColumns"/>
+        from admin_users
+        where admin_user_id = #{adminUserId} and is_delete = 0
+        limit 1
+    </select>
+
+    <select id="selectByUsername" resultMap="AdminUserResultMap">
+        select <include refid="BaseColumns"/>
+        from admin_users
+        where username = #{username} and is_delete = 0
+        limit 1
+    </select>
+
+    <select id="selectListByCondition" resultMap="AdminUserResultMap">
+        select <include refid="BaseColumns"/>
+        from admin_users
+        <include refid="ConditionWhere"/>
+        order by id desc
+    </select>
+
+    <select id="selectPageByCondition" resultMap="AdminUserResultMap">
+        select <include refid="BaseColumns"/>
+        from admin_users
+        <include refid="ConditionWhere"/>
+        order by id desc
+        limit #{limit} offset #{offset}
+    </select>
+
+    <insert id="insertOne" parameterType="com.foodmap.admin.infrastructure.persistence.entity.AdminUserEntity">
+        insert into admin_users
+        (created_time, updated_time, is_delete, admin_user_id, username, password_hash,
+         display_name, mobile_masked, email_masked, admin_status, permission_version, last_login_time)
+        values
+        (#{createdTime}, #{updatedTime}, #{isDelete}, #{adminUserId}, #{username}, #{passwordHash},
+         #{displayName}, #{mobileMasked}, #{emailMasked}, #{adminStatus}, #{permissionVersion}, #{lastLoginTime})
+    </insert>
+
+    <insert id="insertBatch">
+        insert into admin_users
+        (created_time, updated_time, is_delete, admin_user_id, username, password_hash,
+         display_name, mobile_masked, email_masked, admin_status, permission_version, last_login_time)
+        values
+        <foreach collection="items" item="item" separator=",">
+            (#{item.createdTime}, #{item.updatedTime}, #{item.isDelete}, #{item.adminUserId}, #{item.username},
+             #{item.passwordHash}, #{item.displayName}, #{item.mobileMasked}, #{item.emailMasked},
+             #{item.adminStatus}, #{item.permissionVersion}, #{item.lastLoginTime})
+        </foreach>
+    </insert>
+
+    <update id="updateById" parameterType="com.foodmap.admin.infrastructure.persistence.entity.AdminUserEntity">
+        update admin_users
+        set username = #{username},
+            password_hash = #{passwordHash},
+            display_name = #{displayName},
+            mobile_masked = #{mobileMasked},
+            email_masked = #{emailMasked},
+            admin_status = #{adminStatus},
+            permission_version = #{permissionVersion},
+            last_login_time = #{lastLoginTime},
+            updated_time = #{updatedTime},
+            is_delete = #{isDelete}
+        where id = #{id}
+    </update>
+
+    <update id="updateByBizId" parameterType="com.foodmap.admin.infrastructure.persistence.entity.AdminUserEntity">
+        update admin_users
+        set username = #{username},
+            password_hash = #{passwordHash},
+            display_name = #{displayName},
+            mobile_masked = #{mobileMasked},
+            email_masked = #{emailMasked},
+            admin_status = #{adminStatus},
+            permission_version = #{permissionVersion},
+            last_login_time = #{lastLoginTime},
+            updated_time = #{updatedTime},
+            is_delete = #{isDelete}
+        where admin_user_id = #{adminUserId}
+    </update>
+
+    <update id="updateBatchByBizId">
+        <foreach collection="items" item="item" separator=";">
+            update admin_users
+            set username = #{item.username},
+                password_hash = #{item.passwordHash},
+                display_name = #{item.displayName},
+                mobile_masked = #{item.mobileMasked},
+                email_masked = #{item.emailMasked},
+                admin_status = #{item.adminStatus},
+                permission_version = #{item.permissionVersion},
+                last_login_time = #{item.lastLoginTime},
+                updated_time = #{item.updatedTime},
+                is_delete = #{item.isDelete}
+            where admin_user_id = #{item.adminUserId}
+        </foreach>
+    </update>
+
+    <update id="logicDeleteById">
+        update admin_users
+        set is_delete = 1, updated_time = #{updatedTime}
+        where id = #{id}
+    </update>
+
+    <update id="logicDeleteByBizIds">
+        update admin_users
+        set is_delete = 1, updated_time = #{updatedTime}
+        where admin_user_id in
+        <foreach collection="adminUserIds" item="adminUserId" open="(" close=")" separator=",">
+            #{adminUserId}
+        </foreach>
+    </update>
+</mapper>

@@ -179,6 +179,7 @@ harness
     ├── run-all.sh
     ├── validate-docs.sh
     ├── validate-backend.sh
+    ├── validate-logging.sh
     ├── validate-ios.sh
     ├── validate-api.sh
     └── validate-git.sh
@@ -451,7 +452,11 @@ front/FoodMapApp
 | 对象存储 | MinIO 或阿里云 OSS |
 | 日志热查询 | Elasticsearch |
 | 日志缓冲管道 | Kafka |
+| 日志采集 | Fluent Bit 本地采集器；生产可按部署形态评估 OpenTelemetry Collector / Filebeat |
+| 日志热写入 | Logstash 本地消费器；生产可按规模评估自研消费者或 Kafka Connect |
+| 日志摘要写入 | foodmap-log-service，消费 api-access topic 并写入独立日志库 |
 | 日志归档 | OSS + 独立日志 PostgreSQL |
+| 日志摘要库 | foodmap_log_db，保存 api_access_log 等结构化摘要 |
 | API 文档 | OpenAPI + Knife4j |
 | 构建 | Maven |
 | 容器 | Docker |
@@ -497,6 +502,8 @@ after
 ├── foodmap-recommendation-service
 ├── foodmap-community-service
 ├── foodmap-media-service
+├── foodmap-admin-service
+├── foodmap-log-service
 └── docker-compose.yml
 ```
 
@@ -771,6 +778,31 @@ service-name
 - 支持门店合并操作。
 - 支持用户状态管理。
 
+#### 8.4.11 日志平台服务
+
+服务：
+
+- foodmap-log-service
+
+数据库：
+
+- foodmap_log_db
+
+核心表：
+
+- api_access_log
+
+验收标准：
+
+- 支持从 `foodmap.logs.api-access` 消费接口访问摘要。
+- 支持按 Kafka `topic + partition + offset` 幂等写入。
+- 支持 `api_access_log` 默认 15 天保留清理，清理任务默认关闭并需要显式开启。
+- 支持生成全量日志 OSS 归档计划，记录归档窗口、对象存储 Key 和处理状态。
+- 支持归档执行器状态机骨架，真实 Elasticsearch 导出适配器已接入并复用 `foodmap-common` 统一 SearchClient，日志归档上传已桥接到 `foodmap-common` 统一 ObjectStorageClient，本地 MinIO/S3 兼容实现已接入，生产阿里云 OSS 适配器按部署和媒体服务阶段后续接入。
+- 默认关闭 Kafka 消费，必须通过 `LOG_SERVICE_API_ACCESS_CONSUMER_ENABLED=true` 显式开启。
+- 不保存 Token、密码、请求体、私密推荐正文、评论正文或完整敏感信息。
+- 不访问认证、用户、推荐、门店、社区、媒体、关系等业务数据库。
+
 ### 8.5 后端通用验收标准
 
 每个后端迭代至少满足：
@@ -834,6 +866,7 @@ service-name
 - 每个服务必须暴露并关注 HikariCP、Redis pool 和请求线程池指标；连接等待、连接获取超时、Redis pool exhausted、看门狗续期失败都必须作为排查信号。
 - 业务事件发布必须通过统一事件发布接口，事件消费者必须具备幂等处理。
 - 对象存储访问必须通过统一对象存储接口，本地优先 MinIO，生产适配阿里云 OSS。
+- Elasticsearch/OpenSearch 等搜索引擎访问必须通过统一搜索接口，例如 `SearchClient`，不能在各服务里散落拼接 `_search` HTTP 请求、认证头和分页游标处理。
 - 业务代码不得随意字符串拼接打印关键业务日志。
 - 涉及用户、认证、推荐、评论、文件和中间件调用的日志必须使用通用日志方法或统一日志封装。
 - 日志不能输出 Token、密码、密钥、完整手机号、完整邮箱或私密推荐内容。
@@ -884,12 +917,12 @@ git@github.com:xuqian-z97/food-map.git
 
 ## 11. 当前优先级
 
-当前阶段已完成文档、多代理规则、harness、`after/` 后端微服务骨架、认证/用户持久化基础能力、Refresh Token 刷新与退出登录、网关 Access Token 校验和可信用户身份透传，以及 `front/FoodMapApp` iOS SwiftUI 认证测试壳。
+当前阶段已完成文档、多代理规则、harness、`after/` 后端微服务骨架、认证/用户持久化基础能力、Refresh Token 刷新与退出登录、网关 Access Token 校验和可信用户身份透传、`foodmap-admin-service` 后台管理员首个代码切片、B1.5-a 日志平台基础能力首批代码；B1.5-b 已完成 MyBatis SQL 日志基础能力、Kafka 本地缓冲管道、Fluent Bit 本地采集器、Elasticsearch 本地热查询基础、Logstash 本地消费写入器、独立日志 PostgreSQL 基础库表、`foodmap-log-service` 接口访问摘要消费落库、内部查询 API、15 天保留清理任务、OSS 归档计划记录、归档执行器状态机骨架、`foodmap-common` 统一 Elasticsearch SearchClient、真实日志归档导出适配器、common ObjectStorageClient 上传桥接、MinIO/S3 兼容对象存储实现、管理后台日志查询代理入口和 `LOG_ACCESS_READ` 权限骨架；同时已生成 `front/FoodMapApp` iOS SwiftUI 认证测试壳。
 
 下一步推荐：
 
-1. 安装 Xcode iOS 平台组件后，使用模拟器验证登录和注册页面。
-2. 将 iOS 登录页联调本地认证服务。
-3. 生成高德地图首页壳、门店查询 API 契约和门店服务基础能力。
-4. 实现推荐主流程和评论体系。
+1. 进入 B1 后续业务能力开发前，可按部署验收任务补充日志查询真实联调；生产阿里云 OSS 适配器顺延到媒体服务或生产部署阶段接入。
+2. 安装 Xcode iOS 平台组件后，使用模拟器验证登录和注册页面。
+3. 将 iOS 登录页联调本地认证服务。
+4. 生成高德地图首页壳、门店查询 API 契约和门店服务基础能力。
 5. 后端镜像生成后，完善 `deploy/docker-compose.ecs2.yml` 中的应用服务配置。

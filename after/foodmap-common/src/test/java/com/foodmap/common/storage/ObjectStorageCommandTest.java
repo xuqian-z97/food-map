@@ -36,4 +36,20 @@ class ObjectStorageCommandTest {
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("objectKey");
     }
+
+    @Test
+    void shouldCreateSystemUploadCommandWithoutOwnerUser() {
+        ObjectStorageCommand command = ObjectStorageCommand.systemUpload(
+                "foodmap-log-archive",
+                "logs/full/year=2026/month=06/day=05/foodmap-logs-2026-06-05.jsonl.gz",
+                "application/x-ndjson+gzip",
+                2048L
+        );
+
+        assertThat(command.bucketName()).isEqualTo("foodmap-log-archive");
+        assertThat(command.objectKey()).contains("foodmap-logs-2026-06-05.jsonl.gz");
+        assertThat(command.contentType()).isEqualTo("application/x-ndjson+gzip");
+        assertThat(command.contentLength()).isEqualTo(2048L);
+        assertThat(command.ownerUserId()).isNull();
+    }
 }

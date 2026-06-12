@@ -81,7 +81,8 @@ foodmap-platform
 ├── foodmap-community-service
 ├── foodmap-media-service
 ├── foodmap-notification-service
-└── foodmap-admin-service
+├── foodmap-admin-service
+└── foodmap-log-service
 ```
 
 MVP 阶段服务：
@@ -102,6 +103,12 @@ foodmap-media-service
 ```text
 foodmap-notification-service
 foodmap-admin-service
+```
+
+日志平台基础设施服务：
+
+```text
+foodmap-log-service
 ```
 
 ## 5. 服务职责
@@ -486,16 +493,85 @@ foodmap-admin-service
 
 职责：
 
-- 公开内容审核。
-- 举报处理。
-- 门店合并操作。
-- 用户状态管理。
+- 后台管理员认证、角色和权限管理。
+- 公开内容审核工单管理。
+- 用户举报处理。
+- 门店合并工单管理。
+- 用户状态管理操作编排。
+- 管理后台操作审计。
+- 近 15 天接口访问摘要查询。
+- 7 天内日志链路查询入口。
 
 数据库：
 
 ```text
 foodmap_admin_db
 ```
+
+边界：
+
+- 管理后台服务只保存后台账号、角色、权限、审核工单、举报工单、门店合并工单、后台操作记录和必要脱敏快照。
+- 管理后台服务不能直接访问认证、用户、门店、推荐、社区、媒体、关系等服务数据库。
+- 公开内容审核结论必须通过推荐服务内部 API 或推荐服务消费的审核事件落到推荐事实表。
+- 门店合并结论必须通过门店服务内部 API 或门店服务消费的合并事件落到门店事实表。
+- 用户禁用、解禁、限制登录等操作必须通过用户服务和认证服务内部 API 编排完成，不能由后台服务跨库改表。
+- 后台页面展示的用户、门店、推荐、评论、媒体信息应来自对应服务的内部查询 API、社区索引快照、日志摘要或审核工单中的脱敏快照。
+- 后台服务可以查询 Elasticsearch、独立日志 PostgreSQL 和 OSS 归档检索入口，但不能把全量技术日志写入 `foodmap_admin_db`。
+
+管理员认证和权限：
+
+- 后台管理员账号与普通用户账号分离，后台登录不复用 App 用户登录态。
+- 管理后台外部入口统一走网关 `/api/admin/**`，必须使用更强认证策略。
+- 后台 Access Token 必须携带管理员业务主键、角色、权限版本和签发来源。
+- 管理后台高风险操作必须校验 RBAC 权限，并记录审计日志。
+- 生产环境中删除、封禁、强制下线、门店合并等高风险动作应支持二次确认或后续审批扩展。
+- B1.5 收尾阶段先使用受信内部请求头承接后台权限骨架：`X-Admin-User-Id` 表示后台管理员业务主键，`X-Admin-Permissions` 表示网关校验后台 Token 后透传的权限码列表。
+- 后台服务内部接口不能只依赖网关放行，Controller 或应用服务必须再次校验必要权限码；缺少后台身份返回 `401`，已认证但缺少权限返回 `403`。
+
+核心能力分期：
+
+1. 阶段 A：后台账号、角色权限、登录、操作日志、只读统计和日志查询。
+2. 阶段 B：公开推荐、评论、图片举报处理和内容审核工单。
+3. 阶段 C：门店合并工单、用户状态管理、封禁/解禁编排。
+4. 阶段 D：运营报表、归档日志检索、审核策略配置和批量处理。
+
+### 5.11 日志平台服务
+
+服务名：
+
+```text
+foodmap-log-service
+```
+
+阶段：
+
+- B1.5-b 日志平台基础设施服务。
+
+职责：
+
+- 消费 `foodmap.logs.api-access` 中的接口访问摘要事件。
+- 将访问摘要解析、脱敏兜底并写入独立日志库 `foodmap_log_db.api_access_log`。
+- 基于 Kafka `topic + partition + offset` 做消费幂等。
+- 后续承接审计摘要、归档游标、日志清理任务和后台查询聚合的日志平台能力。
+
+数据库：
+
+```text
+foodmap_log_db
+```
+
+核心表：
+
+```text
+api_access_log
+```
+
+边界：
+
+- 日志平台服务不是业务服务，不能访问认证、用户、推荐、门店等业务库。
+- 只保存排查和统计需要的摘要字段，不保存请求体、Token、密码、私密推荐正文、评论正文或完整敏感信息。
+- 默认不开启 Kafka 消费，需要显式设置 `LOG_SERVICE_API_ACCESS_CONSUMER_ENABLED=true`。
+- 管理后台读取日志时应通过日志平台或独立日志库查询入口完成，不能把全量日志复制进 `foodmap_admin_db`。
 
 ## 6. 数据库归属
 
@@ -509,7 +585,8 @@ foodmap_admin_db
 | 社区服务 | foodmap_community_db | 公开统计和索引 |
 | 媒体服务 | foodmap_media_db | 媒体元数据 |
 | 通知服务 | foodmap_notification_db | 通知 |
-| 管理服务 | foodmap_admin_db | 举报和审核 |
+| 管理服务 | foodmap_admin_db | 后台账号、角色权限、举报、审核工单、门店合并工单、用户管理工单 |
+| 日志平台服务 | foodmap_log_db | 接口访问摘要、后续审计摘要和日志归档游标 |
 
 数据库规则：
 
@@ -1320,6 +1397,280 @@ foodmap_media_db
 | biz_type | varchar(64) not null | 使用场景，如 AVATAR、RECOMMENDATION_IMAGE、COMMENT_IMAGE、STORE_IMAGE |
 | biz_id | bigint not null | 使用该媒体的业务对象主键，如 user_id、recommendation_id、store_id |
 
+#### 6.2.9 管理后台服务表结构
+
+数据库：
+
+```text
+foodmap_admin_db
+```
+
+说明：
+
+- 管理后台服务表只保存后台自身业务事实、处理过程和必要脱敏快照。
+- 管理后台服务表不能替代认证、用户、门店、推荐、社区、媒体等服务的事实表。
+- 下列所有业务表都必须包含固定字段 `id / created_time / updated_time / is_delete`。
+
+表：`admin_users`
+
+中文名：后台管理员表。
+
+用途：保存后台管理员账号、登录状态和权限版本，是管理后台服务的管理员身份主表。
+
+| 字段名 | 推荐类型 | 中文注释 |
+| --- | --- | --- |
+| admin_user_id | bigint not null | 后台管理员业务主键 |
+| username | varchar(64) not null | 后台登录账号名 |
+| password_hash | varchar(255) not null | 后台登录密码哈希 |
+| display_name | varchar(64) not null | 后台展示名称 |
+| mobile_masked | varchar(32) | 脱敏手机号，用于后台安全联系和审计展示 |
+| email_masked | varchar(128) | 脱敏邮箱，用于后台安全联系和审计展示 |
+| admin_status | varchar(32) not null | 管理员状态，如 ACTIVE、DISABLED、LOCKED |
+| permission_version | bigint not null default 1 | 权限版本，角色或权限变更后递增，用于使旧 Token 失效 |
+| last_login_time | timestamptz | 最近一次后台登录时间 |
+
+表：`admin_roles`
+
+中文名：后台角色表。
+
+用途：保存后台角色定义，用于 RBAC 权限控制。
+
+| 字段名 | 推荐类型 | 中文注释 |
+| --- | --- | --- |
+| role_id | bigint not null | 后台角色业务主键 |
+| role_code | varchar(64) not null | 后台角色编码，如 SUPER_ADMIN、CONTENT_REVIEWER、OPS_VIEWER |
+| role_name | varchar(64) not null | 后台角色名称 |
+| role_description | varchar(255) | 角色职责说明 |
+| role_status | varchar(32) not null | 角色状态，如 ACTIVE、DISABLED |
+
+表：`admin_user_roles`
+
+中文名：后台管理员角色关联表。
+
+用途：保存管理员与角色的授权关系。
+
+| 字段名 | 推荐类型 | 中文注释 |
+| --- | --- | --- |
+| relation_id | bigint not null | 管理员角色关联业务主键 |
+| admin_user_id | bigint not null | 后台管理员业务主键 |
+| role_id | bigint not null | 后台角色业务主键 |
+| granted_by | bigint | 授权人后台管理员业务主键 |
+| granted_time | timestamptz not null | 授权时间 |
+
+表：`admin_permissions`
+
+中文名：后台权限表。
+
+用途：保存后台可授权的功能权限点，用于接口鉴权和页面按钮控制。
+
+| 字段名 | 推荐类型 | 中文注释 |
+| --- | --- | --- |
+| permission_id | bigint not null | 后台权限业务主键 |
+| permission_code | varchar(128) not null | 权限编码，如 CONTENT_REVIEW_READ、CONTENT_REVIEW_DECIDE |
+| permission_name | varchar(64) not null | 权限名称 |
+| permission_module | varchar(64) not null | 权限所属模块，如 CONTENT、USER、STORE、LOG |
+| permission_description | varchar(255) | 权限用途和排查说明 |
+| permission_status | varchar(32) not null | 权限状态，如 ACTIVE、DISABLED |
+
+表：`admin_role_permissions`
+
+中文名：后台角色权限关联表。
+
+用途：保存角色和权限点的授权关系。
+
+| 字段名 | 推荐类型 | 中文注释 |
+| --- | --- | --- |
+| relation_id | bigint not null | 角色权限关联业务主键 |
+| role_id | bigint not null | 后台角色业务主键 |
+| permission_id | bigint not null | 后台权限业务主键 |
+| granted_by | bigint | 授权人后台管理员业务主键 |
+| granted_time | timestamptz not null | 授权时间 |
+
+表：`content_reports`
+
+中文名：内容举报表。
+
+用途：保存用户对公开推荐、评论、图片、门店等对象的举报入口信息和处理状态。
+
+| 字段名 | 推荐类型 | 中文注释 |
+| --- | --- | --- |
+| report_id | bigint not null | 举报业务主键 |
+| reporter_user_id | bigint | 举报人用户业务主键，匿名举报或系统导入时可为空 |
+| target_type | varchar(64) not null | 被举报对象类型，如 RECOMMENDATION、COMMENT、MEDIA、STORE、USER |
+| target_id | bigint not null | 被举报对象业务主键 |
+| target_owner_user_id | bigint | 被举报对象所属用户业务主键快照 |
+| report_reason | varchar(64) not null | 举报原因编码 |
+| report_description_summary | varchar(500) | 举报补充说明的脱敏摘要 |
+| evidence_media_ids | varchar(1000) | 举报证据媒体业务主键列表，使用逗号分隔 |
+| report_status | varchar(32) not null | 举报状态，如 PENDING、PROCESSING、RESOLVED、REJECTED |
+| assigned_admin_user_id | bigint | 当前处理人后台管理员业务主键 |
+| resolved_time | timestamptz | 举报处理完成时间 |
+
+表：`moderation_cases`
+
+中文名：内容审核工单表。
+
+用途：保存公开内容审核、举报转审核和系统风控转人工审核的工单。
+
+| 字段名 | 推荐类型 | 中文注释 |
+| --- | --- | --- |
+| case_id | bigint not null | 审核工单业务主键 |
+| source_type | varchar(64) not null | 工单来源，如 REPORT、SYSTEM_RISK、MANUAL_REVIEW |
+| source_id | bigint | 来源业务主键，如 report_id 或风控任务主键 |
+| target_type | varchar(64) not null | 审核对象类型，如 RECOMMENDATION、COMMENT、MEDIA、STORE、USER |
+| target_id | bigint not null | 审核对象业务主键 |
+| target_owner_user_id | bigint | 审核对象所属用户业务主键快照 |
+| target_snapshot | jsonb | 审核对象脱敏快照，不保存私密推荐正文和敏感凭证 |
+| case_priority | varchar(32) not null | 工单优先级，如 LOW、NORMAL、HIGH、URGENT |
+| case_status | varchar(32) not null | 工单状态，如 PENDING、PROCESSING、APPROVED、REJECTED、HIDDEN、CLOSED |
+| assigned_admin_user_id | bigint | 当前处理人后台管理员业务主键 |
+| due_time | timestamptz | 期望处理截止时间 |
+| closed_time | timestamptz | 工单关闭时间 |
+
+表：`moderation_actions`
+
+中文名：内容审核动作表。
+
+用途：保存审核工单上的每一次处理动作，用于追溯审核结论、补偿和复盘。
+
+| 字段名 | 推荐类型 | 中文注释 |
+| --- | --- | --- |
+| action_id | bigint not null | 审核动作业务主键 |
+| case_id | bigint not null | 审核工单业务主键 |
+| admin_user_id | bigint not null | 执行动作的后台管理员业务主键 |
+| action_type | varchar(64) not null | 审核动作类型，如 CLAIM、APPROVE、HIDE、REJECT、RESTORE、ESCALATE |
+| action_reason | varchar(255) | 审核动作原因摘要 |
+| target_status_before | varchar(32) | 执行动作前目标状态快照 |
+| target_status_after | varchar(32) | 执行动作后期望目标状态 |
+| apply_status | varchar(32) not null | 动作应用状态，如 PENDING、SUCCESS、FAILED、COMPENSATING |
+| request_id | varchar(128) | 执行动作时的请求流水号 |
+| trace_id | varchar(128) | 执行动作时的链路追踪号 |
+
+表：`store_merge_tasks`
+
+中文名：门店合并工单表。
+
+用途：保存人工发起或系统发现的门店合并候选项和后台处理结论。
+
+| 字段名 | 推荐类型 | 中文注释 |
+| --- | --- | --- |
+| merge_task_id | bigint not null | 门店合并工单业务主键 |
+| source_store_id | bigint not null | 待合并门店业务主键 |
+| target_store_id | bigint not null | 目标门店业务主键 |
+| source_snapshot | jsonb | 待合并门店脱敏快照 |
+| target_snapshot | jsonb | 目标门店脱敏快照 |
+| merge_reason | varchar(255) | 发起合并的原因摘要 |
+| task_status | varchar(32) not null | 合并工单状态，如 PENDING、APPROVED、REJECTED、APPLIED、FAILED |
+| assigned_admin_user_id | bigint | 当前处理人后台管理员业务主键 |
+| applied_time | timestamptz | 合并结论应用到门店服务的时间 |
+| failure_reason | varchar(500) | 应用失败原因摘要 |
+
+表：`user_management_tasks`
+
+中文名：用户管理工单表。
+
+用途：保存封禁、解禁、限制登录、强制下线等用户状态管理操作的编排过程。
+
+| 字段名 | 推荐类型 | 中文注释 |
+| --- | --- | --- |
+| task_id | bigint not null | 用户管理工单业务主键 |
+| target_user_id | bigint not null | 被管理用户业务主键 |
+| target_account_id | bigint | 被管理账号业务主键 |
+| action_type | varchar(64) not null | 用户管理动作类型，如 DISABLE_USER、ENABLE_USER、DISABLE_LOGIN、FORCE_LOGOUT |
+| action_reason | varchar(255) not null | 用户管理动作原因摘要 |
+| task_status | varchar(32) not null | 工单状态，如 PENDING、APPLYING、SUCCESS、FAILED、COMPENSATING |
+| admin_user_id | bigint not null | 发起操作的后台管理员业务主键 |
+| user_service_apply_status | varchar(32) | 用户服务应用状态 |
+| auth_service_apply_status | varchar(32) | 认证服务应用状态 |
+| applied_time | timestamptz | 工单全部应用完成时间 |
+| failure_reason | varchar(500) | 失败原因摘要 |
+
+表：`admin_operation_logs`
+
+中文名：后台操作记录表。
+
+用途：保存后台管理员关键操作的业务摘要，用于后台自身审计、权限排查和补偿任务定位。
+
+| 字段名 | 推荐类型 | 中文注释 |
+| --- | --- | --- |
+| operation_id | bigint not null | 后台操作业务主键 |
+| admin_user_id | bigint not null | 后台管理员业务主键 |
+| operation_module | varchar(64) not null | 操作模块，如 RBAC、CONTENT、USER、STORE、LOG |
+| operation_type | varchar(64) not null | 操作类型，如 CREATE、UPDATE、DECIDE、EXPORT、QUERY |
+| target_type | varchar(64) | 被操作对象类型 |
+| target_id | bigint | 被操作对象业务主键 |
+| operation_summary | varchar(500) not null | 操作脱敏摘要 |
+| operation_result | varchar(32) not null | 操作结果，如 SUCCESS、FAILED |
+| request_id | varchar(128) | 操作请求流水号 |
+| trace_id | varchar(128) | 操作链路追踪号 |
+
+#### 6.2.10 日志库表结构
+
+数据库：
+
+```text
+foodmap_log_db
+```
+
+说明：
+
+- 日志库不是业务服务库，只保存日志平台所需的结构化摘要、审计摘要和归档游标。
+- 全量技术日志 7 天内保存在 Elasticsearch，7 天后归档到 OSS，不写入 `foodmap_log_db`。
+- `api_access_log` 保存接口访问摘要，默认保留 15 天，用于后台最近调用查询、统计报表和故障排查入口，过期摘要由 `foodmap-log-service` 清理。
+- `log_archive_records` 保存全量日志归档计划、对象存储位置和处理状态，不保存全量日志正文。
+- 日志库不能保存 Token、密码、密钥、完整手机号、完整邮箱、私密推荐内容、评论正文或完整请求体。
+
+表：`api_access_log`
+
+中文名：接口访问摘要日志表。
+
+用途：保存每次业务接口调用的摘要字段，支持按 `requestId`、`traceId`、服务、状态码和时间范围查询最近 15 天调用情况。
+
+| 字段名 | 推荐类型 | 中文注释 |
+| --- | --- | --- |
+| access_log_id | bigint not null | 接口访问摘要日志业务主键 |
+| request_id | varchar(128) not null | 请求流水号，用于查询一次接口调用相关日志 |
+| trace_id | varchar(128) not null | 链路追踪号，用于串联跨服务调用日志 |
+| span_id | varchar(128) | 当前日志所在调用片段编号 |
+| service_name | varchar(128) not null | 产生日志的服务名称 |
+| event_name | varchar(128) not null | 访问日志事件名，如 api.access.completed 或 api.access.slow |
+| log_level | varchar(16) not null | 日志等级，如 INFO、WARN、ERROR |
+| http_method | varchar(16) not null | HTTP 请求方法 |
+| request_path | varchar(500) not null | HTTP 请求路径，不包含敏感请求体 |
+| http_status | integer not null | HTTP 响应状态码 |
+| duration_ms | bigint not null | 接口耗时，单位毫秒 |
+| client_ip_masked | varchar(64) | 脱敏后的客户端 IP 摘要 |
+| account_id | bigint | 认证账号业务主键，可为空 |
+| user_id | bigint | 用户业务主键，可为空 |
+| gateway_route_id | varchar(128) | 网关路由标识，可为空 |
+| error_code | varchar(128) | 稳定业务错误码或系统错误码，可为空 |
+| occurred_time | timestamptz not null | 接口访问发生时间 |
+| source_topic | varchar(128) | 来源 Kafka topic |
+| source_partition | integer | 来源 Kafka 分区 |
+| source_offset | bigint | 来源 Kafka offset |
+
+表：`log_archive_records`
+
+中文名：日志归档记录表。
+
+用途：记录全量日志从 Elasticsearch 热存储归档到 OSS 的计划窗口、目标对象 Key 和处理状态，为后续归档执行、失败重试、后台查询和人工补偿提供事实依据。
+
+| 字段名 | 推荐类型 | 中文注释 |
+| --- | --- | --- |
+| archive_id | bigint not null | 日志归档记录业务主键 |
+| archive_type | varchar(64) not null | 归档类型，如 FULL_LOG_DAILY |
+| window_start_time | timestamptz not null | 归档日志窗口开始时间，闭区间 |
+| window_end_time | timestamptz not null | 归档日志窗口结束时间，开区间 |
+| source_index_pattern | varchar(128) not null | 来源 Elasticsearch 索引模式 |
+| storage_provider | varchar(32) not null | 归档存储提供方，如 OSS |
+| bucket_name | varchar(128) not null | 归档对象存储桶名称 |
+| object_key | varchar(500) not null | 归档对象存储 Key |
+| archive_status | varchar(32) not null | 归档状态，如 PENDING、RUNNING、SUCCESS、FAILED |
+| retry_count | integer not null | 归档重试次数 |
+| failure_reason | varchar(500) | 归档失败原因摘要 |
+| started_time | timestamptz | 归档开始时间 |
+| completed_time | timestamptz | 归档完成时间 |
+
 ## 7. 服务通信模式
 
 ### 7.1 同步调用
@@ -1419,6 +1770,80 @@ foodmap_media_db
 
 - 如果未来采用异步媒体确认，推荐服务可以消费该事件。
 
+### 8.5 ContentModerationDecidedEvent
+
+发送方：
+
+- 管理后台服务
+
+消费方：
+
+- 推荐服务
+- 社区服务，后续可选
+
+用途：
+
+- 将后台公开内容审核结论通知推荐服务。
+- 推荐服务根据审核结论更新推荐、评论或图片状态。
+- 社区服务在公开内容被隐藏、恢复或删除后刷新公开索引和统计。
+
+事件内容：
+
+```json
+{
+  "eventId": "uuid",
+  "eventType": "ContentModerationDecidedEvent",
+  "eventVersion": "1",
+  "occurredAt": "datetime",
+  "sourceService": "foodmap-admin-service",
+  "caseId": "long",
+  "actionId": "long",
+  "targetType": "RECOMMENDATION",
+  "targetId": "long",
+  "decision": "HIDE",
+  "reasonCode": "POLICY_VIOLATION",
+  "adminUserId": "long",
+  "requestId": "string",
+  "traceId": "string"
+}
+```
+
+### 8.6 StoreMergeApprovedEvent
+
+发送方：
+
+- 管理后台服务
+
+消费方：
+
+- 门店服务
+- 推荐服务，后续可选
+- 社区服务，后续可选
+
+用途：
+
+- 将后台门店合并审核结论通知门店服务。
+- 门店服务负责真正执行门店合并、别名维护和合并记录落库。
+- 推荐服务和社区服务后续可根据门店合并结果刷新推荐引用和公开统计索引。
+
+### 8.7 UserManagementRequestedEvent
+
+发送方：
+
+- 管理后台服务
+
+消费方：
+
+- 用户服务
+- 认证服务
+
+用途：
+
+- 将封禁、解禁、限制登录、强制下线等后台用户管理动作传递给对应事实服务。
+- 用户服务负责用户资料状态变更。
+- 认证服务负责账号登录状态、Refresh Token 撤销和强制下线。
+- 管理后台服务必须记录每个消费者的应用状态，失败时进入重试、补偿或人工处理。
+
 ## 9. API 设计原则
 
 1. 外部 API 通过网关暴露。
@@ -1427,7 +1852,7 @@ foodmap_media_db
 4. API 响应不能泄露私密数据元信息。
 5. 列表接口必须支持分页。
 6. 地图接口必须支持边界框查询。
-7. 所有写接口必须使用 Token 中的登录用户身份。
+7. App 写接口必须使用 Token 中的登录用户身份，管理后台写接口必须使用后台 Token 中的管理员身份。
 
 ## 10. 初始外部 API 草案
 
@@ -1504,6 +1929,82 @@ GET /api/community/dishes/hot
 GET /api/community/stores/nearby
 ```
 
+### 10.8 管理后台接口
+
+管理后台接口阶段性规划，后续实现时必须继续补充 DTO 字段、权限码和错误码。
+
+认证和当前管理员：
+
+```text
+POST /api/admin/auth/login
+POST /api/admin/auth/logout
+GET /api/admin/me
+GET /api/admin/me/permissions
+```
+
+后台账号和角色权限：
+
+```text
+GET /api/admin/users
+POST /api/admin/users
+PUT /api/admin/users/{adminUserId}
+POST /api/admin/users/{adminUserId}/disable
+POST /api/admin/users/{adminUserId}/enable
+GET /api/admin/roles
+POST /api/admin/roles
+PUT /api/admin/roles/{roleId}
+PUT /api/admin/roles/{roleId}/permissions
+```
+
+举报和内容审核：
+
+```text
+GET /api/admin/reports
+GET /api/admin/reports/{reportId}
+POST /api/admin/reports/{reportId}/assign
+POST /api/admin/reports/{reportId}/resolve
+GET /api/admin/moderation/cases
+GET /api/admin/moderation/cases/{caseId}
+POST /api/admin/moderation/cases/{caseId}/claim
+POST /api/admin/moderation/cases/{caseId}/approve
+POST /api/admin/moderation/cases/{caseId}/hide
+POST /api/admin/moderation/cases/{caseId}/reject
+POST /api/admin/moderation/cases/{caseId}/restore
+```
+
+门店合并和用户管理：
+
+```text
+GET /api/admin/store-merge/tasks
+POST /api/admin/store-merge/tasks
+GET /api/admin/store-merge/tasks/{mergeTaskId}
+POST /api/admin/store-merge/tasks/{mergeTaskId}/approve
+POST /api/admin/store-merge/tasks/{mergeTaskId}/reject
+GET /api/admin/user-management/tasks
+POST /api/admin/user-management/tasks
+GET /api/admin/user-management/tasks/{taskId}
+POST /api/admin/user-management/tasks/{taskId}/retry
+```
+
+日志、审计和运营摘要：
+
+```text
+GET /api/admin/logs/traces?requestId=&traceId=
+GET /api/admin/logs/access?requestId=&serviceName=&startTime=&endTime=
+GET /api/admin/audit/actions?actorId=&targetType=&targetId=&startTime=&endTime=
+GET /api/admin/metrics/overview?startTime=&endTime=
+GET /api/admin/operations
+```
+
+接口约束：
+
+- `/api/admin/**` 必须由网关使用后台认证链路保护，不能被 App 普通用户 Token 调用。
+- 所有列表接口必须分页，并限制最大分页大小。
+- 所有写接口必须从后台 Token 获取 `adminUserId`，不能信任请求体中的管理员身份。
+- 高风险写接口必须写入 `admin_operation_logs`，并通过统一审计日志链路输出审计事件。
+- 审核、合并、用户管理类写接口必须具备幂等键或重复提交保护。
+- 后台查询日志和审计记录时必须按权限控制字段可见性，不能返回 Token、密码、完整手机号、完整邮箱、私密推荐正文、评论正文或图片签名 URL。
+
 ## 11. 安全和权限要求
 
 ### 11.1 认证
@@ -1533,6 +2034,16 @@ GET /api/community/stores/nearby
 - 校验文件大小。
 - 校验文件类型。
 - 保存对象 Key、URL、拥有者 ID 和状态。
+
+### 11.5 管理后台
+
+- 管理后台账号与 App 用户账号分离。
+- 管理后台登录、登出、权限变更和高风险操作必须记录审计日志。
+- `/api/admin/**` 不能接受普通 App 用户 Access Token。
+- 后台管理员 Token 必须校验签名、过期时间、权限版本和管理员状态。
+- 管理后台查询用户、推荐、评论、媒体、日志和审计信息时必须执行字段级脱敏。
+- 管理后台导出能力后续实现时必须单独授权、记录导出范围，并限制导出频率。
+- 生产环境管理后台入口必须使用 HTTPS，并优先限制来源 IP、启用更严格限流和二次确认。
 
 ## 12. 可见范围校验
 
@@ -2173,11 +2684,11 @@ flowchart LR
 
 ### 16.7.1 中间件访问封装规则
 
-阶段一必须在 `foodmap-common` 中沉淀 Redis、对象存储、MQ 和内部服务调用的统一封装接口。业务服务后续只能依赖这些接口或服务内基础设施适配器，不能在业务代码中散落直接操作中间件 SDK。
+阶段一必须在 `foodmap-common` 中沉淀 Redis、对象存储、MQ、搜索引擎和内部服务调用的统一封装接口。业务服务后续只能依赖这些接口或服务内基础设施适配器，不能在业务代码中散落直接操作中间件 SDK。
 
 必须遵守：
 
-- 业务代码不能直接散落使用 `RedisTemplate`、`StringRedisTemplate`、`RabbitTemplate`、`MinioClient`、OSS SDK 或其他中间件原始客户端。
+- 业务代码不能直接散落使用 `RedisTemplate`、`StringRedisTemplate`、`RabbitTemplate`、`MinioClient`、OSS SDK、Elasticsearch HTTP/SDK 或其他中间件原始客户端。
 - 业务代码不能直接使用 `RedissonClient`、`RLock`、`RBucket` 或其他 Redisson API；Redisson API 只能出现在 `foodmap-common` 的锁适配器或服务内基础设施适配器中。
 - 所有 Redis Key 必须通过统一 Key 规则生成，格式为 `foodmap:{service}:{biz}:{version}:{key}`。
 - Redis 缓存写入必须显式设置 TTL，不能创建无过期时间的业务缓存。
@@ -2185,6 +2696,7 @@ flowchart LR
 - MQ 事件发布必须通过统一事件发布接口，例如 `DomainEventPublisher`，不能直接在业务服务里调用 MQ 客户端。
 - MQ 事件必须使用统一事件信封，至少包含 `eventId`、`eventType`、`eventVersion`、`sourceService`、`occurredAt` 和业务载荷。
 - 对象存储访问必须通过统一对象存储接口，例如 `ObjectStorageClient`，不能把 MinIO 或 OSS SDK 调用散落到业务代码。
+- Elasticsearch/OpenSearch 等搜索引擎访问必须通过统一搜索接口，例如 `SearchClient`，不能在各服务里散落拼接 `_search` HTTP 请求、认证头和分页游标处理。
 - 内部服务调用必须通过统一客户端配置，包含超时、请求头透传、错误解码和安全日志。
 - 中间件封装层必须记录调用耗时、结果和错误码，但不能记录敏感内容、完整 Token、完整 objectKey 或私密业务正文。
 
@@ -2209,13 +2721,29 @@ foodmap-common
 │   ├── ObjectStorageClient
 │   ├── ObjectStorageCommand
 │   ├── ObjectStorageResult
-│   └── ObjectStorageException
+│   ├── ObjectStorageException
+│   └── minio
+│       ├── FoodMapMinioStorageAutoConfiguration
+│       ├── MinioObjectStorageProperties
+│       ├── MinioObjectStorageClient
+│       ├── MinioObjectStorageGateway
+│       └── MinioHttpObjectStorageGateway
 ├── mq
 │   ├── DomainEvent
 │   ├── DomainEventEnvelope
 │   ├── DomainEventPublisher
 │   ├── EventPublishResult
 │   └── EventConsumeGuard
+├── search
+│   ├── SearchClient
+│   ├── SearchRequest
+│   ├── SearchResponse
+│   ├── SearchHit
+│   ├── SearchException
+│   └── elasticsearch
+│       ├── FoodMapSearchAutoConfiguration
+│       ├── ElasticsearchSearchProperties
+│       └── ElasticsearchSearchClient
 └── client
     ├── InternalRequestHeaders
     ├── InternalClientException
@@ -2227,7 +2755,8 @@ foodmap-common
 
 - Redis、MQ、对象存储先定义稳定接口和轻量默认实现，避免业务服务直接绑定具体 SDK。
 - 分布式锁真实 Redis 实现优先使用 Redisson 适配器，但业务层只能依赖 `DistributedLockClient`。
-- MinIO 作为本地开发默认对象存储实现，阿里云 OSS 先保留适配器接口和配置占位。
+- MinIO 作为本地开发默认对象存储实现，当前通过 common `MinioObjectStorageClient` 和 S3 Signature V4 HTTP 网关访问；阿里云 OSS 后续新增同级适配器并复用 `ObjectStorageClient` 端口。
+- 搜索引擎统一入口先提供 `SearchClient` 和 Elasticsearch HTTP 适配器，具体服务只表达领域查询语义，通用客户端负责地址、认证、超时、HTTP 错误和 hits 解析。
 - RabbitMQ 作为本地开发默认 MQ 实现，RocketMQ 先保留事件模型兼容空间。
 - 分布式锁阶段一可以先提供接口和明确异常，具体实现根据业务需要落地。
 
@@ -2406,25 +2935,31 @@ sequenceDiagram
 
 ### 16.10.1 统一日志方法规则
 
-阶段一必须在 `foodmap-common` 中沉淀统一日志工具和 MDC 上下文能力，避免各服务日志格式、字段和脱敏策略不一致。
+B1.5-a 已在 `foodmap-common` 中沉淀统一日志工具、MDC 上下文、Servlet 访问日志过滤器和自动配置，避免各服务日志格式、字段和脱敏策略不一致。B1.5-b 继续补齐 SQL 日志拦截、Kafka/Elasticsearch/独立日志库/OSS 归档和后台日志查询能力。
 
 推荐包结构：
 
 ```text
 foodmap-common
 └── logging
-    ├── LogConstants
+    ├── TraceHeaders
+    ├── TraceIdGenerator
+    ├── LogMdcKeys
     ├── LogContext
     ├── LogField
     ├── LogMdcFilter
+    ├── ApiAccessLogFilter
+    ├── FoodMapLoggingAutoConfiguration
+    ├── FoodMapLoggingProperties
     ├── SafeLog
-    ├── LogMasker
-    └── BusinessLogEvent
+    └── LogMasker
 ```
 
 必须遵守：
 
-- `LogMdcFilter` 负责写入或透传 `traceId`、`requestId`、`serviceName`、`userId`。
+- `LogMdcFilter` 负责写入或透传 `traceId`、`requestId`、`spanId`、`serviceName`、`accountId`、`userId`。
+- `ApiAccessLogFilter` 负责输出服务内接口访问摘要，不读取请求体，不输出 Token、密码、私密推荐正文或评论正文。
+- `FoodMapLoggingAutoConfiguration` 只在 Servlet Web 应用生效，业务服务引入 `foodmap-common` 后默认获得 MDC 和访问日志过滤器。
 - `LogMasker` 负责手机号、邮箱、Token、密码、密钥、对象存储 Key、私密推荐内容、评论正文等脱敏。
 - `SafeLog` 或等价通用方法负责结构化业务日志输出。
 - 业务成功日志使用稳定事件名，例如 `recommendation.create.success`、`comment.create.success`。
@@ -2478,7 +3013,7 @@ Bearer abc.def.ghi -> Bearer ***
 
 ### 16.10.2 日志平台总体设计
 
-FoodMap 日志平台采用应用内结构化日志、Kafka 缓冲、Elasticsearch 热查询、独立日志归档库和 OSS 冷存储的分层设计。Kafka 从当前阶段开始纳入后端基础设施规划，不再仅作为后续预留项。
+FoodMap 日志平台采用应用内结构化日志、Kafka 缓冲、Elasticsearch 热查询、独立日志归档库和 OSS 冷存储的分层设计。Kafka 从 B1.5-b 开始进入可运行基础设施；B1.5-a 先完成应用内日志上下文、访问日志和网关透传闭环。
 
 核心目标：
 
@@ -2487,7 +3022,43 @@ FoodMap 日志平台采用应用内结构化日志、Kafka 缓冲、Elasticsearc
 - 日志链路不反向影响主业务请求，日志投递失败不能阻塞用户请求。
 - 业务库只存业务数据，不承载全量技术日志；接口访问摘要使用独立日志库，全量日志使用 Elasticsearch 和 OSS 承载。
 
-推荐链路：
+B1.5-a 当前实现链路：
+
+```mermaid
+flowchart LR
+    client["iOS App / Admin Web"]
+    gateway_trace["GatewayTraceFilter<br/>生成或校验 requestId / traceId"]
+    gateway_auth["GatewayAuthFilter<br/>认证和可信身份头"]
+    service_mdc["LogMdcFilter<br/>写入 MDC 和响应头"]
+    service_access["ApiAccessLogFilter<br/>服务内访问摘要"]
+    service_log["业务服务<br/>SafeLog 自动带上下文"]
+    b15b_sink["B1.5-b 日志平台<br/>Kafka / Elasticsearch / Log PostgreSQL / OSS"]
+
+    client -->|"HTTP 请求"| gateway_trace
+    gateway_trace -->|"X-Request-Id / X-Trace-Id / X-Span-Id"| gateway_auth
+    gateway_auth -->|"可信 accountId / userId"| service_mdc
+    service_mdc --> service_access
+    service_access --> service_log
+    service_log -. "后续采集" .-> b15b_sink
+```
+
+B1.5-a 实现原理：
+
+- 网关入口由 `GatewayTraceFilter` 生成或校验 `X-Request-Id`、`X-Trace-Id`、`X-Span-Id`，并写回响应头。
+- 网关过滤器顺序早于认证过滤器，因此认证失败也能返回同一 `requestId` 供排查。
+- Servlet 业务服务由 `FoodMapLoggingAutoConfiguration` 自动注册 `LogMdcFilter` 和 `ApiAccessLogFilter`。
+- `LogMdcFilter` 读取链路头和网关可信身份头，写入 MDC，并在 finally 中清理 FoodMap 日志上下文。
+- `SafeLog` 输出业务日志时自动附带 MDC 中的 `requestId`、`traceId`、`spanId`、`serviceName`、`accountId`、`userId`。
+- `ApiAccessLogFilter` 只记录方法、路径、状态码、耗时、客户端 IP 等摘要字段，不读取请求体。
+
+B1.5 后续每个小阶段必须同步补充：
+
+- 关键技术说明：说明引入的框架、配置项、类和边界。
+- 实现原理说明：说明一次请求、一次 SQL 或一次日志事件如何流转。
+- 架构图或流程图：优先使用 Mermaid，必要时后续可补充 D2/SVG 图。
+- 运维和风险说明：说明默认开关、生产风险、排查入口和回滚方式。
+
+B1.5-b 推荐链路：
 
 ```mermaid
 flowchart LR
@@ -2495,6 +3066,7 @@ flowchart LR
     collector["日志采集器<br/>OTel Collector / Filebeat / Fluent Bit"]
     kafka["Kafka<br/>日志缓冲与削峰"]
     es["Elasticsearch<br/>全量热查询 7 天"]
+    log_service["foodmap-log-service<br/>接口摘要消费落库"]
     api_db["独立日志 PostgreSQL<br/>api_access_log 保留 15 天"]
     archive_job["日志归档任务<br/>7 天后压缩归档"]
     oss["OSS 冷存储<br/>全量日志低频查询"]
@@ -2502,7 +3074,8 @@ flowchart LR
     app -->|"stdout / file appender"| collector
     collector -->|"结构化日志事件"| kafka
     kafka -->|"近实时写入"| es
-    kafka -->|"接口访问摘要"| api_db
+    kafka -->|"接口访问摘要"| log_service
+    log_service -->|"幂等写入"| api_db
     es -->|"7 天后全量归档"| archive_job
     archive_job -->|"压缩日志文件"| oss
 ```
@@ -2522,6 +3095,524 @@ foodmap.logs.sql             SQL 执行日志。
 foodmap.logs.audit           业务审计日志。
 foodmap.logs.security        安全日志。
 ```
+
+B1.5-b Kafka 本地缓冲管道：
+
+```mermaid
+flowchart LR
+    app["后端服务<br/>stdout / file 日志"]
+    future_collector["B1.5-b collector<br/>Fluent Bit"]
+    kafka["Kafka<br/>logging profile 启动"]
+    init["kafka-init<br/>创建日志 topic"]
+    topics["日志 topics<br/>application / api-access / sql / audit / security"]
+    future_sink["消费端<br/>Logstash / foodmap-log-service / OSS 归档"]
+
+    app -. "共享日志卷 / 后续文件日志" .-> future_collector
+    future_collector -->|"Kafka output"| kafka
+    init -->|"--if-not-exists"| topics
+    kafka --> topics
+    topics -. "后续消费" .-> future_sink
+```
+
+关键技术和实现原理：
+
+- 本地 Compose 使用 `bitnami/kafka:3.7` 的 KRaft 单节点模式，不依赖 Zookeeper，降低本地依赖数量。
+- Kafka 服务放入 Docker Compose `logging` profile，默认基础环境不启动，避免拖慢非日志开发。
+- `kafka-init` 是一次性初始化容器，等待 Kafka 健康后用 `kafka-topics.sh --create --if-not-exists` 创建五类日志 topic。
+- 本地宿主机通过 `localhost:${KAFKA_EXTERNAL_PORT:-9094}` 访问 Kafka，Compose 网络内 collector 使用 `kafka:9092`。
+- 当前阶段不把业务服务直接改成 Kafka producer；由 Fluent Bit 作为统一 collector 接入，避免业务代码散落 Kafka SDK。
+
+运维和风险说明：
+
+- 本地启用命令：`docker compose --env-file .env.dev -f deploy/docker-compose.dev.yml --profile logging up -d kafka kafka-init fluent-bit elasticsearch elasticsearch-init`。
+- 本地默认日志 topic 分区数为 `KAFKA_LOG_TOPIC_PARTITIONS=3`，单节点副本因子固定为 1。
+- Kafka 本地默认保留时间为 `KAFKA_LOG_RETENTION_HOURS=24`，生产保留周期由独立部署和 Elasticsearch/OSS 策略决定。
+- 如果 Kafka 不可用，当前阶段不影响业务服务启动；后续接入 collector 后也必须保留本地 fallback 日志，不能阻塞业务请求。
+
+B1.5-b Fluent Bit 本地采集器：
+
+```mermaid
+flowchart LR
+    app_file["后端容器日志文件<br/>foodmap-app-logs 卷"]
+    fluent["Fluent Bit<br/>tail + parser + rewrite_tag"]
+    app_topic["foodmap.logs.application"]
+    api_topic["foodmap.logs.api-access"]
+    sql_topic["foodmap.logs.sql"]
+    audit_topic["foodmap.logs.audit"]
+    security_topic["foodmap.logs.security"]
+    kafka["Kafka<br/>kafka:9092"]
+
+    app_file -->|"tail /foodmap/logs/*.log"| fluent
+    fluent -->|"默认未分类"| app_topic
+    fluent -->|"api.access.*"| api_topic
+    fluent -->|"sql.execute.*"| sql_topic
+    fluent -->|"audit.*"| audit_topic
+    fluent -->|"security.*"| security_topic
+    app_topic --> kafka
+    api_topic --> kafka
+    sql_topic --> kafka
+    audit_topic --> kafka
+    security_topic --> kafka
+```
+
+关键技术和实现原理：
+
+- 本地 Compose 使用 `fluent/fluent-bit:3.1` 作为日志采集器，服务名为 `foodmap-fluent-bit`，同样放入 `logging` profile。
+- Fluent Bit 读取共享日志卷 `foodmap-app-logs` 中的 `/foodmap/logs/*.log`，状态数据库写入 `foodmap-fluent-bit-state`，避免重启后重复读取全部日志。
+- `parser` filter 尝试解析 JSON 日志；普通文本日志保留原始 `log` 字段，保证当前阶段的控制台文本格式也能被转发。
+- `rewrite_tag` filter 按日志事件名前缀路由：`api.access.*` 进入接口访问 topic，`sql.execute.*` 进入 SQL topic，`audit.*` 和 `security.*` 分别进入审计和安全 topic，未匹配日志进入 application topic。
+- Kafka output 使用 `LOG_KAFKA_BROKERS` 配置，默认 `kafka:9092`，业务服务仍不依赖 Kafka SDK。
+
+运维和风险说明：
+
+- 本地启用采集器命令：`docker compose --env-file .env.dev -f deploy/docker-compose.dev.yml --profile logging up -d kafka kafka-init fluent-bit`。
+- 当前阶段 Fluent Bit 完成本地采集和 Kafka 分流；Logstash 负责 Kafka 到 Elasticsearch 的本地热查询写入；`foodmap-log-service` 负责接口访问摘要消费落库；OSS 归档仍由后续小阶段实现。
+- 后续容器化 Java 服务需要把应用日志写入或挂载到 `foodmap-app-logs` 卷；未完成文件日志配置前，Fluent Bit 可空跑，不影响业务服务。
+- 如果 Kafka 或 Fluent Bit 不可用，业务服务仍应保留本地日志输出；日志链路故障只影响集中查询，不影响用户请求。
+
+B1.5-b Elasticsearch 本地热查询基础：
+
+```mermaid
+flowchart LR
+    kafka["Kafka<br/>五类日志 topic"]
+    future_consumer["B1.5-b 日志消费器<br/>Logstash"]
+    es["Elasticsearch<br/>foodmap-elasticsearch"]
+    init["elasticsearch-init<br/>写入 ILM 和 Index Template"]
+    ilm["ILM Policy<br/>foodmap-logs-hot-7d"]
+    template["Index Template<br/>foodmap-logs-*"]
+    query["后台日志查询 API<br/>后续 B1.5-b"]
+
+    kafka -->|"Kafka input 消费五类 topic"| future_consumer
+    future_consumer -->|"Elasticsearch output 写入"| es
+    init -->|"PUT _ilm/policy"| ilm
+    init -->|"PUT _index_template"| template
+    ilm --> es
+    template --> es
+    query -. "按 requestId / traceId 查询" .-> es
+```
+
+关键技术和实现原理：
+
+- 本地 Compose 使用 `docker.elastic.co/elasticsearch/elasticsearch:8.15.3` 单节点模式，服务名为 `foodmap-elasticsearch`，仅在 `logging` profile 下启动。
+- 本地关闭 `xpack.security.enabled`，方便开发联调；生产环境必须启用认证、TLS、访问控制和磁盘水位监控。
+- `elasticsearch-init` 使用 `curlimages/curl` 在 Elasticsearch 健康后写入 `foodmap-logs-hot-7d` ILM 策略和 `foodmap-logs-template` 索引模板。
+- 索引模板覆盖 `foodmap-logs-*`，固定 `requestId`、`traceId`、`serviceName`、`eventName`、`level`、`logType`、`durationMs`、`status`、`mapperId`、`sqlHash` 等常用查询字段类型，避免动态映射把关键字段识别错误。
+- 当前阶段已建立 Elasticsearch 本地热存储、ILM、mapping 规则和 Logstash 本地消费写入器；接口访问摘要由 `foodmap-log-service` 写入独立日志 PostgreSQL；OSS 归档和管理后台查询 API 在后续小阶段实现。
+
+运维和风险说明：
+
+- 本地 Elasticsearch 端口为 `localhost:${ELASTICSEARCH_HTTP_PORT:-9200}`，默认 JVM 参数为 `-Xms512m -Xmx512m`。
+- 本地 ILM 策略 7 天后删除 `foodmap-logs-*` 热日志；生产删除前必须确认 OSS 归档任务已完成，不能只依赖 Elasticsearch 保留全量历史。
+- 查询入口后续由管理后台日志 API 封装，业务代码不直接拼 Elasticsearch 查询 DSL。
+- 如果 Elasticsearch 不可用，Kafka 中日志不应立即丢弃；Logstash 会依赖 Kafka 消费位点和 Elasticsearch output 重试机制保留恢复空间，生产还需要补充死信或人工补偿策略。
+
+B1.5-b Kafka 到 Elasticsearch 消费写入：
+
+```mermaid
+flowchart LR
+    app_topic["foodmap.logs.application"]
+    api_topic["foodmap.logs.api-access"]
+    sql_topic["foodmap.logs.sql"]
+    audit_topic["foodmap.logs.audit"]
+    security_topic["foodmap.logs.security"]
+    logstash["Logstash<br/>foodmap-logstash"]
+    filter["Filter<br/>logType / eventName / timestamp"]
+    es_index["Elasticsearch<br/>foodmap-logs-YYYY.MM.dd"]
+    query["后续后台查询<br/>requestId / traceId"]
+
+    app_topic --> logstash
+    api_topic --> logstash
+    sql_topic --> logstash
+    audit_topic --> logstash
+    security_topic --> logstash
+    logstash --> filter
+    filter -->|"bulk index"| es_index
+    query -. "后续读取" .-> es_index
+```
+
+关键技术和实现原理：
+
+- 本地 Compose 使用 `docker.elastic.co/logstash/logstash:8.15.3`，服务名为 `foodmap-logstash`，仅在 `logging` profile 下启动。
+- Logstash `kafka` input 消费五类日志 topic，消费组默认为 `foodmap-logstash-elasticsearch-local`，本地 `auto_offset_reset=earliest` 便于从头验证日志流。
+- Logstash `filter` 根据 Kafka topic 写入稳定 `logType`，例如 `foodmap.logs.api-access` 对应 `api-access`，并从文本 `log` 字段提取事件名前缀作为 `eventName`。
+- 如果日志事件包含 `timestamp`，Logstash 会尝试解析为 `@timestamp`；解析失败时打上 `foodmap_timestamp_parse_failed` 标签，便于后续排查采集格式问题。
+- Logstash `elasticsearch` output 写入 `foodmap-logs-%{+YYYY.MM.dd}` 每日索引，关闭 Logstash 自带模板管理，使用 B1.5-b 已定义的 FoodMap 索引模板和 ILM 策略。
+
+运维和风险说明：
+
+- 本地启动完整日志热查询链路命令：`docker compose --env-file .env.dev -f deploy/docker-compose.dev.yml --profile logging up -d kafka kafka-init fluent-bit elasticsearch elasticsearch-init logstash`。
+- Logstash 默认 JVM 参数为 `-Xms256m -Xmx256m`，本地资源紧张时可以临时不启动 `logstash`，不影响业务服务和 Kafka 缓冲。
+- 本地 Logstash 到 Elasticsearch 使用明文 HTTP；生产必须使用认证、TLS、限权账号和独立部署参数。
+- 当前 Logstash 写入目标仅为 Elasticsearch 热查询；接口访问摘要由 `foodmap-log-service` 落独立日志 PostgreSQL；OSS 归档和管理后台查询 API 仍在后续 B1.5-b 小阶段完成。
+
+B1.5-b 独立日志 PostgreSQL 基础：
+
+```mermaid
+flowchart LR
+    kafka_api["Kafka<br/>foodmap.logs.api-access"]
+    log_service["foodmap-log-service<br/>ApiAccessLogKafkaConsumer"]
+    ingest["ApiAccessLogIngestionService<br/>解析 + 事务边界"]
+    mapper["ApiAccessLogMapper.xml<br/>on conflict do nothing"]
+    log_db["foodmap_log_db<br/>独立日志 PostgreSQL"]
+    flyway["log-postgres-migrate<br/>Flyway migration"]
+    table["api_access_log<br/>保留 15 天"]
+    admin["管理后台<br/>最近调用查询 / 统计报表"]
+
+    flyway -->|"V1__create_api_access_log.sql"| table
+    table --> log_db
+    kafka_api -->|"消费接口访问 topic"| log_service
+    log_service --> ingest
+    ingest --> mapper
+    mapper -->|"insert summary"| table
+    admin -. "后续查询" .-> table
+```
+
+关键技术和实现原理：
+
+- `foodmap_log_db` 是独立日志 PostgreSQL 库，不属于认证、用户、推荐、管理后台等业务服务库。
+- 本地 PostgreSQL 初始化脚本会创建 `foodmap_log_db`；已有数据卷不会自动补建，需手动执行建库 SQL 或重建本地卷。
+- `deploy/logging/postgres/migration` 使用 Flyway 管理日志库结构，当前 `V1__create_api_access_log.sql` 创建 `api_access_log`、业务主键序列、查询索引和中文注释。
+- `api_access_log` 只保存接口访问摘要和 Kafka 来源位点，不保存请求体、Token、密码、私密推荐正文和完整敏感信息。
+- `foodmap-log-service` 使用 Spring Kafka 消费 `foodmap.logs.api-access`，消费方法只接收 Kafka 记录并交给应用服务处理，避免在消息入口堆叠持久化细节。
+- `ApiAccessLogEventParser` 兼容结构化 JSON 字段和当前 SafeLog 文本键值对，优先使用 `requestId`、`traceId`、`serviceName`、`durationMs` 等稳定字段，缺失时使用安全默认值兜底。
+- `ApiAccessLogIngestionService` 是消费落库的事务边界，依赖仓储端口 `ApiAccessLogRepository`，不直接依赖 MyBatis Mapper。
+- `ApiAccessLogMapper.xml` 使用 `on conflict on constraint uk_api_access_log_source do nothing`，以 Kafka `source_topic + source_partition + source_offset` 唯一约束保证重复消费不会重复写入。
+
+B1.5-b 接口访问摘要消费落库：
+
+```mermaid
+sequenceDiagram
+    participant kafka as "Kafka foodmap.logs.api-access"
+    participant consumer as "ApiAccessLogKafkaConsumer"
+    participant parser as "ApiAccessLogEventParser"
+    participant service as "ApiAccessLogIngestionService"
+    participant repository as "ApiAccessLogRepository"
+    participant db as "foodmap_log_db.api_access_log"
+
+    kafka->>consumer: "ConsumerRecord<String, Map>"
+    consumer->>service: "ingest(payload, topic, partition, offset)"
+    service->>parser: "parse(...)"
+    parser-->>service: "ApiAccessLogEntity"
+    service->>repository: "saveIgnoreDuplicate(entity)"
+    repository->>db: "insert ... on conflict do nothing"
+```
+
+关键技术和实现原理：
+
+- 新增 `after/foodmap-log-service` Maven 模块，服务名为 `foodmap-log-service`，端口默认 `8089`，仅负责日志平台基础设施能力。
+- 模块依赖 Spring Kafka、MyBatis、PostgreSQL Driver、Nacos Config/Discovery 和 Actuator；业务服务仍不直接依赖 Kafka SDK。
+- Kafka 消费默认关闭，只有显式配置 `LOG_SERVICE_API_ACCESS_CONSUMER_ENABLED=true` 后才创建 `ApiAccessLogKafkaConsumer`，避免未启动 Kafka 时影响普通本地开发。
+- 数据库连接使用 `LOG_DB_URL`、`LOG_DB_USERNAME`、`LOG_DB_PASSWORD`，连接目标固定为 `foodmap_log_db`，不复用管理后台或业务服务数据库。
+- 落库字段只覆盖接口方法、路径、状态码、耗时、脱敏 IP、账号/用户业务主键、错误码、发生时间和 Kafka 来源位点，不接收请求体和敏感正文。
+
+运维和风险说明：
+
+- 本地执行日志库迁移命令：`docker compose --env-file .env.dev -f deploy/docker-compose.dev.yml --profile logging up log-postgres-migrate`。
+- 本机启动消费服务前，需要先启动 `kafka`、`kafka-init` 和 `log-postgres-migrate`，并设置 `LOG_SERVICE_API_ACCESS_CONSUMER_ENABLED=true`。
+- 本机 Kafka 使用 `LOG_KAFKA_BROKERS=127.0.0.1:9094`，容器网络内使用 `LOG_KAFKA_BROKERS=kafka:9092`。
+- `api_access_log` 设计保留 15 天；当前由 `ApiAccessLogRetentionScheduler` 定时触发清理，默认关闭，显式开启后按配置 cron 物理删除过期摘要。
+- `source_topic + source_partition + source_offset` 设置唯一约束，为 Kafka 消费落库提供幂等基础。
+- 管理后台查询日志摘要时只能访问 `foodmap_log_db` 的摘要字段，不能把全量 Elasticsearch 日志复制进 `foodmap_admin_db`。
+- 如果 `foodmap-log-service` 停止，业务请求不受影响；Kafka 会按消费组位点保留待消费消息，恢复后继续写入。生产环境需要补充消费失败告警、死信或人工补偿入口。
+
+B1.5-b 接口访问摘要查询内部 API：
+
+```mermaid
+flowchart LR
+    admin["foodmap-admin-service<br/>后续 /api/admin/logs/**"]
+    controller["LogApiAccessLogController<br/>/internal/logs/api-access"]
+    service["ApiAccessLogQueryService<br/>参数归一化 + DTO 转换"]
+    repository["ApiAccessLogRepository<br/>查询仓储端口"]
+    mapper["ApiAccessLogMapper.xml<br/>动态条件 + 分页"]
+    db["foodmap_log_db.api_access_log<br/>15 天摘要"]
+
+    admin -->|"内部调用"| controller
+    controller --> service
+    service --> repository
+    repository --> mapper
+    mapper --> db
+```
+
+关键技术和实现原理：
+
+- `foodmap-log-service` 先提供内部查询接口 `/internal/logs/api-access`，后续管理后台 `/api/admin/logs/**` 只做鉴权和代理，不直接访问日志库。
+- 查询条件支持 `requestId`、`traceId`、`serviceName`、`logLevel`、`httpStatus`、`occurredFrom`、`occurredTo` 和分页参数。
+- `ApiAccessLogQueryService` 负责 trim 文本条件、修正非法分页参数并限制最大 `pageSize=100`，避免后台误触发大范围扫描。
+- 查询响应只返回 `api_access_log` 已脱敏摘要字段，不包含请求体、Token、密码、私密推荐正文、评论正文或完整敏感信息。
+- MyBatis 动态 SQL 只查询独立日志库 `foodmap_log_db.api_access_log`，按 `occurred_time desc, access_log_id desc` 稳定排序。
+
+B1.5-b 管理后台日志查询代理入口：
+
+```mermaid
+sequenceDiagram
+    participant browser as "Admin Web / Operator"
+    participant gateway as "API Gateway"
+    participant admin as "foodmap-admin-service"
+    participant client as "LogApiAccessLogClient"
+    participant log as "foodmap-log-service"
+    participant db as "foodmap_log_db.api_access_log"
+
+    browser->>gateway: "GET /api/admin/logs/api-access"
+    gateway->>admin: "透传 admin 身份与 trace headers"
+    admin->>client: "search(request)"
+    client->>log: "GET /internal/logs/api-access"
+    log->>db: "分页查询 15 天摘要"
+    db-->>log: "脱敏摘要列表"
+    log-->>admin: "ApiResponse<PageResponse<ApiAccessLogResponse>>"
+    admin-->>browser: "ApiResponse<PageResponse<AdminApiAccessLogResponse>>"
+```
+
+关键技术和实现原理：
+
+- 管理后台对外暴露 `/api/admin/logs/api-access`，只承载后台鉴权、权限控制、参数转发和响应 DTO 转换。
+- `foodmap-admin-service` 不连接 `foodmap_log_db`，不写 Elasticsearch DSL，也不读取 OSS 归档文件；日志数据访问统一由 `foodmap-log-service` 承担。
+- `LogApiAccessLogClient` 调用日志服务内部接口时必须设置请求超时，并透传 `X-Request-Id`、`X-Trace-Id` 和 `X-Span-Id`，保证后台查询自身也能串联日志。
+- 日志服务不可用时，管理后台返回稳定错误码，不暴露内部地址、异常类名、堆栈或数据库信息。
+- `/api/admin/logs/api-access` 当前要求 `X-Admin-User-Id` 存在且 `X-Admin-Permissions` 包含 `LOG_ACCESS_READ`；后续真实后台登录态完成后由网关或后台认证过滤器从后台 Access Token 中生成这些受信字段。
+
+B1.5-b 管理后台日志权限骨架：
+
+```mermaid
+flowchart LR
+    gateway["API Gateway<br/>后台 Token 校验"]
+    headers["受信内部请求头<br/>X-Admin-User-Id / X-Admin-Permissions"]
+    controller["AdminLogController<br/>/api/admin/logs/api-access"]
+    guard["AdminPermissionGuard<br/>登录态 + 权限码校验"]
+    code["AdminPermissionCode<br/>LOG_ACCESS_READ"]
+    service["AdminApiAccessLogQueryService<br/>日志查询代理"]
+    log_service["foodmap-log-service<br/>/internal/logs/api-access"]
+
+    gateway --> headers
+    headers --> controller
+    controller --> guard
+    guard -->|"校验 required permission"| code
+    guard -->|"通过"| service
+    service --> log_service
+    guard -. "缺少身份: 401" .-> controller
+    guard -. "缺少权限: 403" .-> controller
+```
+
+关键技术和实现原理：
+
+- `AdminAuthHeaders` 固化后台服务当前阶段信任的内部头名称，避免 Controller 中散落魔法字符串。
+- `AdminPermissionCode.LOG_ACCESS_READ` 固化日志查询权限码，后续接入真实 RBAC 时继续复用该稳定枚举值。
+- `AdminPermissionGuard` 先检查后台管理员身份，再检查权限码列表；缺少身份返回 `401`，已登录但缺少日志查询权限返回 `403`，避免混淆认证失败和授权失败。
+- `AdminLogController` 在代理日志服务前先执行权限校验，校验失败不会调用 `foodmap-log-service`，避免后台权限绕过。
+
+运维和风险说明：
+
+- 当前阶段的 `X-Admin-User-Id` 和 `X-Admin-Permissions` 必须只允许网关或受信内部链路写入，公网客户端不能直接绕过网关访问后台服务。
+- 后续接入后台登录态后，应由网关或后台认证过滤器从后台 Access Token 和权限表生成内部头，而不是让前端自行传权限码。
+- 日志查询权限只授予具备运维或审计职责的后台角色；后续如增加导出或归档下载，需要新增更细权限码，不能复用普通查询权限。
+
+B1.5-b 接口访问摘要保留清理：
+
+```mermaid
+flowchart LR
+    cron["Spring Scheduler<br/>ApiAccessLogRetentionScheduler"]
+    service["ApiAccessLogRetentionService<br/>计算 now - retentionDays"]
+    repository["ApiAccessLogRepository<br/>仓储端口"]
+    mapper["ApiAccessLogMapper.xml<br/>deleteOccurredBefore"]
+    db["foodmap_log_db.api_access_log"]
+    log["SafeLog<br/>api_access_log.retention.cleanup.completed"]
+
+    cron -->|"默认关闭<br/>显式开启后按 cron 触发"| service
+    service -->|"cutoffTime"| repository
+    repository --> mapper
+    mapper -->|"delete where occurred_time < cutoff"| db
+    cron -->|"输出删除行数和保留天数"| log
+```
+
+关键技术和实现原理：
+
+- `LogRetentionConfiguration` 启用 Spring Scheduling，并提供 UTC `Clock`，让清理边界可测试、可复现。
+- `ApiAccessLogRetentionService` 使用 `foodmap.log.api-access.retention-days` 计算保留边界，默认 15 天；小于 1 的配置按 1 天兜底。
+- `ApiAccessLogRetentionScheduler` 由 `foodmap.log.api-access.retention.cleanup.enabled` 控制，默认不创建定时清理任务。
+- 清理 SQL 使用物理删除：`delete from api_access_log where occurred_time < cutoffTime`，避免摘要库随时间无限增长。
+- 清理完成后通过 `SafeLog` 输出 `api_access_log.retention.cleanup.completed`，只包含 `retentionDays` 和 `deletedRows`，不输出任何请求内容。
+
+运维和风险说明：
+
+- 本地或生产打开清理任务前，需要设置 `LOG_SERVICE_API_ACCESS_RETENTION_CLEANUP_ENABLED=true`。
+- 默认 cron 为 `0 20 3 * * *`，默认时区为 `Asia/Shanghai`，可通过 `LOG_SERVICE_API_ACCESS_RETENTION_CLEANUP_CRON` 和 `LOG_SERVICE_API_ACCESS_RETENTION_CLEANUP_ZONE` 调整。
+- 如果后台需要查询最近 15 天接口摘要，不能把 `LOG_SERVICE_API_ACCESS_RETENTION_DAYS` 配置得小于 15；临时缩短保留期属于不可逆数据删除操作。
+- 物理删除不会影响 Elasticsearch 7 天热日志和 OSS 归档策略，但生产上仍应先完成 OSS 归档再依赖长期历史检索。
+- 如果清理任务失败，业务请求不受影响；排查入口是 `api_access_log.retention.cleanup.completed` 是否缺失、数据库连接池指标和 `foodmap-log-service` 应用日志。
+
+B1.5-b 全量日志 OSS 归档计划：
+
+```mermaid
+flowchart LR
+    scheduler["Spring Scheduler<br/>LogArchivePlanningScheduler"]
+    planner["LogArchivePlanningService<br/>计算 now - hotRetentionDays"]
+    record["log_archive_records<br/>PENDING 归档记录"]
+    future_worker["后续归档执行器<br/>ES Export + gzip"]
+    oss["OSS<br/>logs/full/year=YYYY/month=MM/day=DD"]
+    admin["后台查询<br/>归档状态 / 失败原因"]
+
+    scheduler -->|"默认关闭<br/>显式开启后按 cron 触发"| planner
+    planner -->|"生成每日窗口和 objectKey"| record
+    record -. "后续读取 PENDING" .-> future_worker
+    future_worker -. "上传 jsonl.gz" .-> oss
+    admin -. "后续查询归档记录" .-> record
+```
+
+关键技术和实现原理：
+
+- `deploy/logging/postgres/migration/V2__create_log_archive_records.sql` 创建 `log_archive_records`，记录归档窗口、来源索引、对象存储位置、状态、重试次数和失败原因。
+- `LogArchivePlanningService` 根据 `foodmap.log.archive.hot-retention-days` 计算刚超过 Elasticsearch 热保留期的 UTC 自然日窗口。
+- 对象 Key 使用稳定分区格式：`logs/full/year=YYYY/month=MM/day=DD/foodmap-logs-YYYY-MM-DD.jsonl.gz`，便于 OSS 生命周期规则、人工下载和后续后台定位。
+- `LogArchivePlanningScheduler` 由 `foodmap.log.archive.planning.enabled` 控制，默认不创建归档计划，避免本地开发误生成归档任务。
+- 当前小阶段只生成 `PENDING` 归档记录，不直接调用 Elasticsearch 或 OSS SDK；后续归档执行器读取 PENDING 记录后再完成导出、压缩、上传和状态流转。
+
+运维和风险说明：
+
+- 本地或生产打开归档计划前，需要设置 `LOG_ARCHIVE_PLANNING_ENABLED=true`，默认 cron 为 `0 40 3 * * *`。
+- `LOG_ARCHIVE_HOT_RETENTION_DAYS` 默认 7，应与 Elasticsearch ILM 热日志保留期保持一致，避免计划窗口早于热日志可查询范围或晚于删除时间。
+- 当前 `log_archive_records` 只代表计划，不代表归档文件已经存在；后台展示时必须区分 `PENDING`、`RUNNING`、`SUCCESS`、`FAILED`。
+- 后续真正删除 Elasticsearch 7 天热日志前，必须确认对应归档窗口状态为 `SUCCESS`，不能仅依赖 ILM 自动删除。
+- 如果归档计划服务停止，业务请求不受影响；恢复后可重新生成同一窗口计划，唯一约束会避免重复记录。
+
+B1.5-b 全量日志归档执行器骨架：
+
+```mermaid
+flowchart LR
+    scheduler["Spring Scheduler<br/>LogArchiveExecutionScheduler"]
+    service["LogArchiveExecutionService<br/>执行一条 PENDING 记录"]
+    repository["LogArchiveRecordRepository<br/>状态流转"]
+    exporter["LogArchiveExportClient<br/>ES 导出适配器"]
+    storage["LogArchiveObjectStorageClient<br/>common ObjectStorageClient 桥接"]
+    table["log_archive_records<br/>PENDING / RUNNING / SUCCESS / FAILED"]
+
+    scheduler -->|"默认关闭<br/>显式开启后按 cron 触发"| service
+    service -->|"findNextPending"| repository
+    repository --> table
+    service -->|"mark RUNNING"| repository
+    service -->|"export(record)"| exporter
+    service -->|"upload(record, payload)"| storage
+    service -->|"成功 mark SUCCESS<br/>失败 mark FAILED + retryCount"| repository
+```
+
+关键技术和实现原理：
+
+- `LogArchiveExecutionService` 每次只处理一条 `PENDING` 归档记录，先标记 `RUNNING`，再调用导出端口和对象存储端口，最后标记 `SUCCESS` 或 `FAILED`。
+- `LogArchiveExportClient` 隔离 Elasticsearch 查询、分页和 gzip 压缩实现；当前已提供真实 Elasticsearch 导出适配器，默认关闭，未开启时继续由 `NoopLogArchiveExportClient` 保持服务可启动。
+- `LogArchiveObjectStorageClient` 隔离 OSS/MinIO SDK；当前已提供 `ObjectStorageLogArchiveObjectStorageClient`，通过 `foodmap-common` 的统一 `ObjectStorageClient` 上传归档载荷，未启用或无具体 ObjectStorageClient Bean 时继续使用 Noop 适配器。
+- 状态更新不把数据库事务包住外部导出和上传，避免长时间持有数据库连接。
+- 失败时写入 `FAILED`、`retry_count + 1` 和截断后的 `failure_reason`，为后续重试和后台排查提供入口。
+
+运维和风险说明：
+
+- 当前执行器调度默认关闭，需要设置 `LOG_ARCHIVE_EXECUTION_ENABLED=true` 才会按 cron 触发。
+- 归档上传默认关闭，需要设置 `LOG_ARCHIVE_STORAGE_UPLOAD_ENABLED=true`，并确保运行环境已注册 MinIO/OSS 等具体 `ObjectStorageClient` Bean，否则仍会回退到 Noop 对象存储适配器。
+- Elasticsearch 导出已支持 `search_after` 分页和 gzip JSON Lines；后续 OSS/MinIO 适配器接入时仍需进一步演进为文件或流式上传，避免一天全量日志长期驻留内存。
+- 若执行器中断，已标记 `RUNNING` 的任务需要后续补偿策略重新置回 `PENDING` 或进入人工处理。
+- 后台查询必须展示归档状态和失败原因，不能把 `PENDING` 或 `RUNNING` 误认为可下载归档。
+
+B1.5-b 真实 Elasticsearch 归档导出适配器：
+
+```mermaid
+flowchart TD
+    record["log_archive_records<br/>RUNNING 窗口"]
+    archive_client["ElasticsearchLogArchiveExportClient<br/>日志归档 DSL + gzip"]
+    search_client["foodmap-common SearchClient<br/>统一 ES 入口"]
+    es_adapter["ElasticsearchSearchClient<br/>HTTP/Auth/Timeout/Hits 解析"]
+    es["Elasticsearch<br/>foodmap-logs-* 热日志"]
+    page["SearchResponse<br/>source + sortValues"]
+    gzip["gzip JSON Lines<br/>application/x-ndjson+gzip"]
+    storage["LogArchiveObjectStorageClient<br/>后续 OSS/MinIO 上传"]
+
+    record -->|"windowStart/windowEnd/indexPattern"| archive_client
+    archive_client -->|"SearchRequest<br/>range @timestamp"| search_client
+    search_client --> es_adapter
+    es_adapter -->|"POST /{index}/_search"| es
+    es --> page
+    page -->|"source 写入"| gzip
+    page -->|"最后一条 sortValues"| archive_client
+    archive_client -->|"search_after 下一页<br/>直到空页"| search_client
+    gzip --> storage
+```
+
+关键技术和实现原理：
+
+- `foodmap-common` 提供统一 `SearchClient`、`SearchRequest`、`SearchResponse` 和 `SearchHit`，`ElasticsearchSearchClient` 负责 Java 21 `HttpClient` 调用 Elasticsearch `_search`、认证头、超时、HTTP 错误和 hits 解析。
+- `ElasticsearchLogArchiveExportClient` 不再直接拼接 Elasticsearch HTTP 请求，只负责日志归档领域语义：归档窗口查询体、`search_after` 游标推进和 gzip JSON Lines 输出。
+- 查询条件只使用归档计划中的 `sourceIndexPattern`、`windowStartTime`、`windowEndTime` 和配置化 `timestampField`，默认按 `@timestamp` 升序导出。
+- 每页读取 `SearchHit.source` 并写入 gzip JSON Lines；如果 hit 带有 `sortValues`，使用最后一条 `sortValues` 作为下一次请求的 `search_after` 游标，直到 Elasticsearch 返回空页。
+- `LOG_ARCHIVE_ELASTICSEARCH_ENABLED=false` 默认关闭日志归档真实导出；开启后由 `@ConditionalOnProperty` 接管 `LogArchiveExportClient`，同时日志服务会把该开关映射到 common `foodmap.search.elasticsearch.enabled`。
+- 支持 `LOG_ARCHIVE_ELASTICSEARCH_PAGE_SIZE`、`LOG_ARCHIVE_ELASTICSEARCH_MAX_PAGES`、`FOODMAP_SEARCH_ELASTICSEARCH_URL`、连接/请求超时、Basic Auth 和 API Key 配置，生产密钥只能来自环境变量或配置中心。
+
+运维和风险说明：
+
+- 只有同时开启 `LOG_ARCHIVE_EXECUTION_ENABLED=true` 和 `LOG_ARCHIVE_ELASTICSEARCH_ENABLED=true`，执行器才会真实访问 Elasticsearch。
+- 当前导出载荷仍以字节数组交给对象存储端口，适合 B1.5-b 基础闭环和小窗口验证；生产大流量场景在接入 OSS/MinIO 时应改造为临时文件或流式上传。
+- `LOG_ARCHIVE_ELASTICSEARCH_MAX_PAGES` 用于防止异常游标或过大窗口导致无限循环；触顶会让归档任务进入 `FAILED`，等待重试或人工处理。
+- common 搜索适配器和日志导出适配器都不能打印日志正文、Token、密码、认证头或请求体，只把失败摘要交给执行服务落库，避免二次泄露敏感内容。
+- 如果 Elasticsearch 已按 7 天 ILM 删除了目标窗口，导出会生成空归档或失败；生产必须保证归档计划和执行早于热日志删除窗口。
+
+B1.5-b 日志归档对象存储上传桥接：
+
+```mermaid
+flowchart LR
+    executor["LogArchiveExecutionService"]
+    payload["LogArchivePayload<br/>gzip JSON Lines"]
+    adapter["ObjectStorageLogArchiveObjectStorageClient<br/>默认关闭"]
+    command["ObjectStorageCommand.systemUpload<br/>bucket/objectKey/contentType/length"]
+    common_storage["foodmap-common ObjectStorageClient"]
+    storage["MinIO / OSS<br/>具体适配器"]
+    table["log_archive_records<br/>SUCCESS / FAILED"]
+
+    executor --> payload
+    executor -->|"upload(record, payload)"| adapter
+    adapter --> command
+    command --> common_storage
+    common_storage --> storage
+    adapter -->|"异常抛出给执行器"| executor
+    executor --> table
+```
+
+关键技术和实现原理：
+
+- `ObjectStorageLogArchiveObjectStorageClient` 是日志服务内的基础设施适配器，只负责把 `LogArchiveRecordEntity` 和 `LogArchivePayload` 转换成 common `ObjectStorageCommand`。
+- `ObjectStorageCommand.systemUpload` 用于日志归档这类系统对象，不绑定单个 `ownerUserId`，避免为了通过校验写入假的用户主键。
+- 真正的 MinIO/OSS 访问由 `foodmap-common` 的具体 `ObjectStorageClient` 实现负责；当前 MinIO 通过 S3 兼容 HTTP 适配器完成上传，日志服务不直接依赖 MinIO 或 OSS SDK。
+- 上传异常会向上抛给 `LogArchiveExecutionService`，由执行器统一把归档任务标记为 `FAILED` 并记录截断后的失败原因。
+
+B1.5-b common MinIO 对象存储实现：
+
+```mermaid
+sequenceDiagram
+    participant log as "foodmap-log-service"
+    participant client as "ObjectStorageClient"
+    participant minioClient as "MinioObjectStorageClient"
+    participant gateway as "MinioHttpObjectStorageGateway"
+    participant minio as "MinIO"
+
+    log->>client: "putObject(systemUpload, gzip stream)"
+    client->>minioClient: "通用上传命令"
+    minioClient->>gateway: "bucket/key/type/length/stream"
+    gateway->>gateway: "构造 path-style PUT Object"
+    gateway->>gateway: "计算 AWS Signature V4"
+    gateway->>minio: "PUT /bucket/objectKey"
+    minio-->>gateway: "2xx / error"
+    gateway-->>minioClient: "上传完成"
+    minioClient-->>log: "ObjectStorageResult"
+```
+
+关键技术和实现原理：
+
+- `ObjectStorageClient` 是业务服务唯一依赖入口，媒体服务、日志服务和后续其他服务都通过这个端口访问对象存储。
+- `MinioObjectStorageClient` 只做通用命令到 MinIO 网关的转换，并统一返回 `ObjectStorageResult`；它不记录完整 objectKey、密钥或敏感路径。
+- `MinioHttpObjectStorageGateway` 使用 MinIO 兼容的 S3 path-style `PUT Object` 协议，并在 common 内完成 AWS Signature V4 认证头计算，避免业务服务直接依赖第三方 SDK。
+- `FoodMapMinioStorageAutoConfiguration` 只有在 `FOODMAP_STORAGE_MINIO_ENABLED=true` 时注册 `ObjectStorageClient`，默认关闭，避免未配置凭证的服务启动后误连本地或生产对象存储。
+- 后续阿里云 OSS 会新增 `oss` 包下的同级适配器，共享 `ObjectStorageCommand`、`ObjectStorageResult`、`ObjectStorageException` 和业务调用入口。
+
+运维和风险说明：
+
+- `LOG_ARCHIVE_STORAGE_UPLOAD_ENABLED=false` 默认关闭上传桥接，避免本地未配置对象存储时误把归档任务标为成功。
+- 开启上传桥接前，需要同时确认 `LOG_ARCHIVE_STORAGE_UPLOAD_ENABLED=true`、`FOODMAP_STORAGE_MINIO_ENABLED=true` 或后续 OSS 开关、对象存储凭证和 bucket 已准备好；否则 Spring 不会注册该桥接适配器，执行器仍使用 Noop 对象存储。
+- 当前归档载荷仍以字节数组传入 common 存储接口，后续大窗口归档需要继续演进为临时文件或流式上传，降低内存占用。
+- 对象 Key 属于排查线索但可能包含业务路径，日志输出必须脱敏或截断，不能输出完整敏感路径、Token 或存储密钥。
 
 关于“DEBUG 等级以上”：
 
@@ -2549,6 +3640,112 @@ foodmap.logs.security        安全日志。
 ### 16.10.4 SQL 日志设计
 
 SQL 日志用于排查 Mapper/XML、动态条件、索引和慢查询问题，统一按 `DEBUG` 输出。
+
+B1.5-b 第一小阶段先落地 MyBatis SQL 日志基础能力：
+
+- `foodmap-common` 提供 MyBatis `Interceptor`，只在存在 MyBatis 类时自动注册。
+- SQL 日志动态配置统一放在 `foodmap.logging.sql` 下；当前拦截器每次 SQL 执行时通过 `SqlLogConfigProvider` 重读 Environment，并已接入 Nacos Config 的可选配置导入。
+- 默认启用拦截器但关闭全量 SQL DEBUG；慢 SQL 和异常 SQL 仍按 `WARN` 输出脱敏摘要。
+- Mapper 白名单、黑名单、requestId/traceId 定向开关和采样率已由配置模型表达；B1.5-b 后续继续补齐 Kafka/Elasticsearch/独立日志库/OSS 归档。
+
+SQL 日志拦截执行流：
+
+```mermaid
+sequenceDiagram
+    participant service as "ServiceImpl / Repository"
+    participant mapper as "MyBatis Mapper"
+    participant interceptor as "MyBatisSqlLogInterceptor"
+    participant formatter as "SqlLogFormatter"
+    participant policy as "SqlLogPolicy"
+    participant safelog as "SafeLog"
+
+    service->>mapper: "调用 Mapper 方法"
+    mapper->>interceptor: "Executor.query / update"
+    interceptor->>interceptor: "记录开始时间和 Mapper ID"
+    interceptor->>mapper: "执行原始 SQL"
+    mapper-->>interceptor: "返回结果或抛出异常"
+    interceptor->>formatter: "BoundSql + 参数映射"
+    formatter-->>interceptor: "脱敏后的 actualSql"
+    interceptor->>policy: "读取当前 SQL 配置并判断等级"
+    alt "异常 SQL"
+        interceptor->>safelog: "sql.execute.failed WARN"
+    else "慢 SQL"
+        interceptor->>safelog: "sql.execute.slow WARN"
+    else "命中 DEBUG 开关"
+        interceptor->>safelog: "sql.execute.debug DEBUG"
+    end
+```
+
+关键技术和实现原理：
+
+- `MyBatisSqlLogInterceptor` 拦截 `Executor.query` 和 `Executor.update`，不改变 Mapper、Repository 和事务边界。
+- `BoundSql` 提供 MyBatis 最终生成的 SQL 和参数映射，日志不能使用 Mapper XML 原始模板。
+- `SqlLogFormatter` 将 `?` 占位符按顺序替换为已脱敏 SQL 字面量，并按 `max-sql-length` 截断。
+- `SqlLogPolicy` 判断是否输出 DEBUG 明细；慢 SQL 和异常 SQL 即使 DEBUG 关闭也会输出 WARN 摘要。
+- `SafeLog` 负责最终结构化输出，并自动带上 B1.5-a 写入 MDC 的 `requestId`、`traceId`、`serviceName` 等字段。
+
+Nacos 配置约定：
+
+- 本地默认 `NACOS_CONFIG_ENABLED=false`，避免没有配置中心时影响 IDEA/Maven 启动。
+- 联调或生产开启 `NACOS_CONFIG_ENABLED=true` 后，服务导入共享日志配置 `foodmap-logging-{profile}.yml` 和服务私有配置 `{spring.application.name}-{profile}.yml`。
+- Nacos Group 默认使用 `FOODMAP`，可通过 `NACOS_CONFIG_GROUP` 覆盖。
+- 共享日志配置模板位于 `deploy/nacos/foodmap-logging-template.yml`，发布时按环境复制为 `foodmap-logging-local.yml`、`foodmap-logging-orbstack.yml` 或 `foodmap-logging-prod.yml`。
+
+SQL 动态配置读取流：
+
+```mermaid
+flowchart LR
+    sql_call["一次 SQL 执行"]
+    interceptor["MyBatisSqlLogInterceptor"]
+    provider["SqlLogConfigProvider"]
+    env_provider["EnvironmentSqlLogConfigProvider"]
+    env["Spring Environment"]
+    config["foodmap.logging.sql.*"]
+    policy["SqlLogPolicy"]
+
+    sql_call --> interceptor
+    interceptor -->|"每次执行读取"| provider
+    provider --> env_provider
+    env_provider -->|"重新 bind"| env
+    env --> config
+    config --> policy
+    policy -->|"决定 DEBUG / WARN / 不输出"| interceptor
+```
+
+动态配置实现原理：
+
+- `SqlLogConfigProvider` 是拦截器和配置来源之间的稳定接口，避免拦截器直接依赖 Nacos SDK。
+- `EnvironmentSqlLogConfigProvider` 每次通过 Spring `Binder` 重新绑定 `foodmap.logging.sql`，读取最新 Environment。
+- Nacos Config refresh 更新 Environment 后，下一次 SQL 执行即可读取新配置，不需要重建 MyBatis 拦截器。
+- `StaticSqlLogConfigProvider` 仅用于测试或固定配置场景，避免测试依赖 Spring Environment。
+
+Nacos 配置导入流：
+
+```mermaid
+flowchart LR
+    app["后端服务启动"]
+    import_cfg["spring.config.import"]
+    shared["foodmap-logging-{profile}.yml"]
+    service_cfg["{serviceName}-{profile}.yml"]
+    env["Spring Environment"]
+    provider["EnvironmentSqlLogConfigProvider"]
+    sql["SQL 日志策略"]
+
+    app --> import_cfg
+    import_cfg -->|"NACOS_CONFIG_ENABLED=true"| shared
+    import_cfg -->|"NACOS_CONFIG_ENABLED=true"| service_cfg
+    shared --> env
+    service_cfg --> env
+    env --> provider
+    provider --> sql
+```
+
+Nacos 配置实现原理：
+
+- 各服务引入 `spring-cloud-starter-alibaba-nacos-config`，但默认 `NACOS_CONFIG_ENABLED=false`。
+- `spring.config.import` 使用 `optional:nacos:`，配置中心不可用时不会阻断本地默认启动。
+- 共享日志配置放在 `foodmap-logging-{profile}.yml`，服务私有配置放在 `{spring.application.name}-{profile}.yml`。
+- 生产临时排查 SQL 时，优先只配置 `request-ids`、`trace-ids` 或窄范围 `mapper-includes`，排查结束后清空。
 
 生产策略：
 
@@ -2596,6 +3793,25 @@ sqlType=SELECT
 elapsedMs=12
 rows=1
 actualSql=select ... from auth_accounts where account_id = 10001 and is_delete = 0
+```
+
+配置示例：
+
+```yaml
+foodmap:
+  logging:
+    sql:
+      enabled: true
+      debug-enabled: false
+      slow-threshold-ms: 500
+      sample-rate: 1.0
+      mapper-includes:
+        - com.foodmap.auth.infrastructure.persistence.mapper.*
+      mapper-excludes:
+        - "*.AuthBusinessIdMapper.*"
+      request-ids: []
+      trace-ids: []
+      max-sql-length: 2000
 ```
 
 ### 16.10.5 业务接口调用留痕设计
@@ -2662,7 +3878,6 @@ actualSql=select ... from auth_accounts where account_id = 10001 and is_delete =
 api_access_log      接口访问摘要，独立日志 PostgreSQL 保存 15 天。
 audit_log           关键业务审计日志，保存关键动作事实和业务主键。
 ```
-```
 
 归档字段规则：
 
@@ -2694,7 +3909,7 @@ FoodMap 必须支持通过一个流水号查询一次接口调用过程中的全
 
 - 网关收到外部请求时，如果请求头没有 `X-Request-Id` 和 `traceparent`，必须生成新的 `requestId` 和 `traceId`。
 - 如果客户端或上游传入 `X-Request-Id`，网关可以透传，但必须校验长度和字符集，避免日志注入。
-- 网关向下游微服务透传 `X-Request-Id`、`X-Trace-Id`，后续接入 OpenTelemetry 后同时支持 W3C `traceparent`。
+- 网关向下游微服务透传 `X-Request-Id`、`X-Trace-Id`、`X-Span-Id`；后续接入 OpenTelemetry 后同时支持 W3C `traceparent`。
 - 业务服务通过 `LogMdcFilter` 或 WebFlux 等价过滤器把 `requestId`、`traceId`、`spanId`、`serviceName`、`accountId`、`userId` 写入 MDC。
 - `SafeLog`、接口访问日志、SQL 日志、异常日志、中间件日志都必须自动带上这些字段。
 - 服务间同步调用和 MQ 事件必须继续透传 `traceId`，MQ 消费生成新的 `requestId` 或消费批次 ID，但保留原始 `traceId`。
@@ -2852,6 +4067,7 @@ service-name
 - `foodmap-common` 统一日志上下文、日志脱敏和安全日志方法。
 - `foodmap-common` Redis Key 规范、缓存客户端和分布式锁接口。
 - `foodmap-common` 对象存储统一接口，MinIO 默认实现和 OSS 适配器占位。
+- `foodmap-common` 搜索引擎统一入口 `SearchClient` 和 Elasticsearch 适配器。
 - `foodmap-common` MQ 事件模型、事件发布接口和消费幂等辅助。
 - `foodmap-common` 内部服务调用超时、错误解码和安全日志封装。
 - Actuator health、基础指标和 OpenTelemetry 预留。

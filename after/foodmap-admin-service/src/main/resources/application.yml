@@ -1,0 +1,38 @@
+server:
+  port: ${SERVER_PORT:8088}
+
+spring:
+  application:
+    name: foodmap-admin-service
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:${FOODMAP_PROFILE:local}}
+  config:
+    import:
+      - optional:nacos:foodmap-logging-${SPRING_PROFILES_ACTIVE:${FOODMAP_PROFILE:local}}.yml?refreshEnabled=true
+      - optional:nacos:${spring.application.name}-${SPRING_PROFILES_ACTIVE:${FOODMAP_PROFILE:local}}.yml?refreshEnabled=true
+  cloud:
+    nacos:
+      config:
+        enabled: ${NACOS_CONFIG_ENABLED:false}
+        server-addr: ${NACOS_SERVER_ADDR:127.0.0.1:8848}
+        group: ${NACOS_CONFIG_GROUP:FOODMAP}
+        file-extension: yml
+      discovery:
+        enabled: ${NACOS_DISCOVERY_ENABLED:true}
+
+foodmap:
+  env:
+    profile: ${SPRING_PROFILES_ACTIVE:${FOODMAP_PROFILE:local}}
+  admin:
+    log-service:
+      base-url: ${ADMIN_LOG_SERVICE_BASE_URL:http://127.0.0.1:8089}
+      request-timeout: ${ADMIN_LOG_SERVICE_REQUEST_TIMEOUT:5s}
+
+mybatis:
+  mapper-locations: classpath*:mapper/**/*.xml
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

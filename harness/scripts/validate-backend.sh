@@ -23,11 +23,43 @@ foodmap-store-service
 foodmap-recommendation-service
 foodmap-community-service
 foodmap-media-service
+foodmap-admin-service
+foodmap-log-service
 "
 
 for service in $services; do
   [ -d "after/$service" ] || printf 'WARN: missing planned service: %s\n' "$service"
 done
+
+[ -f "after/foodmap-admin-service/src/main/java/com/foodmap/admin/controller/AdminLogController.java" ] || {
+  printf 'FAIL: AdminLogController is required for admin log query proxy.\n' >&2
+  exit 1
+}
+
+if ! grep -q "/api/admin/logs/api-access" after/foodmap-admin-service/src/main/java/com/foodmap/admin/controller/AdminLogController.java; then
+  printf 'FAIL: admin-service must expose /api/admin/logs/api-access as the admin log query proxy.\n' >&2
+  exit 1
+fi
+
+if ! grep -q "LOG_ACCESS_READ" after/foodmap-admin-service/src/main/java/com/foodmap/admin/security/AdminPermissionCode.java; then
+  printf 'FAIL: admin-service must define LOG_ACCESS_READ permission for admin log queries.\n' >&2
+  exit 1
+fi
+
+if ! grep -q "X-Admin-User-Id" after/foodmap-admin-service/src/main/java/com/foodmap/admin/security/AdminAuthHeaders.java; then
+  printf 'FAIL: admin-service must define trusted admin identity header.\n' >&2
+  exit 1
+fi
+
+if ! grep -q "requirePermission" after/foodmap-admin-service/src/main/java/com/foodmap/admin/controller/AdminLogController.java; then
+  printf 'FAIL: admin log query proxy must enforce server-side permission checks.\n' >&2
+  exit 1
+fi
+
+if ! grep -q "ADMIN_LOG_SERVICE_BASE_URL" after/foodmap-admin-service/src/main/resources/application.yml; then
+  printf 'FAIL: admin-service must externalize log-service base URL.\n' >&2
+  exit 1
+fi
 
 entity_files=$(find after -type f \( \
   -path "*/src/main/java/*/infrastructure/persistence/entity/*Entity.java" \

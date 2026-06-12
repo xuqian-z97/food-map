@@ -34,7 +34,9 @@ after
 ├── foodmap-store-service
 ├── foodmap-recommendation-service
 ├── foodmap-community-service
-└── foodmap-media-service
+├── foodmap-media-service
+├── foodmap-admin-service
+└── foodmap-log-service
 ```
 
 ## 4. 当前范围
@@ -48,7 +50,13 @@ after
 - 统一 API 响应和枚举。
 - `application-local.yml / application-orbstack.yml / application-prod.yml` 分文件 profile 配置。
 
-业务 API、数据库迁移、服务 DTO 和持久化逻辑将在后续迭代中实现。
+认证、用户和管理后台的首批业务 API、数据库迁移、服务 DTO 和持久化逻辑已开始按纵向切片落地。
+
+B1.5-a 日志平台基础能力已开始落地：
+
+- `foodmap-common` 提供 `LogContext`、`LogMdcFilter`、`ApiAccessLogFilter`、`SafeLog` 和 Servlet 自动配置。
+- `foodmap-gateway-service` 提供 `GatewayTraceFilter`，负责生成、校验并透传 `X-Request-Id`、`X-Trace-Id`、`X-Span-Id`。
+- B1.5-b 已完成 MyBatis SQL 日志基础拦截器、SQL 脱敏格式化、DEBUG 配置模型、Environment 动态重读层、Nacos Config 可选导入、Kafka 本地缓冲管道、Fluent Bit 本地采集器、Elasticsearch 本地热查询基础、Logstash 本地消费写入器、独立日志 PostgreSQL 基础库表、`foodmap-log-service` 接口访问摘要消费落库、内部查询 API、15 天保留清理任务、OSS 归档计划记录、归档执行器状态机骨架、`foodmap-common` 统一 Elasticsearch SearchClient、真实日志归档导出适配器、common ObjectStorageClient 上传桥接、MinIO/S3 兼容对象存储实现、管理后台日志查询代理 API 和 `LOG_ACCESS_READ` 权限骨架。真实环境联调验收和阿里云 OSS 生产适配器顺延为后续部署/媒体服务阶段任务，不阻塞 B1.5 交付。
 
 ## 5. 环境 Profile
 

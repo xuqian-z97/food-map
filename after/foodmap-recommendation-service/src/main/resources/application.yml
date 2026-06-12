@@ -6,8 +6,17 @@ spring:
     name: foodmap-recommendation-service
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:${FOODMAP_PROFILE:local}}
+  config:
+    import:
+      - optional:nacos:foodmap-logging-${SPRING_PROFILES_ACTIVE:${FOODMAP_PROFILE:local}}.yml?refreshEnabled=true
+      - optional:nacos:${spring.application.name}-${SPRING_PROFILES_ACTIVE:${FOODMAP_PROFILE:local}}.yml?refreshEnabled=true
   cloud:
     nacos:
+      config:
+        enabled: ${NACOS_CONFIG_ENABLED:false}
+        server-addr: ${NACOS_SERVER_ADDR:127.0.0.1:8848}
+        group: ${NACOS_CONFIG_GROUP:FOODMAP}
+        file-extension: yml
       discovery:
         enabled: ${NACOS_DISCOVERY_ENABLED:true}
 

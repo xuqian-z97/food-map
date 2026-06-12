@@ -1,2 +1,6 @@
 com.foodmap.common.web.FoodMapWebExceptionAutoConfiguration
 com.foodmap.common.redis.redisson.FoodMapRedissonAutoConfiguration
+com.foodmap.common.logging.FoodMapLoggingAutoConfiguration
+com.foodmap.common.logging.mybatis.FoodMapMyBatisLoggingAutoConfiguration
+com.foodmap.common.search.elasticsearch.FoodMapSearchAutoConfiguration
+com.foodmap.common.storage.minio.FoodMapMinioStorageAutoConfiguration
