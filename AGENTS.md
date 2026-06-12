@@ -149,6 +149,7 @@ skills
 ├── foodmap-backend-service
 ├── foodmap-ios-feature
 ├── foodmap-api-contract
+├── foodmap-integration-coordination
 └── foodmap-qa-check
 ```
 
@@ -158,6 +159,7 @@ skills
 - 创建或修改 Java 微服务时，使用 `foodmap-backend-service`。
 - 创建或修改 iOS/SwiftUI 功能时，使用 `foodmap-ios-feature`。
 - 设计或校验 API、DTO、前后端模型时，使用 `foodmap-api-contract`。
+- 生成联调说明、记录联调问题、协调前后端联调和复测时，使用 `foodmap-integration-coordination`。
 - 构建、测试、验收、GitHub 同步前检查时，使用 `foodmap-qa-check`。
 
 这些 skills 必须与 CODEX 文档、AGENTS.md 和 `.agents/*.md` 保持一致。
@@ -180,6 +182,7 @@ harness
     ├── validate-docs.sh
     ├── validate-backend.sh
     ├── validate-logging.sh
+    ├── validate-integration.sh
     ├── validate-ios.sh
     ├── validate-api.sh
     └── validate-git.sh

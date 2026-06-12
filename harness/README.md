@@ -34,6 +34,7 @@ harness
     ├── run-all.sh
     ├── validate-docs.sh
     ├── validate-backend.sh
+    ├── validate-integration.sh
     ├── validate-ios.sh
     ├── validate-api.sh
     └── validate-git.sh

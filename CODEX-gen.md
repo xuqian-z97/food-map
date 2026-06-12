@@ -150,6 +150,7 @@ food-map
 │   ├── foodmap-backend-service
 │   ├── foodmap-ios-feature
 │   ├── foodmap-api-contract
+│   ├── foodmap-integration-coordination
 │   └── foodmap-qa-check
 ├── harness
 │   ├── README.md

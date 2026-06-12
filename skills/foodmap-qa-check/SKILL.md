@@ -19,6 +19,7 @@ description: Use when validating FoodMap iterations, reviewing acceptance criter
 - `.agents/qa-agent.md`
 - `harness/acceptance-checklist.md`
 - `harness/scripts/run-all.sh`
+- `docs/integration/README.md`
 
 ## 核心检查项
 
@@ -62,6 +63,12 @@ Harness：
 - `harness/` 文件结构是否完整。
 - 重要迭代是否执行 `harness/scripts/run-all.sh`。
 - 未执行的 harness 检查是否说明原因。
+
+联调文档：
+
+- 前后端联调是否创建 `docs/integration/<iteration>-<feature>/`。
+- 是否包含 `integration-plan.md` 和 `issue-log.md`。
+- 问题记录是否包含复现步骤、测试数据、日志摘要、`requestId`、`traceId` 和复测结果。
 
 部署：
 
