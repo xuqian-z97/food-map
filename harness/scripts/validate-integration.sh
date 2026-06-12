@@ -27,8 +27,15 @@ require_file "skills/foodmap-integration-coordination/SKILL.md"
 contains "docs/integration/README.md" "integration-plan.md"
 contains "docs/integration/README.md" "issue-log.md"
 contains "docs/integration/README.md" "通过"
+contains "docs/integration/README.md" "联调安全点"
+contains "docs/integration/README.md" "L2 本地真实联调"
 contains "docs/integration/templates/integration-plan.md" "前端职责"
 contains "docs/integration/templates/integration-plan.md" "后端职责"
+contains "docs/integration/templates/integration-plan.md" "联调安全点"
+contains "docs/integration/templates/integration-plan.md" "准入检查"
+contains "docs/integration/templates/integration-plan.md" "联调等级"
+contains "docs/integration/templates/integration-plan.md" "前端可发起真实请求"
+contains "docs/integration/templates/integration-plan.md" "后端接口可被 curl"
 contains "docs/integration/templates/integration-plan.md" "requestId"
 contains "docs/integration/templates/integration-plan.md" "traceId"
 contains "docs/integration/templates/integration-plan.md" "验收判定"
@@ -39,6 +46,8 @@ contains "docs/integration/templates/issue-log.md" "后端日志"
 contains "docs/integration/templates/issue-log.md" "复测结果"
 contains "skills/foodmap-integration-coordination/SKILL.md" "docs/integration"
 contains "skills/foodmap-integration-coordination/SKILL.md" "validate-integration.sh"
+contains "skills/foodmap-integration-coordination/SKILL.md" "联调安全点"
+contains "skills/foodmap-integration-coordination/SKILL.md" "业务切片"
 
 found_instance=false
 for dir in docs/integration/*; do
@@ -50,6 +59,8 @@ for dir in docs/integration/*; do
   require_file "$dir/integration-plan.md"
   require_file "$dir/issue-log.md"
   contains "$dir/integration-plan.md" "联调目标"
+  contains "$dir/integration-plan.md" "联调安全点"
+  contains "$dir/integration-plan.md" "准入检查"
   contains "$dir/integration-plan.md" "前端职责"
   contains "$dir/integration-plan.md" "后端职责"
   contains "$dir/integration-plan.md" "验收场景"
@@ -63,4 +74,3 @@ done
 [ "$found_instance" = true ] || fail "no integration instance folder found under docs/integration"
 
 printf 'PASS: integration coordination baseline checks completed.\n'
-
