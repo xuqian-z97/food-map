@@ -188,9 +188,35 @@ food-map
 │   └── FoodMapApp
 └── docs
     ├── api
+    ├── integration
+    │   ├── README.md
+    │   ├── templates
+    │   │   ├── integration-plan.md
+    │   │   └── issue-log.md
+    │   └── <iteration>-<feature>
+    │       ├── integration-plan.md
+    │       └── issue-log.md
     ├── database
     └── design
 ```
+
+## 6.1 前后端联调文档生成规则
+
+每次进入前后端联调前，必须在 `docs/integration/<iteration>-<feature>/` 下生成两个核心文件：
+
+- `integration-plan.md`：联调说明，明确功能范围、前后端职责、接口契约、测试数据、验收标准、环境和提交记录。
+- `issue-log.md`：问题记录，记录联调失败、测试数据、前端现象、后端日志摘要、复现步骤、初步归因、修复提交和复测结论。
+
+联调说明必须作为验收标准来源。前端、后端和 QA 子代理在联调时都必须按该文件检查交付代码，不能只凭口头描述判定通过。
+
+验收判定统一使用：
+
+- `通过`：必测场景全部执行并有证据，阻塞级和高风险 BUG 已关闭。
+- `有条件通过`：主流程可用，仅存在明确记录的非阻塞问题。
+- `不通过`：主流程失败，或出现权限、隐私、Token、可见范围、PUBLIC 统计口径等高风险问题。
+- `无法判定`：缺少环境、构建、测试、接口调用、截图/录屏、日志等关键证据。
+
+联调失败时，必须在 `issue-log.md` 中新增 BUG 条目。阻塞级和高风险 BUG 修复后必须记录复测结果，才能把本次联调标记为通过。
 
 ## 7. 开发策略
 

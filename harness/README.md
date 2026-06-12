@@ -44,8 +44,9 @@ harness
 1. 主代理根据 `agent-task-template.md` 拆分任务。
 2. 子代理按 `file-boundary-rules.md` 执行。
 3. 接口任务按 `api-contract-checklist.md` 设计和验收。
-4. 迭代完成前按 `acceptance-checklist.md` 检查。
-5. 执行：
+4. 前后端联调前，在 `docs/integration/<iteration>-<feature>/` 下生成 `integration-plan.md` 和 `issue-log.md`。
+5. 联调完成前按 `integration-plan.md`、`issue-log.md` 和 `acceptance-checklist.md` 检查。
+6. 执行：
 
 ```sh
 ./harness/scripts/run-all.sh
@@ -71,4 +72,3 @@ harness 必须始终保护以下规则：
 - 只有 `PUBLIC / 全部公开` 推荐进入全站统计。
 - 菜名必须是纯文字。
 - 重要迭代需要提交并推送 GitHub。
-
