@@ -17,6 +17,9 @@ import com.foodmap.auth.infrastructure.persistence.memory.InMemoryRefreshTokenRe
 import com.foodmap.auth.service.impl.AuthServiceImpl;
 import com.foodmap.common.exception.FoodMapException;
 import org.junit.jupiter.api.Test;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.lang.reflect.Method;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -67,5 +70,15 @@ class AuthServiceImplTest {
 
         assertThatThrownBy(() -> service.refresh(new RefreshTokenRequest(loginResponse.refreshToken())))
                 .isInstanceOf(FoodMapException.class);
+    }
+
+    @Test
+    void registerUsesRollbackTransactionForUserProvisionFailure() throws NoSuchMethodException {
+        Method registerMethod = AuthServiceImpl.class.getMethod("register", RegisterRequest.class);
+
+        Transactional transactional = registerMethod.getAnnotation(Transactional.class);
+
+        assertThat(transactional).isNotNull();
+        assertThat(transactional.rollbackFor()).contains(Exception.class);
     }
 }

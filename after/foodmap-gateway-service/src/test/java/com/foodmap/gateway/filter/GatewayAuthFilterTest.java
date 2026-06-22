@@ -55,4 +55,33 @@ class GatewayAuthFilterTest {
         assertThat(downstreamExchange.get()).isNull();
         assertThat(exchange.getResponse().getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
     }
+
+    @Test
+    void shouldRejectInternalProvisionPathThroughExternalGateway() {
+        GatewayAuthFilter filter = new GatewayAuthFilter(TOKEN_SECRET);
+        MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.post("/internal/users/provision").build());
+        AtomicReference<ServerWebExchange> downstreamExchange = new AtomicReference<>();
+
+        filter.filter(exchange, chainExchange -> {
+            downstreamExchange.set(chainExchange);
+            return Mono.empty();
+        }).block();
+
+        assertThat(downstreamExchange.get()).isNull();
+        assertThat(exchange.getResponse().getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+    }
+
+    @Test
+    void shouldAllowInternalHealthPathForLocalGatewayDiagnostics() {
+        GatewayAuthFilter filter = new GatewayAuthFilter(TOKEN_SECRET);
+        MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.get("/internal/auth/health").build());
+        AtomicReference<ServerWebExchange> downstreamExchange = new AtomicReference<>();
+
+        filter.filter(exchange, chainExchange -> {
+            downstreamExchange.set(chainExchange);
+            return Mono.empty();
+        }).block();
+
+        assertThat(downstreamExchange.get()).isNotNull();
+    }
 }

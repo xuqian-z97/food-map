@@ -4,7 +4,9 @@ import com.foodmap.common.api.ApiResponse;
 import com.foodmap.common.exception.CommonErrorCode;
 import com.foodmap.common.exception.FoodMapException;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -37,5 +39,19 @@ class FoodMapGlobalExceptionHandlerTest {
         assertThat(response.getBody().status()).isEqualTo(500);
         assertThat(response.getBody().code()).isEqualTo("INTERNAL_ERROR");
         assertThat(response.getBody().message()).isEqualTo("系统内部错误");
+    }
+
+    @Test
+    void shouldConvertNoResourceFoundToNotFoundResponse() {
+        FoodMapGlobalExceptionHandler handler = new FoodMapGlobalExceptionHandler();
+
+        ResponseEntity<ApiResponse<Void>> response = handler.handleNoResourceFound(
+                new NoResourceFoundException(HttpMethod.GET, "/foodmap-user-service/api/users/me"));
+
+        assertThat(response.getStatusCode().value()).isEqualTo(404);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().status()).isEqualTo(404);
+        assertThat(response.getBody().code()).isEqualTo("NOT_FOUND");
+        assertThat(response.getBody().message()).isEqualTo("资源不存在");
     }
 }

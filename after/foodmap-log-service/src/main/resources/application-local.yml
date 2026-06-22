@@ -15,3 +15,17 @@ spring:
     nacos:
       discovery:
         server-addr: ${NACOS_SERVER_ADDR:127.0.0.1:8848}
+
+foodmap:
+  logging:
+    sql:
+      enabled: true
+      debug-enabled: true
+      sample-rate: 1.0
+      mapper-includes:
+        - "*"
+      mapper-excludes: []
+
+logging:
+  level:
+    com.foodmap.common.logging.mybatis: DEBUG

@@ -105,6 +105,12 @@ X-FoodMap-Account-Name
 
 后续网关接入 JWT 后，这些字段由网关或认证上下文统一注入，前端不应自行伪造用户身份。
 
+用户资料创建：
+
+- `POST /api/auth/register` 注册成功后，认证服务必须通过 OpenFeign 调用用户服务内部接口创建用户资料，默认使用 Nacos 服务名 `foodmap-user-service` 做服务发现。
+- 用户服务至少创建 `users`、`user_profiles` 和 `user_settings` 基础记录，保证注册后可立即查询 `/api/users/me`。
+- `/api/users/me` 必须同时校验 `X-FoodMap-User-Id` 和 `X-FoodMap-Account-Id`，防止用户业务主键和账号业务主键不匹配时串读资料。
+
 响应 `data`：
 
 ```json
@@ -114,6 +120,51 @@ X-FoodMap-Account-Name
   "accountName": "foodie_01",
   "nickname": "小张",
   "avatarMediaId": 300001,
+  "userStatus": "NORMAL"
+}
+```
+
+## 4.1 POST /internal/users/provision
+
+所属服务：`foodmap-user-service`
+
+用途：认证服务注册成功后调用，创建用户主资料、扩展资料和默认隐私设置。该接口是内部接口，不直接对 App 暴露。
+
+调用方：`foodmap-auth-service` 的 OpenFeign 客户端。
+
+访问约束：
+
+- 只能由认证服务通过 Nacos 服务发现或内网直连调用。
+- 外部 Gateway 对非健康类 `/internal/**` 路径返回 `403`，不得把该接口直接暴露给 App 或公网调用方。
+- 认证服务注册用例使用本地事务包裹 auth 账号、凭证写入和本接口调用；如果本接口失败，auth 侧账号和凭证写入必须回滚。
+
+请求体：
+
+```json
+{
+  "accountId": 100001,
+  "userId": 200001,
+  "nickname": "小张"
+}
+```
+
+字段说明：
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| accountId | number | 是 | 认证账号业务主键 |
+| userId | number | 是 | 用户业务主键 |
+| nickname | string | 是 | 初始昵称 |
+
+响应 `data`：
+
+```json
+{
+  "userId": 200001,
+  "accountId": 100001,
+  "accountName": null,
+  "nickname": "小张",
+  "avatarMediaId": null,
   "userStatus": "NORMAL"
 }
 ```

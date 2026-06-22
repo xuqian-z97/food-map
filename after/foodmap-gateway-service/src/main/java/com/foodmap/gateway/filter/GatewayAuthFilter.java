@@ -66,6 +66,9 @@ public class GatewayAuthFilter implements GlobalFilter, Ordered {
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         String path = exchange.getRequest().getPath().pathWithinApplication().value();
         ServerWebExchange sanitizedExchange = stripTrustedIdentityHeaders(exchange);
+        if (isInternalPath(path) && !isInternalHealthPath(path)) {
+            return forbidden(sanitizedExchange, "内部接口不允许通过外部网关访问");
+        }
         if (!path.startsWith("/api/") || isPublicPath(path)) {
             return chain.filter(sanitizedExchange);
         }
@@ -109,6 +112,14 @@ public class GatewayAuthFilter implements GlobalFilter, Ordered {
         return PUBLIC_API_PATHS.stream().anyMatch(path::equals);
     }
 
+    private boolean isInternalPath(String path) {
+        return path.startsWith("/internal/");
+    }
+
+    private boolean isInternalHealthPath(String path) {
+        return path.startsWith("/internal/") && path.endsWith("/health");
+    }
+
     private String extractBearerToken(String authorization) {
         if (authorization == null || !authorization.startsWith(BEARER_PREFIX)) {
             return null;
@@ -130,6 +141,23 @@ public class GatewayAuthFilter implements GlobalFilter, Ordered {
             return exchange.getResponse().writeWith(Mono.just(buffer));
         } catch (Exception ex) {
             exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
+            return exchange.getResponse().setComplete();
+        }
+    }
+
+    private Mono<Void> forbidden(ServerWebExchange exchange, String message) {
+        try {
+            byte[] body = objectMapper.writeValueAsString(ApiResponse.fail(
+                            CommonErrorCode.FORBIDDEN.status(),
+                            CommonErrorCode.FORBIDDEN.code(),
+                            message))
+                    .getBytes(StandardCharsets.UTF_8);
+            exchange.getResponse().setStatusCode(HttpStatus.FORBIDDEN);
+            exchange.getResponse().getHeaders().setContentType(MediaType.APPLICATION_JSON);
+            DataBuffer buffer = exchange.getResponse().bufferFactory().wrap(body);
+            return exchange.getResponse().writeWith(Mono.just(buffer));
+        } catch (Exception ex) {
+            exchange.getResponse().setStatusCode(HttpStatus.FORBIDDEN);
             return exchange.getResponse().setComplete();
         }
     }

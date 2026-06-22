@@ -1,6 +1,10 @@
 server:
   port: ${SERVER_PORT:8085}
 
+logging:
+  pattern:
+    dateformat: "yyyy-MM-dd HH:mm:ss:SSS"
+
 spring:
   application:
     name: foodmap-recommendation-service

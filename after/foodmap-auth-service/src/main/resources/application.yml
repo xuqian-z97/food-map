@@ -1,6 +1,10 @@
 server:
   port: ${SERVER_PORT:8081}
 
+logging:
+  pattern:
+    dateformat: "yyyy-MM-dd HH:mm:ss:SSS"
+
 spring:
   application:
     name: foodmap-auth-service
@@ -19,10 +23,20 @@ spring:
         file-extension: yml
       discovery:
         enabled: ${NACOS_DISCOVERY_ENABLED:true}
+    openfeign:
+      client:
+        config:
+          foodmap-user-service:
+            connectTimeout: ${AUTH_USER_SERVICE_CONNECT_TIMEOUT_MS:3000}
+            readTimeout: ${AUTH_USER_SERVICE_READ_TIMEOUT_MS:5000}
+            loggerLevel: basic
 
 foodmap:
   env:
     profile: ${SPRING_PROFILES_ACTIVE:${FOODMAP_PROFILE:local}}
+  auth:
+    user-service:
+      url: ${AUTH_USER_SERVICE_URL:}
 
 mybatis:
   mapper-locations: classpath*:mapper/**/*.xml

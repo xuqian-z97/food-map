@@ -30,6 +30,7 @@ import com.foodmap.common.exception.CommonErrorCode;
 import com.foodmap.common.exception.FoodMapException;
 import com.foodmap.common.security.TokenClaims;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
 
@@ -77,6 +78,7 @@ public class AuthServiceImpl implements AuthService {
      * @return 注册成功后的账号和用户业务主键信息。
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public RegisterResponse register(RegisterRequest request) {
         ensureLoginIdentifierAvailable(request.accountName(), request.phone(), request.email());
         Long accountId = businessIdGenerator.nextAccountId();

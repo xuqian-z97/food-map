@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.foodmap.user.infrastructure.persistence.mapper.UserBusinessIdMapper">
+    <select id="nextProfileId" resultType="java.lang.Long">
+        select nextval('user_profile_id_seq')
+    </select>
+
+    <select id="nextSettingId" resultType="java.lang.Long">
+        select nextval('user_setting_id_seq')
+    </select>
+</mapper>

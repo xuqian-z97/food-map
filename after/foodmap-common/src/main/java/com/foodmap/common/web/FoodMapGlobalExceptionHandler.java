@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.Arrays;
 import java.util.stream.Collectors;
@@ -146,6 +147,19 @@ public class FoodMapGlobalExceptionHandler {
         int status = exception.getStatusCode().value();
         String message = exception.getReason() == null ? HttpStatus.valueOf(status).getReasonPhrase() : exception.getReason();
         return error(status, mapStatusToCode(status), message);
+    }
+
+    /**
+     * 处理未匹配到 MVC 资源或路由的场景，避免错误路径被兜底为系统内部错误。
+     *
+     * @param exception 未找到资源异常。
+     * @return HTTP 404 统一错误响应。
+     */
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<ApiResponse<Void>> handleNoResourceFound(NoResourceFoundException exception) {
+        return error(CommonErrorCode.NOT_FOUND.status(),
+                CommonErrorCode.NOT_FOUND.code(),
+                CommonErrorCode.NOT_FOUND.defaultMessage());
     }
 
     /**

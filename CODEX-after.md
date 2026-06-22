@@ -126,6 +126,7 @@ foodmap-gateway-service
 - 外部 API 统一入口。
 - 将请求路由到内部微服务。
 - 通过 Spring Cloud LoadBalancer 解析 `lb://service-name` 路由。
+- 拦截非健康类 `/internal/**` 路径，避免外部调用方绕过服务边界直接访问内部业务接口。
 - 在合适场景下进行 JWT 前置校验。
 - 限流。
 - 请求日志。
@@ -1872,7 +1873,19 @@ GET /api/auth/me
 GET /api/users/me
 PUT /api/users/me
 GET /api/users/search?keyword=
+POST /internal/users/provision
 ```
+
+注册后用户资料开通：
+
+- `POST /api/auth/register` 成功生成 `accountId` 和 `userId` 后，认证服务必须通过内部 API 通知用户服务开通资料。
+- 用户服务内部接口 `POST /internal/users/provision` 负责创建 `users`、`user_profiles` 和 `user_settings` 记录。
+- 认证服务不得直接访问 `foodmap_user_db`，用户服务不得直接访问 `foodmap_auth_db`。
+- B1 本地联调阶段使用 OpenFeign 通过 Nacos 服务名 `foodmap-user-service` 调用用户服务内部 API；仅在禁用 Nacos 的本地排查场景允许通过 `AUTH_USER_SERVICE_URL` 临时指定直连地址。
+- `POST /internal/users/provision` 只能由认证服务通过服务发现或内网直连调用；外部 Gateway 对该路径必须返回 `403`，避免外部调用方直接创建用户资料。
+- B1 同步注册链路中，认证服务注册用例必须使用本地事务包裹账号、凭证写入和用户资料开通调用；如果用户服务开通失败，认证服务本地账号和凭证写入必须回滚。
+- 认证服务内面向用户服务的 Feign 客户端统一放在 `com.foodmap.auth.infrastructure.client.user` 包下；后续新增其他下游服务客户端时，按下游服务继续拆分子包，避免混杂在同一 client 根包。
+- 后续进入更复杂跨服务写流程时，需要演进为 Outbox / 事件 / 补偿任务，避免跨服务数据不一致。
 
 ### 10.3 关系接口
 
@@ -2679,6 +2692,8 @@ flowchart LR
 建议逐步补齐：
 
 - 使用 OpenFeign 作为内部 REST 客户端时，为每个客户端配置超时、日志级别和错误解码。
+- 引入 `foodmap-common` 且启用 OpenFeign 的服务，默认通过 `FoodMapFeignAutoConfiguration` 注册 `FoodMapFeignTraceRequestInterceptor`，将 MDC 中的 `X-Request-Id`、`X-Trace-Id` 和 `X-Span-Id` 透传到下游服务。
+- 服务内 OpenFeign 客户端按下游服务分包，例如 `infrastructure.client.user`、`infrastructure.client.log`，包名表达调用边界，端口适配器继续隐藏 Feign 原始错误模型。
 - 对关键远程调用引入 Spring Cloud CircuitBreaker/Resilience4j。
 - 对高德、OSS 等外部依赖增加熔断、重试上限和失败告警。
 
@@ -2748,7 +2763,7 @@ foodmap-common
     ├── InternalRequestHeaders
     ├── InternalClientException
     ├── InternalClientProperties
-    └── FeignClientConfiguration
+    └── FeignClientConfiguration / FoodMapFeignAutoConfiguration
 ```
 
 阶段一实现策略：
@@ -3718,6 +3733,7 @@ flowchart LR
 - `EnvironmentSqlLogConfigProvider` 每次通过 Spring `Binder` 重新绑定 `foodmap.logging.sql`，读取最新 Environment。
 - Nacos Config refresh 更新 Environment 后，下一次 SQL 执行即可读取新配置，不需要重建 MyBatis 拦截器。
 - `StaticSqlLogConfigProvider` 仅用于测试或固定配置场景，避免测试依赖 Spring Environment。
+- 本地 `local` profile 为联调排查效率，所有使用 MyBatis 的业务服务默认开启 `foodmap.logging.sql.debug-enabled=true`，`mapper-includes=["*"]`，并将 `com.foodmap.common.logging.mybatis` 日志级别设为 `DEBUG`，覆盖全部 Mapper SQL 明细。
 
 Nacos 配置导入流：
 
@@ -3746,6 +3762,7 @@ Nacos 配置实现原理：
 - `spring.config.import` 使用 `optional:nacos:`，配置中心不可用时不会阻断本地默认启动。
 - 共享日志配置放在 `foodmap-logging-{profile}.yml`，服务私有配置放在 `{spring.application.name}-{profile}.yml`。
 - 生产临时排查 SQL 时，优先只配置 `request-ids`、`trace-ids` 或窄范围 `mapper-includes`，排查结束后清空。
+- 后端服务控制台日志时间统一使用 `yyyy-MM-dd HH:mm:ss:SSS`，例如 `2026-06-22 11:50:34:835`，便于本地联调按毫秒排查调用顺序。
 
 生产策略：
 
@@ -4065,6 +4082,7 @@ service-name
 - `foodmap-common` 统一响应、错误码、异常、分页和校验。
 - `foodmap-common` 当前用户上下文、JWT 工具接口和请求头透传。
 - `foodmap-common` 统一日志上下文、日志脱敏和安全日志方法。
+- `foodmap-common` OpenFeign 链路头透传自动配置，统一内部同步调用的 `requestId / traceId / spanId` 传递。
 - `foodmap-common` Redis Key 规范、缓存客户端和分布式锁接口。
 - `foodmap-common` 对象存储统一接口，MinIO 默认实现和 OSS 适配器占位。
 - `foodmap-common` 搜索引擎统一入口 `SearchClient` 和 Elasticsearch 适配器。

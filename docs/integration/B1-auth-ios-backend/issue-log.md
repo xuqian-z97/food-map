@@ -4,11 +4,209 @@
 
 | BUG 编号 | 标题 | 发现阶段 | 严重级别 | 优先级 | 状态 | 责任侧 | 关联场景 | 修复提交 | 复测结论 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-|  |  |  |  |  |  |  |  |  |  |
+| BUG-001 | Gateway 暴露用户开通内部接口 | 后端联调审查 | Critical | P0 | 已关闭 | 后端/网关 | IT-006 | 未提交，当前工作区 | 复测通过 |
+| BUG-002 | 用户服务开通失败时 auth 数据未回滚 | 后端联调审查 | Critical | P0 | 已关闭 | 后端/认证 | IT-008 | 未提交，当前工作区 | 复测通过 |
+| BUG-003 | 当前用户查询未校验 accountId 归属 | 后端联调审查 | Major | P1 | 已关闭 | 后端/用户 | IT-007 | 未提交，当前工作区 | 复测通过 |
 
 ## 2. 问题详情
 
-当前尚未开始联调，暂无问题。
+本次后端联调已记录并关闭以下问题。完整 iOS 前后端联调尚未执行，后续如发现前端侧问题继续追加。
+
+### BUG-001 Gateway 暴露用户开通内部接口
+
+| 项目 | 内容 |
+| --- | --- |
+| 发现时间 | 2026-06-22 |
+| 发现人/Agent | Codex |
+| 发现阶段 | 后端联调审查 |
+| 严重级别 | Critical |
+| 优先级 | P0 |
+| 当前状态 | 已关闭 |
+| 责任侧 | 后端/网关 |
+| 所属模块 | 网关 / 用户服务 |
+| 关联联调场景 | IT-006 |
+| 关联接口/页面 | `POST /internal/users/provision` |
+| 环境信息 | local |
+
+#### 复现步骤
+
+1. 通过 Gateway 请求 `POST /internal/users/provision`。
+2. 请求体使用已有 `accountId/userId/nickname`。
+
+#### 测试数据
+
+| 数据类型 | 数据值 | 说明 |
+| --- | --- | --- |
+| 业务数据 | `accountId=100010`、`userId=200010` | 后端联调账号 |
+| 请求参数 | internal 用户开通载荷 | 不记录 Token、密码或敏感正文 |
+
+#### 期望结果
+
+- Gateway 返回 `403/FORBIDDEN`，不允许外部访问内部开通接口。
+
+#### 实际结果
+
+- 修复前存在外部访问风险；修复后 Gateway 返回 `403/FORBIDDEN`。
+
+#### 后端日志摘要
+
+- `requestId`：`codex-b1-internal-forbidden`
+- `traceId`：`codex-b1-gateway-trace`
+- 服务：`foodmap-gateway-service`
+- 接口：`POST /internal/users/provision`
+- 日志等级：INFO
+- 关键摘要：Gateway completed，HTTP status 403。
+- 数据库/中间件状态：未转发到用户服务，无新增数据。
+
+#### 初步分析
+
+- 可能原因：Gateway 对非 `/api/**` 直接放行，且路由包含 `/internal/users/**`。
+- 影响范围：内部业务接口可能被外部绕过服务边界调用。
+- 建议修复范围：Gateway 认证过滤器拦截非健康类 `/internal/**`。
+- 是否涉及权限、隐私、Token、可见范围或 PUBLIC 统计口径：涉及权限和服务边界。
+
+#### 修复和复测
+
+| 项目 | 内容 |
+| --- | --- |
+| 修复负责人 | Codex |
+| 修复提交 | 未提交，当前工作区 |
+| 复测时间 | 2026-06-22 |
+| 复测步骤 | Gateway `POST /internal/users/provision` |
+| 复测结果 | 返回 `403/FORBIDDEN`，通过 |
+| 关闭人和关闭时间 | Codex，2026-06-22 |
+| 是否关闭 | 是 |
+
+### BUG-002 用户服务开通失败时 auth 数据未回滚
+
+| 项目 | 内容 |
+| --- | --- |
+| 发现时间 | 2026-06-22 |
+| 发现人/Agent | Codex |
+| 发现阶段 | 后端联调审查 |
+| 严重级别 | Critical |
+| 优先级 | P0 |
+| 当前状态 | 已关闭 |
+| 责任侧 | 后端/认证 |
+| 所属模块 | 认证 / 用户服务 |
+| 关联联调场景 | IT-008 |
+| 关联接口/页面 | `POST /api/auth/register` |
+| 环境信息 | local |
+
+#### 复现步骤
+
+1. 启动 auth 服务并将 `AUTH_USER_SERVICE_URL` 指向不可用地址。
+2. 请求 `POST /api/auth/register`。
+3. 查询 `foodmap_auth_db.auth_accounts` 和 `auth_credentials`。
+
+#### 测试数据
+
+| 数据类型 | 数据值 | 说明 |
+| --- | --- | --- |
+| 账号 | `codex_rollback_170622` | 回滚验证账号 |
+| 请求参数 | 注册请求 | 不记录密码明文 |
+
+#### 期望结果
+
+- 注册返回上游失败错误，auth 账号和凭证不落库。
+
+#### 实际结果
+
+- 修复后返回 `504/GATEWAY_TIMEOUT`，`auth_accounts=0`，`auth_credentials=0`。
+
+#### 后端日志摘要
+
+- `requestId`：`codex-b1-rollback-request`
+- `traceId`：`codex-b1-rollback-trace`
+- 服务：`foodmap-auth-service`
+- 接口：`POST /api/auth/register`
+- 日志等级：WARN
+- 关键摘要：用户服务资料开通超时，统一异常响应 `GATEWAY_TIMEOUT`。
+- 数据库/中间件状态：auth 账号和凭证计数均为 0。
+
+#### 初步分析
+
+- 可能原因：注册用例本地写入和内部 Feign 调用不在同一事务边界中。
+- 影响范围：可能出现 auth 已注册但 user 资料缺失的半成功状态。
+- 建议修复范围：B1 同步注册链路增加本地事务回滚控制。
+- 是否涉及权限、隐私、Token、可见范围或 PUBLIC 统计口径：涉及账号一致性。
+
+#### 修复和复测
+
+| 项目 | 内容 |
+| --- | --- |
+| 修复负责人 | Codex |
+| 修复提交 | 未提交，当前工作区 |
+| 复测时间 | 2026-06-22 |
+| 复测步骤 | 坏用户服务 URL 注册失败后查库 |
+| 复测结果 | `auth_accounts=0`，`auth_credentials=0`，通过 |
+| 关闭人和关闭时间 | Codex，2026-06-22 |
+| 是否关闭 | 是 |
+
+### BUG-003 当前用户查询未校验 accountId 归属
+
+| 项目 | 内容 |
+| --- | --- |
+| 发现时间 | 2026-06-22 |
+| 发现人/Agent | Codex |
+| 发现阶段 | 后端联调审查 |
+| 严重级别 | Major |
+| 优先级 | P1 |
+| 当前状态 | 已关闭 |
+| 责任侧 | 后端/用户 |
+| 所属模块 | 用户服务 |
+| 关联联调场景 | IT-007 |
+| 关联接口/页面 | `GET /api/users/me` |
+| 环境信息 | local |
+
+#### 复现步骤
+
+1. 使用正确 `X-FoodMap-User-Id`。
+2. 使用错误 `X-FoodMap-Account-Id`。
+3. 请求用户服务 `GET /api/users/me`。
+
+#### 测试数据
+
+| 数据类型 | 数据值 | 说明 |
+| --- | --- | --- |
+| 业务数据 | `userId=200010`、错误 `accountId=999999` | 后端联调账号 |
+
+#### 期望结果
+
+- 用户服务返回 `403/FORBIDDEN`。
+
+#### 实际结果
+
+- 修复后返回 `403/FORBIDDEN`，提示当前账号与用户资料不匹配。
+
+#### 后端日志摘要
+
+- `requestId`：`codex-b1-account-mismatch`
+- `traceId`：`codex-b1-gateway-trace`
+- 服务：`foodmap-user-service`
+- 接口：`GET /api/users/me`
+- 日志等级：WARN
+- 关键摘要：统一业务异常 `FORBIDDEN`。
+- 数据库/中间件状态：仅读取用户主表，无数据变更。
+
+#### 初步分析
+
+- 可能原因：服务层只按 userId 查资料，未二次校验 accountId 归属。
+- 影响范围：直连服务或可信头异常时存在资料串读风险。
+- 建议修复范围：用户服务 service 层校验 accountId 和用户资料归属一致。
+- 是否涉及权限、隐私、Token、可见范围或 PUBLIC 统计口径：涉及权限和隐私。
+
+#### 修复和复测
+
+| 项目 | 内容 |
+| --- | --- |
+| 修复负责人 | Codex |
+| 修复提交 | 未提交，当前工作区 |
+| 复测时间 | 2026-06-22 |
+| 复测步骤 | 错配 accountId 请求 `/api/users/me` |
+| 复测结果 | 返回 `403/FORBIDDEN`，通过 |
+| 关闭人和关闭时间 | Codex，2026-06-22 |
+| 是否关闭 | 是 |
 
 新增问题时复制以下模板。
 
