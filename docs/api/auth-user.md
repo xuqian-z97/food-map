@@ -7,13 +7,22 @@
 ```json
 {
   "success": true,
+  "status": 200,
   "code": "OK",
   "message": "success",
   "data": {}
 }
 ```
 
-错误响应中 `success=false`，`code` 使用稳定错误码，`data=null`。
+错误响应中 `success=false`，`status` 使用 HTTP 数字状态码语义，`code` 使用稳定错误码，`data=null`。
+
+本地 iOS 前后端联调时，App 必须优先通过 Gateway 访问外部 API：
+
+```text
+http://127.0.0.1:18080
+```
+
+认证服务和用户服务直连端口只用于后端排障，不作为 App 正式联调入口。
 
 ## 2. POST /api/auth/register
 
@@ -95,7 +104,16 @@
 
 用途：查询当前登录用户资料。
 
-当前 B1 阶段身份来源：
+外部调用路径：
+
+```http
+GET /api/users/me
+Authorization: Bearer <access-token>
+X-Request-Id: <request-id>
+X-Trace-Id: <trace-id>
+```
+
+当前 B1 阶段用户服务身份来源：
 
 ```text
 X-FoodMap-User-Id
@@ -103,7 +121,7 @@ X-FoodMap-Account-Id
 X-FoodMap-Account-Name
 ```
 
-后续网关接入 JWT 后，这些字段由网关或认证上下文统一注入，前端不应自行伪造用户身份。
+这些字段由 Gateway 校验 JWT 后统一注入。前端不得自行伪造 `X-FoodMap-*` 可信身份头；即使外部请求携带这些头，Gateway 也必须覆盖为 Token 对应身份。
 
 用户资料创建：
 

@@ -127,7 +127,10 @@ Stage 1：后端认证用户基础能力与 iOS 认证测试壳已完成
 
 当前 B1 后续目标：
 
-- iOS 登录页联调本地认证服务，并在登录后进入真实地图首页。
+- iOS 认证联调先完成 Gateway 入口收口：前端默认或推荐 Base URL 指向 Gateway，本地为 `http://127.0.0.1:18080`。
+- iOS 网络层补齐 B1 必需能力：GET/POST、Bearer Token、`X-Request-Id`、`X-Trace-Id`、统一响应 `success/status/code/message/data` 解析和非 2xx 错误体解析。
+- iOS 登录和 Token 恢复后必须调用 Gateway `GET /api/users/me` 校验真实当前用户；禁止用 `accountId/userId = 0` 作为运行时已登录会话。
+- B1 完整前后端联调安全点以 `docs/integration/B1-auth-ios-backend/integration-plan.md` 为准；当前状态是后端 L2 已通过，完整 iOS L2 未到安全点。
 - 在继续大规模业务能力前，优先完成日志平台基础规划和第一阶段代码骨架，避免后续服务重复补日志能力。
 - 生成高德地图首页壳、离线地图城市管理壳、门店查询 API 契约和门店服务基础能力。
 - 建立 iOS 低风险业务缓存底座，用于弱网时展示最近加载过的门店点位和门店摘要。
@@ -244,6 +247,12 @@ food-map
 - 如果跳过联调继续开发，可能带来的契约、权限、状态或数据风险是什么。
 
 示例：后端完成登录能力后，应提示前端至少具备 `LoginView + APIClient + Token 保存 + 登录后跳转` 再进入 B1 认证联调；后端完成地图视野查询后，应提示前端至少具备地图首页壳、bbox 获取、真实请求和点位/列表展示再进入门店地图联调。
+
+B1 认证联调当前安全点拆分：
+
+- 后端安全点已到达：Gateway/Auth/User 已完成注册、登录、当前用户、内部接口拦截、accountId 归属校验和注册失败回滚的本地 L2 验证。
+- 前端安全点未到达：`APIClient` 尚未支持 Bearer GET 和 `/api/users/me`，默认联调入口仍直连 Auth，错误响应解析尚未按 `status/code/message` 收口。
+- 下一步必须先完成 `docs/superpowers/plans/2026-06-22-b1-auth-ios-backend-integration.md` 中 P0 前端任务，再执行完整 iOS L2 联调。
 
 推荐顺序：
 
