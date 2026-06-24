@@ -8,14 +8,14 @@
 | 迭代编号 | B1 |
 | 联调文件夹 | `docs/integration/B1-auth-ios-backend` |
 | 创建时间 | 2026-06-13 |
-| 最近更新 | 2026-06-22 |
+| 最近更新 | 2026-06-24 |
 | 主代理 | Codex 主代理 |
 | 后端观察子代理 | 后端子代理，观察 `after/foodmap-auth-service`、`after/foodmap-user-service`、`after/foodmap-gateway-service` |
 | 前端观察子代理 | 前端子代理，观察 `front/FoodMapApp` 认证页面、会话状态和网络层 |
 | 联调验收子代理 | QA 子代理，按本文档和 `issue-log.md` 判定 |
-| 前端提交 | 待补齐 B1 iOS 阻断项后填写 |
+| 前端提交 | 本次 B1 iOS 数据链路提交待生成 |
 | 后端提交 | `b37929c feat: complete B1 auth backend integration` |
-| 文档提交 | 本次计划调整待提交 |
+| 文档提交 | 本次计划与状态同步待提交 |
 | 相关文档 | `CODEX-front.md`、`CODEX-after.md`、`CODEX-gen.md`、`docs/api/auth-user.md`、`docs/superpowers/plans/2026-06-22-b1-auth-ios-backend-integration.md` |
 
 ## 2. 联调目标
@@ -41,7 +41,7 @@
 
 ## 3. 当前审查结论
 
-完整 iOS 前后端联调当前不建议开始，结论为：`暂不通过联调安全点`。
+完整 iOS 前后端联调当前可以进入执行阶段，结论为：`前端代码准入已通过，真实 L2 联调尚未判定通过`。
 
 已具备的能力：
 
@@ -50,13 +50,16 @@
 - iOS 登录和注册页面已经有基本表单、加载态和 Keychain Token 存储能力。
 - iOS 注册请求体是扁平 JSON，字段与后端注册契约基本一致。
 - 当前前端代码未发现 `print`、`debugPrint`、`NSLog` 直接输出 Token 或密码。
+- iOS 默认服务地址已改为本地 Gateway `http://127.0.0.1:18080`，并保留手工覆盖能力用于排障。
+- `APIClient` 已支持 GET/POST、Bearer Token、`X-Request-Id`、`X-Trace-Id`、统一响应 `success/status/code/message/data` 和非 2xx 错误体解析。
+- 登录成功和 Token 恢复都会通过 Gateway `GET /api/users/me` 拉取真实用户资料，运行时不再使用 `accountId/userId = 0` 占位会话。
+- 本地 Token 清理条件已收窄为 401/403 或明确账号/用户失效业务码，网络失败、5xx 和临时响应异常不应误清 Keychain。
 
-阻断完整联调的前端问题：
+剩余未完成的完整 L2 事项：
 
-- `LoginViewModel` 默认 Base URL 仍为 `http://127.0.0.1:8081`，未默认走 Gateway。
-- `APIClient` 目前只有登录/注册 POST，不支持通用 GET、`Authorization: Bearer` 和 `/api/users/me`。
-- `APIResponse` 未建模 `status`，`APIClient` 对非 2xx 直接丢弃后端统一错误体，无法稳定展示业务错误。
-- `AuthSessionStore` 启动恢复 Token 时用 `accountId/userId = 0` 占位，未通过 `/api/users/me` 校验真实会话。
+- 需要启动 Gateway/Auth/User/PostgreSQL 后，用 iOS 模拟器或等价运行环境执行注册、登录、当前用户和错误态真实链路。
+- 当前 Xcode 工程尚未配置测试 Target，网络层和会话层自动化测试仍是 P1 风险。
+- 仍需保留登录成功、注册成功、当前用户成功、登录失败等截图或脱敏网络摘要作为证据。
 - 地图首页仍使用本地样例点位和缓存，不阻断 B1 认证联调，但不能作为地图业务联调证据。
 
 ## 4. 前后端开发计划
@@ -67,7 +70,7 @@
 | --- | --- | --- | --- |
 | P0 | 统一 B1 联调入口到 Gateway | `front/FoodMapApp/FoodMapApp/Features/Auth/LoginViewModel.swift`、`front/FoodMapApp/FoodMapApp/Features/Auth/RegisterView.swift`、`front/FoodMapApp/README.md` | 默认或推荐 Base URL 为 `http://127.0.0.1:18080`；登录和注册都通过 Gateway 请求 `/api/auth/**`；README 说明模拟器和真机地址差异 |
 | P0 | 扩展 `APIClient` 通用请求能力 | `Core/Networking/APIClient.swift`、`APIResponse.swift`、`NetworkError.swift`、`APIRequestTimeout.swift` | 支持 GET/POST、请求超时、`Authorization: Bearer`、`X-Request-Id`、`X-Trace-Id`、统一成功和失败响应解析 |
-| P0 | 接入当前用户接口 | `Features/Auth/AuthModels.swift`、`Core/Auth/AuthSessionStore.swift`、必要时新增 `Features/Profile` 或 `Core/Auth/CurrentUser` 模型 | 登录成功后调用 Gateway `GET /api/users/me`；Token 恢复后先拉取当前用户，失败则回到登录页并清理无效会话；会话中不再出现 `accountId/userId = 0` 占位 |
+| P0 | 接入当前用户接口 | `Features/Auth/AuthModels.swift`、`Core/Auth/AuthSessionStore.swift`、必要时新增 `Features/Profile` 或 `Core/Auth/CurrentUser` 模型 | 登录成功后调用 Gateway `GET /api/users/me`；Token 恢复后先拉取当前用户，仅认证失效时清理本地 Token；会话中不再出现 `accountId/userId = 0` 占位 |
 | P0 | 完成错误展示分类 | `LoginView.swift`、`RegisterView.swift`、`NetworkError.swift` | 400 参数错误、401 未认证、403 权限不足、409 冲突、500/504 服务异常、网络不可用均展示可理解提示，并保留可修正输入 |
 | P1 | 增加前端测试靶点 | `front/FoodMapApp` Xcode project、`front/FoodMapApp/FoodMapAppTests` | 至少覆盖登录成功、注册成功、当前用户成功、401、403、409、网络失败和 Token 清理；使用 mock `URLProtocol`，不请求真实后端 |
 | P1 | 补齐联调证据 | `docs/integration/B1-auth-ios-backend/screenshots`、`network`、`tests` | 保存登录成功、注册成功、登录失败、当前用户成功的截图或录屏，以及脱敏网络摘要 |
@@ -96,22 +99,22 @@
 
 | 检查项 | 前端状态 | 后端状态 | 结论 |
 | --- | --- | --- | --- |
-| API 契约已确认 | 需按 `status`、Bearer Token、`/api/users/me` 更新模型 | `docs/api/auth-user.md` 已描述注册、登录、当前用户和内部开通 | 有条件确认，前端需补代码 |
-| 前端可发起真实请求 | 登录/注册可发 POST；缺 Gateway 默认、Bearer GET、当前用户 | - | 未通过 |
+| API 契约已确认 | 已按 `status`、Bearer Token、`/api/users/me` 更新模型 | `docs/api/auth-user.md` 已描述注册、登录、当前用户和内部开通 | 通过，待真实联调复测 |
+| 前端可发起真实请求 | 代码已具备 Gateway POST/GET、Bearer Token 和当前用户请求 | - | 有条件通过，待模拟器执行 |
 | 后端接口可被 curl/Postman/测试调通 | - | Gateway/Auth/User 已通过本地 curl 和 Maven 验证 | 通过 |
 | 测试数据已准备 | 需由 iOS 注册或复用后端账号 | 注册接口已创建 `codex_b1_gateway_171349` 等联调账号 | 有条件通过 |
-| `requestId` / `traceId` 可追踪 | 需生成或记录脱敏网络摘要 | Gateway/Auth/User 已验证链路追踪 | 后端通过，前端待补 |
+| `requestId` / `traceId` 可追踪 | 前端请求已生成 `X-Request-Id` 和 `X-Trace-Id`，证据待保留 | Gateway/Auth/User 已验证链路追踪 | 有条件通过，待联调摘要 |
 | 必要环境已启动 | iOS 模拟器待启动；App 可编译 | Gateway 18080、Auth 18081、User 18082、PostgreSQL 可启动 | 有条件通过 |
 | 本次范围已冻结 | 登录、注册、当前用户、错误态、敏感日志 | 登录、注册、当前用户、internal 拦截、回滚、accountId 校验 | 已确认 |
 
 联调开始前结论：
 
-- [ ] 可以开始完整 iOS 前后端联调
-- [x] 暂不开始，前端需要补齐：Gateway Base URL、Bearer 请求、`/api/users/me`、统一错误解析、Token 恢复校验和基本测试。
-- [ ] 暂不开始，后端需要补齐：
-- [ ] 暂不开始，环境或测试数据需要补齐：
+- [x] 可以开始完整 iOS 前后端联调执行，但尚未判定通过
+- [ ] 暂不开始，前端需要补齐：不适用
+- [ ] 暂不开始，后端需要补齐：不适用
+- [ ] 暂不开始，环境或测试数据需要补齐：不适用
 
-完成以下门禁后，才允许把 B1 从“后端 L2 已通过”推进到“完整 iOS L2 联调”：
+以下代码门禁已补齐，允许把 B1 从“后端 L2 已通过”推进到“完整 iOS L2 联调执行”：
 
 1. iOS Debug 构建通过。
 2. `APIClient` 能通过 Gateway 完成注册、登录和当前用户查询。
@@ -120,6 +123,8 @@
 5. 登录失败、注册参数错误、账号冲突、服务不可用均有 UI 错误提示。
 6. 前端和后端日志、问题记录不保存 Token、密码、完整手机号和完整邮箱。
 7. 至少保留一组脱敏网络摘要和一组后端 `requestId/traceId` 日志摘要。
+
+完整 L2 通过前仍需完成第 7 项证据留存，并补充 iOS 模拟器实际操作结果。
 
 ## 6. 前端职责
 

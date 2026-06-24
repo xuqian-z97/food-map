@@ -5,7 +5,7 @@ import Foundation
 final class LoginViewModel: ObservableObject {
     @Published var loginIdentifier = ""
     @Published var password = ""
-    @Published var apiBaseURL = UserDefaults.standard.string(forKey: "foodmap.apiBaseURL") ?? "http://127.0.0.1:8081"
+    @Published var apiBaseURL = APIClient.preferredBaseURLString()
     @Published var isLoading = false
     @Published var errorMessage: String?
 
@@ -28,7 +28,7 @@ final class LoginViewModel: ObservableObject {
         defer { isLoading = false }
 
         do {
-            UserDefaults.standard.set(apiBaseURL, forKey: "foodmap.apiBaseURL")
+            UserDefaults.standard.set(apiBaseURL, forKey: APIClient.baseURLDefaultsKey)
             try await sessionStore.login(
                 identifier: loginIdentifier,
                 password: password,

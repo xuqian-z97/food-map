@@ -49,3 +49,19 @@ struct RegisterResponse: Decodable {
     /// 账号状态，例如 NORMAL。
     let accountStatus: String
 }
+
+/// 当前用户资料响应模型，对应 Gateway `GET /api/users/me`。
+struct CurrentUserResponse: Decodable, Equatable {
+    /// 用户服务用户业务 ID。
+    let userId: Int64
+    /// 认证服务账号业务 ID。
+    let accountId: Int64
+    /// 登录账号名，由后端当前用户接口返回；B1 网关当前可能不透传该字段。
+    let accountName: String?
+    /// 当前展示昵称。
+    let nickname: String
+    /// 可选头像媒体 ID。
+    let avatarMediaId: Int64?
+    /// 用户状态，例如 NORMAL。
+    let userStatus: String
+}

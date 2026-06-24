@@ -85,11 +85,13 @@ FoodMapApp
 - 当前使用 SwiftUI + MVVM 生成认证测试壳。
 - 登录页支持账号名、手机号或邮箱作为登录标识。
 - 注册页支持账号名、手机号、邮箱、昵称、密码。
-- 登录和注册请求已通过统一 `APIClient` 调用后端；B1 完整联调要求前端统一通过 Gateway 调用，不再以直连 Auth 服务作为默认联调入口。
+- 登录、注册和当前用户请求已通过统一 `APIClient` 调用后端；B1 完整联调前端统一通过 Gateway 调用，不再以直连 Auth 服务作为默认联调入口。
 - Access Token 和 Refresh Token 已通过 Keychain 封装持久化。
-- 登录成功后进入 `MapHomeView` 地图首页壳；当前地图点位仍使用本地样例和低风险缓存，不作为门店地图业务联调证据。
-- 当前代码默认服务地址仍为 `http://127.0.0.1:8081`，这是 B1 完整联调阻断项；下一步必须改为 Gateway 优先，例如本地 `http://127.0.0.1:18080`。
-- 当前 `APIClient` 只覆盖登录和注册 POST；B1 完整联调前必须补齐 GET、Bearer Token、`/api/users/me`、`status` 响应字段和非 2xx 统一错误响应解析。
+- 登录成功后会先通过 Gateway `GET /api/users/me` 拉取真实当前用户资料，再进入 `MapHomeView` 地图首页壳；当前地图点位仍使用本地样例和低风险缓存，不作为门店地图业务联调证据。
+- 当前代码默认服务地址为本地 Gateway `http://127.0.0.1:18080`；如果本机保存过早期 Auth 直连地址 `http://127.0.0.1:8081`，App 会自动回到 Gateway 默认值。
+- 当前 `APIClient` 已支持 GET/POST、Bearer Token、`X-Request-Id`、`X-Trace-Id`、`success/status/code/message/data` 成功响应和非 2xx 统一错误响应解析。
+- Token 恢复时必须先调用 `/api/users/me` 校验真实当前用户，不允许使用 `accountId/userId = 0` 作为运行时已登录会话。
+- 当前 Xcode 工程尚未配置测试 Target；B1 L2 完整通过前仍需要补充网络层和会话层自动化测试或保留等价手工联调证据。
 - 本机 Xcode 如果尚未安装 iOS 平台组件，需要先在 Xcode Settings 的 Components 中安装 iOS 平台后再执行完整模拟器构建。
 
 ## 6. 核心模块
@@ -229,18 +231,18 @@ ViewModel：
 - `LoginView` 已落地账号名、手机号或邮箱登录入口。
 - `RegisterView` 已落地测试注册入口。
 - `LoginViewModel` 负责登录表单状态、错误展示和提交状态。
-- `AuthSessionStore` 负责认证会话状态、Token 保存和退出登录。
-- `APIClient` 当前负责登录、注册接口 JSON 请求和基础成功响应解析；尚未完成 `status` 字段建模、非 2xx 错误体解析、Bearer Token 注入和当前用户 GET 请求。
+- `AuthSessionStore` 负责认证会话状态、Token 保存、当前用户恢复和退出登录。
+- `APIClient` 当前负责登录、注册、当前用户接口 JSON 请求和统一成功/失败响应解析，并支持 Bearer Token 和链路头。
 - `KeychainTokenStore` 负责 Token 的 Keychain 保存、读取和清理。
 - 注册成功后当前停留在注册弹窗并展示账号 ID；登录成功后进入 `MapHomeView`。
-- 当前 Token 恢复逻辑仍使用占位会话进入已登录态，B1 完整联调前必须通过 `/api/users/me` 校验真实当前用户，禁止把 `accountId/userId = 0` 作为运行时已登录会话。
+- 当前 Token 恢复逻辑通过 `/api/users/me` 校验真实当前用户；只有 401、403 或明确账号/用户失效业务码才允许清理本地 Token，网络失败和服务 5xx 不应误清 Keychain。
 
 B1 认证完整联调前端开发计划：
 
-- P0：默认或推荐 Base URL 改为 Gateway，本地为 `http://127.0.0.1:18080`，保留手工覆盖能力用于排障。
-- P0：`APIClient` 支持 GET/POST、Bearer Token、`X-Request-Id`、`X-Trace-Id`、`success/status/code/message/data` 成功和失败响应解析。
-- P0：新增当前用户模型和 `/api/users/me` 调用，登录成功和 Token 恢复后都必须拉取真实用户资料。
-- P0：401/403 时清理无效 Token 并回到登录页；400/409/500/504 和网络不可用需要展示明确错误。
+- P0：默认或推荐 Base URL 改为 Gateway，本地为 `http://127.0.0.1:18080`，保留手工覆盖能力用于排障。当前代码已落地。
+- P0：`APIClient` 支持 GET/POST、Bearer Token、`X-Request-Id`、`X-Trace-Id`、`success/status/code/message/data` 成功和失败响应解析。当前代码已落地。
+- P0：新增当前用户模型和 `/api/users/me` 调用，登录成功和 Token 恢复后都必须拉取真实用户资料。当前代码已落地。
+- P0：401/403 时清理无效 Token 并回到登录页；400/409/500/504 和网络不可用需要展示明确错误。当前代码已落地，需在真实 Gateway 联调中复测。
 - P1：新增前端网络层和会话层测试，覆盖登录、注册、当前用户、错误响应和 Token 清理。
 - P1：保留登录成功、注册成功、当前用户成功、登录失败和参数错误的截图或脱敏网络摘要作为联调证据。
 

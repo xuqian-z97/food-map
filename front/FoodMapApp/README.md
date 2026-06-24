@@ -20,7 +20,7 @@ B1 完整前后端联调时，iOS 应通过 Gateway 访问后端：
 http://127.0.0.1:18080
 ```
 
-当前代码里的历史默认值仍可能是 Auth 直连端口 `http://127.0.0.1:8081`。正式执行 B1 iOS 联调前，需要先把默认值调整为 Gateway，或在登录页“服务地址”输入框中手工改成 Gateway 地址。
+登录页和注册页默认使用 Gateway 地址，且“服务地址”输入框仍可编辑。若本机曾保存过早期 Auth 直连默认值 `http://127.0.0.1:8081`，App 会自动回到 Gateway 默认值；如需排障，可手工改为其他本地或局域网 Gateway 地址。
 
 Auth/User 直连地址只用于后端排障，例如：
 
@@ -61,6 +61,6 @@ SPRING_CLOUD_GATEWAY_ROUTES_1_PREDICATES_0='Path=/api/users/**,/internal/users/*
 
 - 登录页：调用 Gateway `POST /api/auth/login`
 - 注册页：调用 Gateway `POST /api/auth/register`
-- B1 待补：登录成功和 Token 恢复后调用 Gateway `GET /api/users/me`
+- 当前用户：登录成功和 Token 恢复后调用 Gateway `GET /api/users/me`，请求携带 `Authorization: Bearer <access-token>`、`X-Request-Id` 和 `X-Trace-Id`
 - 登录成功页：`MapHomeView` 地图首页壳
 - Token 存储：Keychain

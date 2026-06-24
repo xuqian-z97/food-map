@@ -159,7 +159,7 @@ struct RegisterView: View {
                 nickname: nickname.trimmed,
                 registeredChannel: "IOS"
             )
-            UserDefaults.standard.set(apiBaseURL, forKey: "foodmap.apiBaseURL")
+            UserDefaults.standard.set(apiBaseURL, forKey: APIClient.baseURLDefaultsKey)
             let response = try await sessionStore.register(request: request, baseURL: apiBaseURL)
             message = "注册成功：\(response.accountId)"
         } catch {
@@ -200,7 +200,7 @@ private extension String {
 }
 
 #Preview {
-    RegisterView(apiBaseURL: "http://127.0.0.1:8081")
+    RegisterView(apiBaseURL: APIClient.defaultBaseURLString)
         .environmentObject(AuthSessionStore(tokenStore: PreviewRegisterTokenStore()))
 }
 
