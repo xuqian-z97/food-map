@@ -8,12 +8,12 @@
 | 迭代编号 | B1 |
 | 联调文件夹 | `docs/integration/B1-auth-ios-backend` |
 | 创建时间 | 2026-06-13 |
-| 最近更新 | 2026-06-24 |
+| 最近更新 | 2026-06-25 |
 | 主代理 | Codex 主代理 |
 | 后端观察子代理 | 后端子代理，观察 `after/foodmap-auth-service`、`after/foodmap-user-service`、`after/foodmap-gateway-service` |
 | 前端观察子代理 | 前端子代理，观察 `front/FoodMapApp` 认证页面、会话状态和网络层 |
 | 联调验收子代理 | QA 子代理，按本文档和 `issue-log.md` 判定 |
-| 前端提交 | 本次 B1 iOS 数据链路提交待生成 |
+| 前端提交 | `869e1c0 feat: prepare B1 iOS auth L2 data flow`、`e7939ae fix: validate iOS register password length` |
 | 后端提交 | `b37929c feat: complete B1 auth backend integration` |
 | 文档提交 | 本次计划与状态同步待提交 |
 | 相关文档 | `CODEX-front.md`、`CODEX-after.md`、`CODEX-gen.md`、`docs/api/auth-user.md`、`docs/superpowers/plans/2026-06-22-b1-auth-ios-backend-integration.md` |
@@ -22,11 +22,11 @@
 
 本次联调需要验证的功能：
 
-- [ ] iOS 登录页通过 Gateway 调用真实认证登录接口。
-- [ ] 登录成功后保存 Token，并进入地图首页。
-- [ ] iOS 注册页通过 Gateway 调用真实注册接口。
-- [ ] 注册成功后认证服务通过用户服务创建用户资料，随后可查询 `/api/users/me`。
-- [ ] iOS 使用 Access Token 通过 Gateway 查询 `/api/users/me`，展示或缓存真实当前用户身份。
+- [x] iOS 登录页通过 Gateway 调用真实认证登录接口，用户已手工确认登录成功。
+- [x] 登录成功后保存 Token，并进入地图首页，用户已手工确认。
+- [x] iOS 注册页通过 Gateway 调用真实注册接口，用户已手工确认注册可用。
+- [ ] 注册成功后认证服务通过用户服务创建用户资料，随后可查询 `/api/users/me`；主链路可用，待补脱敏网络摘要和后端日志证据。
+- [ ] iOS 使用 Access Token 通过 Gateway 查询 `/api/users/me`，展示或缓存真实当前用户身份；从最新前端代码路径看登录后进入地图依赖该接口成功，仍待补请求证据。
 - [x] 后端通过 Gateway 验证注册、登录、当前用户、内部接口拦截、accountId 归属校验和失败回滚。
 - [ ] 登录失败、参数错误、账号不存在、密码错误、未认证、权限不足和服务异常时，前端展示明确错误。
 - [ ] Token、密码、完整手机号、完整邮箱不出现在前端日志、后端日志、网络摘要或问题记录中。
@@ -41,13 +41,14 @@
 
 ## 3. 当前审查结论
 
-完整 iOS 前后端联调当前可以进入执行阶段，结论为：`前端代码准入已通过，真实 L2 联调尚未判定通过`。
+完整 iOS 前后端联调当前主链路已手工走通，结论为：`有条件通过，待补 requestId/traceId 与错误态证据后再判定完整 L2 通过`。
 
 已具备的能力：
 
 - 后端 Gateway/Auth/User 本地 L2 联调已通过，提交为 `b37929c`。
 - iOS 工程 `FoodMapApp` 可通过命令行 Debug 构建。
 - iOS 登录和注册页面已经有基本表单、加载态和 Keychain Token 存储能力。
+- 2026-06-25 用户手工确认 iOS 注册可用、登录成功后可正常进入地图页。
 - iOS 注册请求体是扁平 JSON，字段与后端注册契约基本一致。
 - 当前前端代码未发现 `print`、`debugPrint`、`NSLog` 直接输出 Token 或密码。
 - iOS 默认服务地址已改为本地 Gateway `http://127.0.0.1:18080`，并保留手工覆盖能力用于排障。
@@ -57,7 +58,8 @@
 
 剩余未完成的完整 L2 事项：
 
-- 需要启动 Gateway/Auth/User/PostgreSQL 后，用 iOS 模拟器或等价运行环境执行注册、登录、当前用户和错误态真实链路。
+- 需要补充 iOS 注册、登录、当前用户请求的脱敏网络摘要和后端 `requestId/traceId` 证据。
+- 需要继续执行登录失败、短密码注册、401/403、5xx/断网等错误态真实链路。
 - 当前 Xcode 工程尚未配置测试 Target，网络层和会话层自动化测试仍是 P1 风险。
 - 仍需保留登录成功、注册成功、当前用户成功、登录失败等截图或脱敏网络摘要作为证据。
 - 地图首页仍使用本地样例点位和缓存，不阻断 B1 认证联调，但不能作为地图业务联调证据。
@@ -100,16 +102,16 @@
 | 检查项 | 前端状态 | 后端状态 | 结论 |
 | --- | --- | --- | --- |
 | API 契约已确认 | 已按 `status`、Bearer Token、`/api/users/me` 更新模型 | `docs/api/auth-user.md` 已描述注册、登录、当前用户和内部开通 | 通过，待真实联调复测 |
-| 前端可发起真实请求 | 代码已具备 Gateway POST/GET、Bearer Token 和当前用户请求 | - | 有条件通过，待模拟器执行 |
+| 前端可发起真实请求 | 用户已手工确认 iOS 注册、登录、登录后进入地图页可用 | - | 有条件通过，待补请求摘要 |
 | 后端接口可被 curl/Postman/测试调通 | - | Gateway/Auth/User 已通过本地 curl 和 Maven 验证 | 通过 |
 | 测试数据已准备 | 需由 iOS 注册或复用后端账号 | 注册接口已创建 `codex_b1_gateway_171349` 等联调账号 | 有条件通过 |
-| `requestId` / `traceId` 可追踪 | 前端请求已生成 `X-Request-Id` 和 `X-Trace-Id`，证据待保留 | Gateway/Auth/User 已验证链路追踪 | 有条件通过，待联调摘要 |
-| 必要环境已启动 | iOS 模拟器待启动；App 可编译 | Gateway 18080、Auth 18081、User 18082、PostgreSQL 可启动 | 有条件通过 |
+| `requestId` / `traceId` 可追踪 | 前端请求已生成 `X-Request-Id` 和 `X-Trace-Id`，本次手工确认未记录具体值 | Gateway/Auth/User 已验证链路追踪 | 有条件通过，待联调摘要 |
+| 必要环境已启动 | iOS 模拟器已执行主链路手工验证；App 可编译 | Gateway 18080、Auth 18081、User 18082、PostgreSQL 已能支撑注册登录主链路 | 有条件通过 |
 | 本次范围已冻结 | 登录、注册、当前用户、错误态、敏感日志 | 登录、注册、当前用户、internal 拦截、回滚、accountId 校验 | 已确认 |
 
 联调开始前结论：
 
-- [x] 可以开始完整 iOS 前后端联调执行，但尚未判定通过
+- [x] 主链路手工可用，可继续补齐完整 iOS L2 证据
 - [ ] 暂不开始，前端需要补齐：不适用
 - [ ] 暂不开始，后端需要补齐：不适用
 - [ ] 暂不开始，环境或测试数据需要补齐：不适用
@@ -124,7 +126,7 @@
 6. 前端和后端日志、问题记录不保存 Token、密码、完整手机号和完整邮箱。
 7. 至少保留一组脱敏网络摘要和一组后端 `requestId/traceId` 日志摘要。
 
-完整 L2 通过前仍需完成第 7 项证据留存，并补充 iOS 模拟器实际操作结果。
+完整 L2 通过前仍需完成第 7 项证据留存，并补充错误态实际操作结果。
 
 ## 6. 前端职责
 
@@ -198,8 +200,8 @@ X-Trace-Id: <trace-id>
 
 | 组件 | 地址/配置 | 状态 |
 | --- | --- | --- |
-| iOS App | `front/FoodMapApp` | 命令行 Debug 构建通过，模拟器手工联调待执行 |
-| iOS 版本 / 设备 | 待填写 | 待确认 |
+| iOS App | `front/FoodMapApp` | 命令行 Debug 构建通过，模拟器主链路手工确认可用 |
+| iOS 版本 / 设备 | iPhone 17 Pro Simulator，iOS 26.5 | 用户截图确认 |
 | Xcode / App 构建号 | Xcode 命令行可构建 | 待记录具体版本 |
 | Gateway | `http://127.0.0.1:18080`，前端联调唯一入口 | 后端已验证后停止，联调时需重启 |
 | Auth Service | `http://127.0.0.1:18081`，本地可用 `AUTH_USER_SERVICE_BASE_URL=http://127.0.0.1:18082` | 后端已验证后停止，联调时需重启 |
@@ -232,10 +234,10 @@ tests/
 
 | 编号 | 场景 | 操作步骤 | 预期结果 | 通过情况 | 证据 |
 | --- | --- | --- | --- | --- | --- |
-| IT-001 | 注册成功 | iOS 通过 Gateway `POST /api/auth/register` 提交合法注册信息 | 后端创建账号和用户资料，返回账号和用户业务主键 | 后端通过，前端未执行 | 后端：`requestId=codex-b1-gateway-register`，`traceId=codex-b1-gateway-trace`，`accountId=100010`，`userId=200010` |
-| IT-002 | 登录成功 | iOS 通过 Gateway `POST /api/auth/login` 输入已注册账号和正确密码 | 返回 Token，Keychain 保存 Token，进入地图首页 | 后端通过，前端未执行 | 后端：`requestId=codex-b1-gateway-login`，Token 已脱敏 |
+| IT-001 | 注册成功 | iOS 通过 Gateway `POST /api/auth/register` 提交合法注册信息 | 后端创建账号和用户资料，返回账号和用户业务主键 | 用户手工确认可用，待补请求摘要 | 用户确认注册可用；后端历史证据：`requestId=codex-b1-gateway-register`，`traceId=codex-b1-gateway-trace`，`accountId=100010`，`userId=200010` |
+| IT-002 | 登录成功 | iOS 通过 Gateway `POST /api/auth/login` 输入已注册账号和正确密码 | 返回 Token，Keychain 保存 Token，进入地图首页 | 用户手工确认通过，待补请求摘要 | 用户确认登录成功后进入地图页；后端历史证据：`requestId=codex-b1-gateway-login`，Token 已脱敏 |
 | IT-003 | 登录失败 | iOS 输入错误密码并提交 | 后端返回稳定错误，前端展示明确失败原因并不清空账号 | 未执行 |  |
-| IT-004 | 当前用户 | iOS 使用登录 Token 通过 Gateway `GET /api/users/me` | Gateway 覆盖伪造身份头，下游返回 Token 对应用户资料，前端会话使用真实 `userId/accountId` | 后端通过，前端未执行 | 后端：`requestId=codex-b1-gateway-me`，返回 `userId=200010/accountId=100010` |
+| IT-004 | 当前用户 | iOS 使用登录 Token 通过 Gateway `GET /api/users/me` | Gateway 覆盖伪造身份头，下游返回 Token 对应用户资料，前端会话使用真实 `userId/accountId` | 用户手工确认登录后进入地图页；按最新代码路径推断当前用户接口成功，待补请求摘要 | 后端历史证据：`requestId=codex-b1-gateway-me`，返回 `userId=200010/accountId=100010` |
 | IT-005 | 敏感日志检查 | 检查前端日志、后端日志和问题记录 | 不出现 Token、密码明文，手机号和邮箱脱敏 | 后端通过，前端未执行 | 后端 SQL 日志中手机号、邮箱、密码哈希、Token 类字段已脱敏 |
 | IT-006 | 内部接口外部拦截 | Gateway `POST /internal/users/provision` | 返回 `403/FORBIDDEN`，不转发到用户服务 | 后端通过 | `requestId=codex-b1-internal-forbidden` |
 | IT-007 | accountId 错配 | 直连 User `GET /api/users/me`，userId 正确但 accountId 错误 | 返回 `403/FORBIDDEN` | 后端通过 | `requestId=codex-b1-account-mismatch` |
@@ -271,9 +273,9 @@ tests/
 
 | 项目 | 结论 |
 | --- | --- |
-| 是否通过 | 后端 L2 本地真实联调通过；完整 iOS 前后端联调未达到安全点 |
-| 阻塞问题 | 前端缺少 Gateway 默认入口、Bearer 请求、`/api/users/me` 和 Token 恢复真实校验 |
-| 高风险问题 | 若继续联调，可能出现会话 `userId/accountId=0`、错误体丢失和当前用户链路无法验证 |
+| 是否通过 | 有条件通过：后端 L2 通过，iOS 注册、登录、登录后进入地图主链路已由用户手工确认 |
+| 阻塞问题 | 暂无主链路阻塞问题 |
+| 高风险问题 | 缺少本次 iOS 请求的脱敏网络摘要和后端 `requestId/traceId`，错误态尚未完整复测 |
 | 已执行验证 | `xcodebuild` Debug 构建、`validate-ios.sh`、后端 Maven 定向测试、`mvn validate`、Gateway/Auth/User curl、本地 PostgreSQL 落库检查 |
-| 未执行验证及原因 | iOS 模拟器手工联调、前端页面操作、当前用户查询 UI 和前端错误态未执行；前端代码未到安全点 |
-| 后续动作 | 按 `docs/superpowers/plans/2026-06-22-b1-auth-ios-backend-integration.md` 先补前端 P0，再执行完整 iOS L2 联调 |
+| 未执行验证及原因 | 登录失败、短密码注册、401/403、5xx/断网等错误态未完成；本次未收集具体 `requestId/traceId` |
+| 后续动作 | 补齐脱敏网络摘要、后端日志摘要和错误态复测后，关闭 BUG-004 至 BUG-008 并判定完整 L2 |
