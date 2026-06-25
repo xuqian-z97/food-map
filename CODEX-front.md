@@ -229,7 +229,7 @@ ViewModel：
 当前实现：
 
 - `LoginView` 已落地账号名、手机号或邮箱登录入口。
-- `RegisterView` 已落地测试注册入口。
+- `RegisterView` 已落地测试注册入口，注册密码按后端契约要求至少 8 位。
 - `LoginViewModel` 负责登录表单状态、错误展示和提交状态。
 - `AuthSessionStore` 负责认证会话状态、Token 保存、当前用户恢复和退出登录。
 - `APIClient` 当前负责登录、注册、当前用户接口 JSON 请求和统一成功/失败响应解析，并支持 Bearer Token 和链路头。

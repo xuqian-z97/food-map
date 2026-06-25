@@ -146,6 +146,11 @@ struct RegisterView: View {
     }
 
     private func register() async {
+        if password.trimmed.count < 8 {
+            message = "密码至少 8 位"
+            return
+        }
+
         isLoading = true
         message = nil
         defer { isLoading = false }

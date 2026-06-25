@@ -50,7 +50,7 @@ http://127.0.0.1:18080
 | accountName | string | 是 | 账号名，最长 64 |
 | phone | string | 否 | 手机号，最长 32 |
 | email | string | 否 | 邮箱，最长 128 |
-| password | string | 是 | 登录密码，后端只保存哈希 |
+| password | string | 是 | 登录密码，长度 8-128，后端只保存哈希 |
 | nickname | string | 是 | 默认昵称，最长 64 |
 | registeredChannel | string | 否 | 注册来源，默认 IOS |
 
