@@ -153,13 +153,13 @@ foodmap-auth-service
 
 职责：
 
-- 注册账号。
-- 支持手机号、邮箱、账号名登录。
-- 密码校验。
-- 密码哈希。
+- 管理登录身份绑定，包含账号名、手机号、邮箱、微信和 Apple 等登录方式到 `userId` 的绑定关系。
+- 校验密码凭证和第三方登录凭证。
+- 管理密码哈希和长期认证凭证状态。
 - 签发 Access Token。
-- 签发和撤销 Refresh Token。
-- 登录日志。
+- 管理 Refresh Token 对应的登录会话，DB 保存会话事实，Redis 用于热缓存、撤销加速和短期风控状态。
+- 产生登录审计事件，长期写入日志服务或安全审计库。
+- 调用用户服务校验用户是否允许登录。
 
 数据库：
 
@@ -170,17 +170,19 @@ foodmap_auth_db
 核心表：
 
 ```text
-auth_accounts
+auth_identity_bindings
 auth_credentials
-refresh_tokens
-login_logs
+auth_sessions
 ```
 
 不负责：
 
 - 用户资料。
+- 用户昵称、头像、城市、简介。
+- 用户隐私偏好。
 - 好友关系。
 - 推荐内容。
+- 用户展示资料搜索。
 
 ### 5.3 用户服务
 
@@ -192,7 +194,7 @@ foodmap-user-service
 
 职责：
 
-- 用户资料。
+- 用户主体和用户资料。
 - 昵称。
 - 头像。
 - 城市。
@@ -202,6 +204,7 @@ foodmap-user-service
 - 用户设置。
 - 用户状态。
 - 根据对外可搜索字段搜索用户。
+- 保存最近登录时间、最近活跃时间等用户活跃快照。
 
 数据库：
 
@@ -643,22 +646,22 @@ infrastructure
 └── persistence
     ├── entity
     ├── mapper
-    │   ├── AuthAccountMapper.java
-    │   ├── AuthAccountDefineMapper.java
+    │   ├── AuthIdentityBindingMapper.java
+    │   ├── AuthIdentityBindingDefineMapper.java
     │   └── xml
-    │       ├── AuthAccountMapper.xml
-    │       └── AuthAccountDefineMapper.xml
+    │       ├── AuthIdentityBindingMapper.xml
+    │       └── AuthIdentityBindingDefineMapper.xml
     └── mybatis
-        └── AuthAccountRepositoryImpl.java
+        └── AuthIdentityBindingRepositoryImpl.java
 ```
 
 命名规则：
 
 - 标准单表 Mapper 使用 `{EntityName}Mapper.java` 和 `{EntityName}Mapper.xml`。
 - 自定义复杂 SQL Mapper 使用 `{EntityName}DefineMapper.java` 和 `{EntityName}DefineMapper.xml`。
-- `{EntityName}` 使用表语义的单数 PascalCase，例如 `auth_accounts` 对应 `AuthAccountEntity`、`AuthAccountMapper`、`AuthAccountDefineMapper`。
+- `{EntityName}` 使用表语义的单数 PascalCase，例如 `auth_identity_bindings` 对应 `AuthIdentityBindingEntity`、`AuthIdentityBindingMapper`、`AuthIdentityBindingDefineMapper`。
 - Repository 实现类名禁止使用 `MyBatis`、`Jdbc`、`Redis` 等技术前缀，避免业务阅读路径被基础设施细节打断。
-- Repository 实现使用 `{EntityName}RepositoryImpl` 或按业务聚合语义命名，例如 `AuthAccountRepositoryImpl`、`UserRepositoryImpl`。
+- Repository 实现使用 `{EntityName}RepositoryImpl` 或按业务聚合语义命名，例如 `AuthIdentityBindingRepositoryImpl`、`UserRepositoryImpl`。
 - 技术实现差异通过包名和注释表达，例如 MyBatis 实现放在 `infrastructure.persistence.mybatis` 包中，而不是写进 Repository 类名前缀。
 
 标准 Mapper 由数据库表结构生成，只允许承载单表模板 SQL：
@@ -744,7 +747,7 @@ is_delete = 0
 示例：
 
 ```text
-auth_accounts.account_id
+auth_identity_bindings.identity_id
 users.user_id
 friend_relations.relation_id
 groups.group_id
@@ -880,66 +883,75 @@ V2__add_login_logs.sql
 foodmap_auth_db
 ```
 
-表：`auth_accounts`
+身份模型基线：
 
-中文名：认证账号表。
+- FoodMap 长期只使用 `userId` 表示登录用户主体。
+- `accountId` 不再作为长期主体主键，也不再作为新增 API、Token 和 Gateway 可信身份头的标准字段。
+- 账号名、手机号、邮箱、微信和 Apple 都是 `userId` 下的登录身份绑定。
+- 当前 B1 代码仍处于旧 `accountId + userId` 模型，后续身份重构完成前，不应在新功能中继续扩大 `accountId` 依赖。
 
-用途：保存登录账号的基础认证身份，负责账号状态、登录标识和与用户服务的 `user_id` 关联。
+表：`auth_identity_bindings`
+
+中文名：认证身份绑定表。
+
+用途：保存登录身份到用户业务主键的绑定关系。登录身份包括账号名、手机号、邮箱、微信 openid/unionid 和 Apple sub 等。该表不是账号主体表，只回答“这个登录标识属于哪个 `userId`”。
 
 | 字段名 | 推荐类型 | 中文注释 |
 | --- | --- | --- |
-| account_id | bigint not null | 账号业务主键，用于认证服务对外引用账号 |
-| user_id | bigint not null | 用户业务主键，关联用户服务的用户身份 |
-| account_name | varchar(64) | 账号名，可用于账号名登录 |
-| phone | varchar(32) | 手机号，可用于手机号登录 |
-| email | varchar(128) | 邮箱，可用于邮箱登录 |
-| account_status | varchar(32) not null | 账号状态，如 NORMAL、DISABLED、LOCKED |
-| registered_channel | varchar(32) | 注册来源，如 IOS、WEB、ADMIN |
-| last_login_time | timestamptz | 最近一次登录成功时间 |
+| identity_id | bigint not null | 登录身份绑定业务主键 |
+| user_id | bigint not null | 用户业务主键，关联用户服务 users.user_id |
+| provider | varchar(32) not null | 身份提供方，如 LOCAL、WECHAT、APPLE |
+| identity_type | varchar(32) not null | 身份类型，如 ACCOUNT_NAME、PHONE、EMAIL、WECHAT_OPENID、WECHAT_UNIONID、APPLE_SUB |
+| identity_hash | varchar(255) not null | 标准化登录标识哈希，用于唯一索引和检索 |
+| identity_cipher | varchar(512) | 加密后的登录标识，可选保存，禁止明文敏感标识直接散落业务日志 |
+| display_masked | varchar(128) | 脱敏展示值，如 186****1693 或 f***@example.com |
+| provider_subject | varchar(255) | 第三方平台主体 ID，如微信 openid 或 Apple sub，保存前必须评估加密和脱敏策略 |
+| union_subject | varchar(255) | 第三方跨应用主体 ID，如微信 unionid，保存前必须评估加密和脱敏策略 |
+| verified | smallint not null default 0 | 是否已验证，1 表示已验证，0 表示未验证 |
+| primary_identity | smallint not null default 0 | 是否主登录身份，1 表示主身份，0 表示普通身份 |
+| identity_status | varchar(32) not null | 登录身份状态，如 NORMAL、DISABLED、UNBOUND |
+| bound_time | timestamptz | 绑定时间 |
 
 表：`auth_credentials`
 
 中文名：认证凭证表。
 
-用途：保存账号的登录凭证。MVP 阶段主要保存密码哈希，后续可扩展验证码、第三方登录等凭证类型。
+用途：保存长期认证凭证。密码哈希和凭证状态必须落库，Redis 只能保存验证码、登录失败计数、OAuth state、短期风控标记等临时认证状态，不能作为长期凭证事实的唯一来源。
 
 | 字段名 | 推荐类型 | 中文注释 |
 | --- | --- | --- |
 | credential_id | bigint not null | 凭证业务主键 |
-| account_id | bigint not null | 账号业务主键，关联 auth_accounts.account_id |
-| credential_type | varchar(32) not null | 凭证类型，如 PASSWORD |
+| user_id | bigint not null | 用户业务主键，关联用户服务 users.user_id |
+| identity_id | bigint | 登录身份绑定业务主键，关联 auth_identity_bindings.identity_id |
+| credential_type | varchar(32) not null | 凭证类型，如 PASSWORD、SMS_CODE、OAUTH_TEMP |
 | password_hash | varchar(255) | 密码哈希值，禁止保存明文密码 |
 | hash_algorithm | varchar(64) | 密码哈希算法标识，如 PBKDF2WithHmacSHA256 |
+| credential_status | varchar(32) not null | 凭证状态，如 ACTIVE、DISABLED |
+| password_updated_time | timestamptz | 密码更新时间 |
 
-表：`refresh_tokens`
+表：`auth_sessions`
 
-中文名：刷新令牌表。
+中文名：认证会话表。
 
-用途：保存 Refresh Token 的哈希、过期和撤销状态，用于刷新 Access Token 和主动退出登录。
+用途：保存 Refresh Token 对应的长期会话事实，用于刷新 Access Token、多端会话管理、主动退出、强制下线和安全审计。Access Token 不落库；Refresh Token 明文不落库；Redis 只作为会话热缓存、denylist 和撤销加速，不作为唯一事实源，除非业务明确接受 Redis 丢失导致全员重新登录。
 
 | 字段名 | 推荐类型 | 中文注释 |
 | --- | --- | --- |
-| token_id | bigint not null | 刷新令牌业务主键 |
-| account_id | bigint not null | 账号业务主键，关联 auth_accounts.account_id |
-| token_hash | varchar(255) not null | Refresh Token 哈希值，禁止保存明文 Token |
+| session_id | varchar(64) not null | 会话 ID，用于多端会话和 Refresh Token 轮换 |
+| user_id | bigint not null | 用户业务主键，关联用户服务 users.user_id |
+| refresh_token_hash | varchar(255) not null | Refresh Token 哈希值，禁止保存明文 Refresh Token |
+| device_type | varchar(32) | 设备类型，如 IOS、WEB、ADMIN |
+| device_name | varchar(128) | 设备名称或脱敏设备摘要 |
 | expires_time | timestamptz not null | Refresh Token 过期时间 |
-| revoked_time | timestamptz | Refresh Token 被撤销时间 |
-| token_status | varchar(32) not null | Token 状态，如 ACTIVE、REVOKED、EXPIRED |
+| revoked_time | timestamptz | 会话被撤销时间 |
+| session_status | varchar(32) not null | 会话状态，如 ACTIVE、REVOKED、EXPIRED |
 
-表：`login_logs`
+登录审计：
 
-中文名：登录日志表。
-
-用途：记录登录行为，用于安全审计、异常登录分析和用户最近登录记录。
-
-| 字段名 | 推荐类型 | 中文注释 |
-| --- | --- | --- |
-| login_log_id | bigint not null | 登录日志业务主键 |
-| account_id | bigint | 账号业务主键，登录失败且账号不存在时可为空 |
-| login_type | varchar(32) not null | 登录方式，如 PHONE、EMAIL、ACCOUNT_NAME |
-| login_result | varchar(32) not null | 登录结果，如 SUCCESS、FAILED |
-| ip_address | varchar(64) | 登录请求 IP 地址 |
-| user_agent | varchar(512) | 登录设备或浏览器 User-Agent |
+- 认证服务必须产生登录成功、登录失败、退出登录、连续失败、强制下线等安全审计事件。
+- 长期由 `foodmap-log-service` 或独立安全审计库保存认证审计日志。
+- user-service 只保存 `last_login_time`、`last_active_time` 等用户活跃快照，不保存完整登录审计事实。
+- 过渡期如 auth-service 保留本地 `auth_login_logs` 表，只能作为短期实现，不能作为长期目标模型。
 
 #### 6.2.3 用户服务表结构
 
@@ -958,11 +970,18 @@ foodmap_user_db
 | 字段名 | 推荐类型 | 中文注释 |
 | --- | --- | --- |
 | user_id | bigint not null | 用户业务主键，用于跨服务引用用户 |
-| account_id | bigint not null | 认证账号业务主键，来源于认证服务 |
 | nickname | varchar(64) not null | 用户昵称 |
 | avatar_media_id | bigint | 头像媒体业务主键，关联媒体服务 media_id |
 | user_status | varchar(32) not null | 用户状态，如 NORMAL、DISABLED |
 | searchable | smallint not null default 1 | 是否允许被搜索，1 表示允许，0 表示不允许 |
+| last_login_time | timestamptz | 最近一次登录成功时间快照，由认证审计事件或内部调用更新 |
+| last_active_time | timestamptz | 最近一次活跃时间快照 |
+
+旧字段迁移：
+
+- `account_id` 属于 B1 旧身份模型字段，目标身份模型废弃该字段。
+- 新增业务不能继续依赖 `users.account_id` 判断用户身份。
+- 身份重构完成后，Token、Gateway、业务服务和 iOS 会话统一只使用 `userId`。
 
 表：`user_profiles`
 
@@ -1873,19 +1892,20 @@ GET /api/auth/me
 GET /api/users/me
 PUT /api/users/me
 GET /api/users/search?keyword=
-POST /internal/users/provision
+POST /internal/users/bootstrap
+GET /internal/users/{userId}/login-state
 ```
 
-注册后用户资料开通：
+注册后用户主体开通：
 
-- `POST /api/auth/register` 成功生成 `accountId` 和 `userId` 后，认证服务必须通过内部 API 通知用户服务开通资料。
-- 用户服务内部接口 `POST /internal/users/provision` 负责创建 `users`、`user_profiles` 和 `user_settings` 记录。
+- `POST /api/auth/register` 先由认证服务检查登录身份唯一性，再调用用户服务内部接口创建用户主体、用户资料和默认设置。
+- 用户服务内部接口 `POST /internal/users/bootstrap` 负责生成或接收约定的 `userId`，并创建 `users`、`user_profiles` 和 `user_settings` 记录。
+- 认证服务随后写入 `auth_identity_bindings` 和 `auth_credentials`。
 - 认证服务不得直接访问 `foodmap_user_db`，用户服务不得直接访问 `foodmap_auth_db`。
-- B1 本地联调阶段使用 OpenFeign 通过 Nacos 服务名 `foodmap-user-service` 调用用户服务内部 API；仅在禁用 Nacos 的本地排查场景允许通过 `AUTH_USER_SERVICE_URL` 临时指定直连地址。
-- `POST /internal/users/provision` 只能由认证服务通过服务发现或内网直连调用；外部 Gateway 对该路径必须返回 `403`，避免外部调用方直接创建用户资料。
-- B1 同步注册链路中，认证服务注册用例必须使用本地事务包裹账号、凭证写入和用户资料开通调用；如果用户服务开通失败，认证服务本地账号和凭证写入必须回滚。
-- 认证服务内面向用户服务的 Feign 客户端统一放在 `com.foodmap.auth.infrastructure.client.user` 包下；后续新增其他下游服务客户端时，按下游服务继续拆分子包，避免混杂在同一 client 根包。
-- 后续进入更复杂跨服务写流程时，需要演进为 Outbox / 事件 / 补偿任务，避免跨服务数据不一致。
+- 本地联调阶段使用 OpenFeign 通过 Nacos 服务名 `foodmap-user-service` 调用用户服务内部 API；仅在禁用 Nacos 的本地排查场景允许通过环境变量临时指定直连地址。
+- `POST /internal/users/bootstrap` 和 `GET /internal/users/{userId}/login-state` 只能由认证服务通过服务发现或内网直连调用；外部 Gateway 对非健康类 `/internal/**` 路径必须返回 `403`。
+- 跨服务注册链路必须有失败状态、补偿任务、重试或人工处理入口，不能静默失败。
+- 后续进入更复杂跨服务写流程时，需要演进为 Outbox / 事件 / 补偿任务，避免跨服务数据不一致；默认不使用强分布式事务。
 
 ### 10.3 关系接口
 
@@ -2024,7 +2044,9 @@ GET /api/admin/operations
 
 - 使用 JWT Access Token。
 - 使用 Refresh Token。
-- Refresh Token 记录保存在认证服务数据库。
+- Access Token 不落库，使用短有效期 JWT。
+- Refresh Token 明文不落库，认证服务数据库只保存 Refresh Token 哈希和会话状态。
+- Redis 用于认证会话热缓存、Access Token denylist、登录失败计数、验证码和 OAuth state 等短期状态；Redis 不能作为长期认证凭证和会话事实的唯一来源，除非明确接受 Redis 丢失导致全员重新登录。
 - 支持 Token 撤销。
 
 ### 11.2 授权
@@ -2033,7 +2055,8 @@ GET /api/admin/operations
 - 后端校验资源归属。
 - 后端校验推荐内容可见范围。
 - 网关可以校验基础 JWT 结构。
-- 网关校验 Access Token 后向下游透传 `X-FoodMap-User-Id` 和 `X-FoodMap-Account-Id`。
+- 网关校验 Access Token 后向下游透传 `X-FoodMap-User-Id`。
+- `X-FoodMap-Account-Id` 属于 B1 旧身份模型兼容字段，新功能不得依赖。
 - 下游服务必须通过 `foodmap-common` 中的当前用户解析工具读取可信身份请求头，不能直接信任客户端传入的用户 ID。
 - 服务内部仍必须做权限校验。
 
@@ -2936,7 +2959,8 @@ sequenceDiagram
 - 所有外部调用、数据库慢查询、MQ 消费失败必须可定位。
 - 项目必须提供通用日志方法，业务代码不能随意字符串拼接打印关键业务日志。
 - 涉及用户、认证、推荐、评论、文件、中间件调用的日志必须通过通用日志方法或统一日志封装输出。
-- 日志字段名必须稳定，常用字段统一使用 `userId`、`accountId`、`storeId`、`recommendationId`、`commentId`、`mediaId`、`eventId`、`requestId`、`traceId`。
+- 日志字段名必须稳定，常用字段统一使用 `userId`、`storeId`、`recommendationId`、`commentId`、`mediaId`、`eventId`、`requestId`、`traceId`。
+- `accountId` 属于 B1 旧身份模型兼容字段，身份重构后不再作为新增日志字段标准。
 - 日志参数必须先脱敏再输出，不能依赖开发者手工记忆敏感字段。
 - 所有业务接口调用必须记录访问留痕，用于后续统计各业务模块使用情况。
 - MyBatis 执行 SQL 必须具备 DEBUG 级别输出能力，输出时需要展示已经绑定实际参数后的 SQL。
@@ -2972,7 +2996,8 @@ foodmap-common
 
 必须遵守：
 
-- `LogMdcFilter` 负责写入或透传 `traceId`、`requestId`、`spanId`、`serviceName`、`accountId`、`userId`。
+- `LogMdcFilter` 负责写入或透传 `traceId`、`requestId`、`spanId`、`serviceName`、`userId`。
+- `accountId` 仅用于旧链路兼容期 MDC，不得作为新业务日志必填字段。
 - `ApiAccessLogFilter` 负责输出服务内接口访问摘要，不读取请求体，不输出 Token、密码、私密推荐正文或评论正文。
 - `FoodMapLoggingAutoConfiguration` 只在 Servlet Web 应用生效，业务服务引入 `foodmap-common` 后默认获得 MDC 和访问日志过滤器。
 - `LogMasker` 负责手机号、邮箱、Token、密码、密钥、对象存储 Key、私密推荐内容、评论正文等脱敏。
@@ -3051,7 +3076,7 @@ flowchart LR
 
     client -->|"HTTP 请求"| gateway_trace
     gateway_trace -->|"X-Request-Id / X-Trace-Id / X-Span-Id"| gateway_auth
-    gateway_auth -->|"可信 accountId / userId"| service_mdc
+    gateway_auth -->|"可信 userId"| service_mdc
     service_mdc --> service_access
     service_access --> service_log
     service_log -. "后续采集" .-> b15b_sink
@@ -3063,7 +3088,7 @@ B1.5-a 实现原理：
 - 网关过滤器顺序早于认证过滤器，因此认证失败也能返回同一 `requestId` 供排查。
 - Servlet 业务服务由 `FoodMapLoggingAutoConfiguration` 自动注册 `LogMdcFilter` 和 `ApiAccessLogFilter`。
 - `LogMdcFilter` 读取链路头和网关可信身份头，写入 MDC，并在 finally 中清理 FoodMap 日志上下文。
-- `SafeLog` 输出业务日志时自动附带 MDC 中的 `requestId`、`traceId`、`spanId`、`serviceName`、`accountId`、`userId`。
+- `SafeLog` 输出业务日志时自动附带 MDC 中的 `requestId`、`traceId`、`spanId`、`serviceName`、`userId`。
 - `ApiAccessLogFilter` 只记录方法、路径、状态码、耗时、客户端 IP 等摘要字段，不读取请求体。
 
 B1.5 后续每个小阶段必须同步补充：
@@ -3805,11 +3830,11 @@ level=DEBUG
 serviceName=foodmap-auth-service
 traceId=...
 requestId=...
-mapperId=com.foodmap.auth.infrastructure.persistence.mapper.AuthAccountMapper.selectByBizId
+mapperId=com.foodmap.auth.infrastructure.persistence.mapper.AuthIdentityBindingMapper.selectByBizId
 sqlType=SELECT
 elapsedMs=12
 rows=1
-actualSql=select ... from auth_accounts where account_id = 10001 and is_delete = 0
+actualSql=select ... from auth_identity_bindings where identity_id = 10001 and is_delete = 0
 ```
 
 配置示例：
@@ -3852,7 +3877,7 @@ foodmap:
 | operation | 业务动作，如 login、createRecommendation、publishComment |
 | httpMethod | HTTP 方法 |
 | path | 请求路径，不记录完整敏感 query |
-| accountId / userId | 当前用户业务主键，未登录接口可为空 |
+| userId | 当前用户业务主键，未登录接口可为空 |
 | status | HTTP 数字状态码 |
 | code | FoodMap 稳定业务码 |
 | success | 是否成功 |
@@ -3927,7 +3952,7 @@ FoodMap 必须支持通过一个流水号查询一次接口调用过程中的全
 - 网关收到外部请求时，如果请求头没有 `X-Request-Id` 和 `traceparent`，必须生成新的 `requestId` 和 `traceId`。
 - 如果客户端或上游传入 `X-Request-Id`，网关可以透传，但必须校验长度和字符集，避免日志注入。
 - 网关向下游微服务透传 `X-Request-Id`、`X-Trace-Id`、`X-Span-Id`；后续接入 OpenTelemetry 后同时支持 W3C `traceparent`。
-- 业务服务通过 `LogMdcFilter` 或 WebFlux 等价过滤器把 `requestId`、`traceId`、`spanId`、`serviceName`、`accountId`、`userId` 写入 MDC。
+- 业务服务通过 `LogMdcFilter` 或 WebFlux 等价过滤器把 `requestId`、`traceId`、`spanId`、`serviceName`、`userId` 写入 MDC。
 - `SafeLog`、接口访问日志、SQL 日志、异常日志、中间件日志都必须自动带上这些字段。
 - 服务间同步调用和 MQ 事件必须继续透传 `traceId`，MQ 消费生成新的 `requestId` 或消费批次 ID，但保留原始 `traceId`。
 

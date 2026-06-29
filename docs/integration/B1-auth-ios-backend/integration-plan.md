@@ -8,14 +8,14 @@
 | 迭代编号 | B1 |
 | 联调文件夹 | `docs/integration/B1-auth-ios-backend` |
 | 创建时间 | 2026-06-13 |
-| 最近更新 | 2026-06-25 |
+| 最近更新 | 2026-06-29 |
 | 主代理 | Codex 主代理 |
 | 后端观察子代理 | 后端子代理，观察 `after/foodmap-auth-service`、`after/foodmap-user-service`、`after/foodmap-gateway-service` |
 | 前端观察子代理 | 前端子代理，观察 `front/FoodMapApp` 认证页面、会话状态和网络层 |
 | 联调验收子代理 | QA 子代理，按本文档和 `issue-log.md` 判定 |
 | 前端提交 | `869e1c0 feat: prepare B1 iOS auth L2 data flow`、`e7939ae fix: validate iOS register password length` |
 | 后端提交 | `b37929c feat: complete B1 auth backend integration` |
-| 文档提交 | 本次计划与状态同步待提交 |
+| 文档提交 | `8208c84 docs: refine identity auth refactor plan`，本次身份基线同步待提交 |
 | 相关文档 | `CODEX-front.md`、`CODEX-after.md`、`CODEX-gen.md`、`docs/api/auth-user.md`、`docs/superpowers/plans/2026-06-22-b1-auth-ios-backend-integration.md` |
 
 ## 2. 联调目标
@@ -38,10 +38,13 @@
 - [ ] 门店搜索、推荐创建、好友和情侣关系。
 - [ ] Refresh Token 自动续期完整闭环；如前端尚未实现，只验证未认证/登录失效的错误展示。
 - [ ] 生产环境 HTTPS、证书和正式域名配置。
+- [ ] userId-only 身份重构后的重新联调。当前记录保留旧 `accountId + userId` 模型下的 B1 证据，不作为身份重构后的通过结论。
 
 ## 3. 当前审查结论
 
 完整 iOS 前后端联调当前主链路已手工走通，结论为：`有条件通过，待补 requestId/traceId 与错误态证据后再判定完整 L2 通过`。
+
+2026-06-29 身份模型决策更新：后续目标模型调整为 `userId-only`，`accountId` 不再作为长期主体。本文档中的 accountId 归属校验、旧注册回滚和旧响应字段仅代表 B1 历史联调证据；身份重构完成后，认证注册、登录、刷新、退出和 `/api/users/me` 必须重新执行 L2 联调。
 
 已具备的能力：
 
