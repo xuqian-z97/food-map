@@ -28,7 +28,7 @@ import java.util.List;
  * 网关认证过滤器，负责校验外部 Access Token 并向下游服务透传可信用户身份。
  *
  * <p>过滤器会覆盖客户端传入的 FoodMap 内部身份请求头，避免外部伪造用户身份。排查下游用户身份异常时，
- * 应先确认网关是否执行了本过滤器以及 Token 中的 accountId、userId 是否正确。</p>
+ * 应先确认网关是否执行了本过滤器以及 Token 中的 userId 是否正确。</p>
  */
 @Component
 public class GatewayAuthFilter implements GlobalFilter, Ordered {
@@ -84,7 +84,6 @@ public class GatewayAuthFilter implements GlobalFilter, Ordered {
                 return unauthorized(sanitizedExchange, "Access Token已过期");
             }
             ServerHttpRequest requestWithIdentity = sanitizedExchange.getRequest().mutate()
-                    .header(FoodMapAuthHeaders.ACCOUNT_ID, String.valueOf(claims.accountId()))
                     .header(FoodMapAuthHeaders.USER_ID, String.valueOf(claims.userId()))
                     .build();
             return chain.filter(sanitizedExchange.mutate().request(requestWithIdentity).build());
@@ -98,6 +97,7 @@ public class GatewayAuthFilter implements GlobalFilter, Ordered {
         return AUTH_FILTER_ORDER;
     }
 
+    @SuppressWarnings("deprecation")
     private ServerWebExchange stripTrustedIdentityHeaders(ServerWebExchange exchange) {
         ServerHttpRequest sanitizedRequest = exchange.getRequest().mutate()
                 .headers(headers -> {

@@ -48,27 +48,53 @@ public class HmacTokenCodec {
     }
 
     /**
-     * 签发 Access Token，载荷包含账号和用户业务主键，供网关和服务端提取身份。
+     * 签发 Access Token，新身份模型只把用户业务主键写入载荷。
      *
-     * @param accountId 账号业务主键。
      * @param userId 用户业务主键。
      * @param expiresTime Access Token 过期时间。
      * @return 可返回给客户端使用的 Access Token。
      */
-    public String issueAccessToken(Long accountId, Long userId, OffsetDateTime expiresTime) {
-        return issue(TokenType.ACCESS, accountId, userId, expiresTime);
+    public String issueAccessToken(Long userId, OffsetDateTime expiresTime) {
+        return issue(TokenType.ACCESS, userId, expiresTime);
     }
 
     /**
-     * 签发 Refresh Token，额外追加 nonce，降低刷新令牌碰撞和重放排查难度。
+     * 签发 Refresh Token，新身份模型只把用户业务主键写入载荷，并追加 nonce 降低碰撞和重放排查难度。
      *
-     * @param accountId 账号业务主键。
      * @param userId 用户业务主键。
      * @param expiresTime Refresh Token 过期时间。
      * @return 可返回给客户端保存的 Refresh Token。
      */
+    public String issueRefreshToken(Long userId, OffsetDateTime expiresTime) {
+        return issue(TokenType.REFRESH, userId, expiresTime) + "." + UUID.randomUUID();
+    }
+
+    /**
+     * 签发包含旧账号业务主键的 Access Token，仅用于 B1 旧身份模型兼容期。
+     *
+     * @param accountId 旧账号业务主键。
+     * @param userId 用户业务主键。
+     * @param expiresTime Access Token 过期时间。
+     * @return 可返回给客户端使用的 Access Token。
+     * @deprecated 新签发链路应使用 {@link #issueAccessToken(Long, OffsetDateTime)}，避免继续扩大 accountId 依赖。
+     */
+    @Deprecated
+    public String issueAccessToken(Long accountId, Long userId, OffsetDateTime expiresTime) {
+        return issueLegacy(TokenType.ACCESS, accountId, userId, expiresTime);
+    }
+
+    /**
+     * 签发包含旧账号业务主键的 Refresh Token，仅用于 B1 旧身份模型兼容期。
+     *
+     * @param accountId 旧账号业务主键。
+     * @param userId 用户业务主键。
+     * @param expiresTime Refresh Token 过期时间。
+     * @return 可返回给客户端保存的 Refresh Token。
+     * @deprecated 新签发链路应使用 {@link #issueRefreshToken(Long, OffsetDateTime)}，避免继续扩大 accountId 依赖。
+     */
+    @Deprecated
     public String issueRefreshToken(Long accountId, Long userId, OffsetDateTime expiresTime) {
-        return issue(TokenType.REFRESH, accountId, userId, expiresTime) + "." + UUID.randomUUID();
+        return issueLegacy(TokenType.REFRESH, accountId, userId, expiresTime) + "." + UUID.randomUUID();
     }
 
     /**
@@ -109,7 +135,17 @@ public class HmacTokenCodec {
         return claims;
     }
 
-    private String issue(TokenType tokenType, Long accountId, Long userId, OffsetDateTime expiresTime) {
+    private String issue(TokenType tokenType, Long userId, OffsetDateTime expiresTime) {
+        TokenClaims claims = new TokenClaims(tokenType, userId, expiresTime);
+        String header = URL_ENCODER.encodeToString("{\"alg\":\"HS256\",\"typ\":\"JWT\"}".getBytes(StandardCharsets.UTF_8));
+        String payload = URL_ENCODER.encodeToString(("{\"tokenType\":\"" + claims.tokenType().name()
+                + "\",\"userId\":" + claims.userId()
+                + ",\"expiresTime\":\"" + claims.expiresTime() + "\"}").getBytes(StandardCharsets.UTF_8));
+        String unsignedToken = header + "." + payload;
+        return unsignedToken + "." + sign(unsignedToken);
+    }
+
+    private String issueLegacy(TokenType tokenType, Long accountId, Long userId, OffsetDateTime expiresTime) {
         TokenClaims claims = new TokenClaims(tokenType, accountId, userId, expiresTime);
         String header = URL_ENCODER.encodeToString("{\"alg\":\"HS256\",\"typ\":\"JWT\"}".getBytes(StandardCharsets.UTF_8));
         String payload = URL_ENCODER.encodeToString(("{\"tokenType\":\"" + claims.tokenType().name()
@@ -134,9 +170,11 @@ public class HmacTokenCodec {
         try {
             String payload = new String(URL_DECODER.decode(parts[1]), StandardCharsets.UTF_8);
             JsonNode root = objectMapper.readTree(payload);
+            JsonNode accountIdNode = root.get("accountId");
+            Long accountId = accountIdNode == null || accountIdNode.isNull() ? null : accountIdNode.asLong();
             return new TokenClaims(
                     TokenType.valueOf(root.get("tokenType").asText()),
-                    root.get("accountId").asLong(),
+                    accountId,
                     root.get("userId").asLong(),
                     OffsetDateTime.parse(root.get("expiresTime").asText())
             );

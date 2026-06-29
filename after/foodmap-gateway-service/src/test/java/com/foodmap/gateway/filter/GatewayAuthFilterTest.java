@@ -19,12 +19,13 @@ class GatewayAuthFilterTest {
     private static final String TOKEN_SECRET = "0123456789abcdef0123456789abcdef";
 
     @Test
-    void shouldWriteTrustedIdentityHeadersForProtectedApi() {
+    void shouldStripSpoofedIdentityHeadersAndForwardOnlyUserIdForProtectedApi() {
         HmacTokenCodec tokenCodec = new HmacTokenCodec(TOKEN_SECRET);
-        String token = tokenCodec.issueAccessToken(1001L, 2001L, OffsetDateTime.now().plusHours(1));
+        String token = tokenCodec.issueAccessToken(2001L, OffsetDateTime.now().plusHours(1));
         GatewayAuthFilter filter = new GatewayAuthFilter(TOKEN_SECRET);
         MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.get("/api/users/me")
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                .header(FoodMapAuthHeaders.ACCOUNT_ID, "8888")
                 .header(FoodMapAuthHeaders.USER_ID, "9999")
                 .build());
         AtomicReference<ServerWebExchange> downstreamExchange = new AtomicReference<>();
@@ -36,7 +37,29 @@ class GatewayAuthFilterTest {
 
         assertThat(downstreamExchange.get()).isNotNull();
         assertThat(downstreamExchange.get().getRequest().getHeaders().getFirst(FoodMapAuthHeaders.ACCOUNT_ID))
-                .isEqualTo("1001");
+                .isNull();
+        assertThat(downstreamExchange.get().getRequest().getHeaders().getFirst(FoodMapAuthHeaders.USER_ID))
+                .isEqualTo("2001");
+    }
+
+    @Test
+    void shouldForwardOnlyUserIdForLegacyAccessTokenDuringMigration() {
+        HmacTokenCodec tokenCodec = new HmacTokenCodec(TOKEN_SECRET);
+        String token = tokenCodec.issueAccessToken(1001L, 2001L, OffsetDateTime.now().plusHours(1));
+        GatewayAuthFilter filter = new GatewayAuthFilter(TOKEN_SECRET);
+        MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.get("/api/users/me")
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                .build());
+        AtomicReference<ServerWebExchange> downstreamExchange = new AtomicReference<>();
+
+        filter.filter(exchange, chainExchange -> {
+            downstreamExchange.set(chainExchange);
+            return Mono.empty();
+        }).block();
+
+        assertThat(downstreamExchange.get()).isNotNull();
+        assertThat(downstreamExchange.get().getRequest().getHeaders().getFirst(FoodMapAuthHeaders.ACCOUNT_ID))
+                .isNull();
         assertThat(downstreamExchange.get().getRequest().getHeaders().getFirst(FoodMapAuthHeaders.USER_ID))
                 .isEqualTo("2001");
     }

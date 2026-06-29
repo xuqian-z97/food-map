@@ -8,10 +8,10 @@ class CurrentUserTest {
 
     @Test
     void shouldUseBigintBusinessKeysForCurrentUserIdentity() {
-        CurrentUser currentUser = new CurrentUser(10001L, 20001L, "foodie");
+        CurrentUser currentUser = new CurrentUser(10001L, null, "foodie");
 
         assertThat(currentUser.userId()).isEqualTo(10001L);
-        assertThat(currentUser.accountId()).isEqualTo(20001L);
+        assertThat(currentUser.accountId()).isNull();
         assertThat(currentUser.accountName()).isEqualTo("foodie");
     }
 }

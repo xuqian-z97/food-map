@@ -11,7 +11,35 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class HmacTokenCodecTest {
 
     @Test
-    void shouldIssueAndParseAccessToken() {
+    void shouldIssueAndParseUserIdOnlyAccessToken() {
+        HmacTokenCodec codec = new HmacTokenCodec("0123456789abcdef0123456789abcdef");
+        OffsetDateTime expiresTime = OffsetDateTime.now().plusHours(1);
+
+        String token = codec.issueAccessToken(2001L, expiresTime);
+        TokenClaims claims = codec.parseAccessToken(token);
+
+        assertThat(claims.tokenType()).isEqualTo(TokenType.ACCESS);
+        assertThat(claims.accountId()).isNull();
+        assertThat(claims.userId()).isEqualTo(2001L);
+        assertThat(claims.expiresTime()).isEqualTo(expiresTime);
+    }
+
+    @Test
+    void shouldIssueAndParseUserIdOnlyRefreshToken() {
+        HmacTokenCodec codec = new HmacTokenCodec("0123456789abcdef0123456789abcdef");
+        OffsetDateTime expiresTime = OffsetDateTime.now().plusDays(30);
+
+        String token = codec.issueRefreshToken(2001L, expiresTime);
+        TokenClaims claims = codec.parseRefreshToken(token);
+
+        assertThat(claims.tokenType()).isEqualTo(TokenType.REFRESH);
+        assertThat(claims.accountId()).isNull();
+        assertThat(claims.userId()).isEqualTo(2001L);
+        assertThat(claims.expiresTime()).isEqualTo(expiresTime);
+    }
+
+    @Test
+    void shouldParseLegacyAccessTokenDuringMigration() {
         HmacTokenCodec codec = new HmacTokenCodec("0123456789abcdef0123456789abcdef");
         OffsetDateTime expiresTime = OffsetDateTime.now().plusHours(1);
 

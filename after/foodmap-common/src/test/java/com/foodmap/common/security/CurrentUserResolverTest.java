@@ -10,15 +10,29 @@ class CurrentUserResolverTest {
 
     @Test
     void shouldResolveCurrentUserFromTrustedHeaders() {
-        CurrentUser currentUser = CurrentUserResolver.fromTrustedHeaders("2001", "1001");
+        CurrentUser currentUser = CurrentUserResolver.fromTrustedHeaders("2001", null);
 
         assertThat(currentUser.userId()).isEqualTo(2001L);
-        assertThat(currentUser.accountId()).isEqualTo(1001L);
+        assertThat(currentUser.accountId()).isNull();
+    }
+
+    @Test
+    void shouldResolveCurrentUserFromUserIdOnlyTrustedHeader() {
+        CurrentUser currentUser = CurrentUserResolver.fromTrustedHeaders("2001");
+
+        assertThat(currentUser.userId()).isEqualTo(2001L);
+        assertThat(currentUser.accountId()).isNull();
     }
 
     @Test
     void shouldRejectInvalidTrustedHeaders() {
-        assertThatThrownBy(() -> CurrentUserResolver.fromTrustedHeaders("abc", "1001"))
+        assertThatThrownBy(() -> CurrentUserResolver.fromTrustedHeaders("abc", null))
+                .isInstanceOf(FoodMapException.class);
+    }
+
+    @Test
+    void shouldRejectMissingUserIdEvenWhenLegacyAccountIdExists() {
+        assertThatThrownBy(() -> CurrentUserResolver.fromTrustedHeaders(null, "1001"))
                 .isInstanceOf(FoodMapException.class);
     }
 }

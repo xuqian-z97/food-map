@@ -93,9 +93,10 @@ Stage 1：后端认证用户基础能力与 iOS 认证测试壳已完成
 - 本地隔离开发环境配置和 profile 切换约定。
 - 认证服务和用户服务已接入 PostgreSQL、Flyway 和 MyBatis Mapper/XML 持久化。
 - B1 已完成的认证链路仍基于旧 `accountId + userId` 身份模型；2026-06-29 起目标身份模型调整为 `userId-only`，账号名、手机号、邮箱、微信和 Apple 都作为 `userId` 下的登录身份绑定。
+- `foodmap-common` 和 `foodmap-gateway-service` 已完成 `userId-only` 首个重构切片：新 Token 签发、当前用户解析和网关可信身份头以 `userId` 为准，旧 `accountId` 仅保留解析兼容。
 - 认证服务业务主键已从内存计数器调整为 Flyway 管理的 PostgreSQL sequence，身份重构后将移除 `accountId` 长期主体语义。
 - 认证服务已补齐 Refresh Token 刷新、退出登录撤销和当前会话查询接口。
-- 网关已具备 Access Token 校验和可信用户身份请求头透传能力。
+- 网关已具备 Access Token 校验和可信用户身份请求头透传能力，外部客户端伪造的 FoodMap 身份头会被移除。
 - `foodmap-common` 已提供 Token 编解码、内部身份请求头常量和当前用户解析工具。
 - `foodmap-admin-service` 已生成首个后台服务代码切片，包含后台管理员创建用例、`admin_users` Flyway 表结构、业务主键 sequence、MyBatis Mapper/XML 和本地/profile 配置。
 - `foodmap-log-service` 已生成接口访问摘要消费落库代码切片，负责从 `foodmap.logs.api-access` 消费并幂等写入 `foodmap_log_db.api_access_log`。
@@ -252,8 +253,9 @@ food-map
 B1 认证联调当前安全点拆分：
 
 - 旧身份模型安全点已到达：Gateway/Auth/User 已完成注册、登录、当前用户、内部接口拦截、accountId 归属校验和注册失败回滚的本地 L2 验证。
-- 新身份模型安全点未到达：需完成 `userId-only` Token、Gateway 可信身份头、认证身份绑定、认证会话和 iOS 模型调整后重新联调。
-- 下一步应先完成身份模型文档基线和后端重构计划，再执行 userId-only 完整 iOS L2 联调。
+- 新身份模型 common/gateway 安全点已到达：Token 编解码、CurrentUser 解析和 Gateway 可信身份头已支持 `userId-only`，并兼容解析旧 `accountId + userId` Token。
+- 新身份模型完整 L2 安全点未到达：auth-service 签发链路、user-service 当前用户接口、认证身份绑定、认证会话和 iOS 模型仍需继续收口；当前 `foodmap-user-service` 仍存在旧 `X-FoodMap-Account-Id` 必填依赖，不能直接进入完整 userId-only 认证联调。
+- 下一步应先完成 auth-service + user-service userId-only 重构，再执行 userId-only 完整 iOS L2 联调。
 
 推荐顺序：
 
