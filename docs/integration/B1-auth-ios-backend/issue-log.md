@@ -12,11 +12,11 @@
 | BUG-006 | iOS 网络层未解析非 2xx 统一错误响应和 `status` | 前端联调安全点审查 | Major | P1 | 已修复待复测 | 前端/契约 | IT-003/IT-005 | 本次前端数据链路提交 | 代码审查通过，真实 iOS 联调未复测 |
 | BUG-007 | iOS 当前用户临时失败时可能误清有效 Token | 前端代码审查 | Major | P0 | 已修复待复测 | 前端 | IT-002/IT-004 | 本次前端数据链路提交 | 代码审查通过，真实 iOS 联调未复测 |
 | BUG-008 | iOS 注册页未在提交前校验密码长度 | 真实 iOS L2 联调 | Major | P1 | 已部分复测待证据 | 前端/契约 | IT-001/IT-003 | 本次注册校验修复提交 | 8 位以上注册主链路已手工确认；短密码前端拦截待复测 |
-| BUG-009 | 登出后未过期 Access Token 仍可访问受保护接口 | 真实后端 L2 联调 | Critical | P0 | 已修复待复测 | 后端/认证/网关 | IT-004/IT-005 | 本次后端 denylist 修复提交 | 自动测试通过，待真实接口复测 |
+| BUG-009 | 登出后未过期 Access Token 仍可访问受保护接口 | 真实后端 L2 联调 | Critical | P0 | 已关闭 | 后端/认证/网关 | IT-004/IT-005 | `5994d70` | 真实接口复测通过 |
 
 ## 2. 问题详情
 
-本次后端联调已记录并关闭 BUG-001 至 BUG-003。2026-06-22 前端联调安全点审查新增 BUG-004 至 BUG-006；2026-06-24 前端代码审查新增 BUG-007；2026-06-25 真实 iOS L2 注册联调新增 BUG-008；2026-06-29 后端 Token 退出登录联调新增 BUG-009。当前 BUG-004、BUG-005 已经由用户手工确认主链路复测可用，BUG-008 的 8 位以上注册主链路已确认可用；BUG-009 已完成自动测试验证，仍需用户按接口工具补真实联调复测；BUG-006、BUG-007 和错误态仍需补充真实 iOS 复测，所有前端问题关闭前还需补脱敏网络摘要和后端 `requestId/traceId`。
+本次后端联调已记录并关闭 BUG-001 至 BUG-003。2026-06-22 前端联调安全点审查新增 BUG-004 至 BUG-006；2026-06-24 前端代码审查新增 BUG-007；2026-06-25 真实 iOS L2 注册联调新增 BUG-008；2026-06-29 后端 Token 退出登录联调新增 BUG-009 并已关闭。当前 BUG-004、BUG-005 已经由用户手工确认主链路复测可用，BUG-008 的 8 位以上注册主链路已确认可用；BUG-009 已完成自动测试和真实接口复测；BUG-006、BUG-007 和错误态仍需补充真实 iOS 复测，所有前端问题关闭前还需补脱敏网络摘要和后端 `requestId/traceId`。
 
 ### BUG-001 Gateway 暴露用户开通内部接口
 
@@ -606,7 +606,7 @@
 | 发现阶段 | 真实后端 L2 联调 |
 | 严重级别 | Critical |
 | 优先级 | P0 |
-| 当前状态 | 已修复待复测 |
+| 当前状态 | 已关闭 |
 | 责任侧 | 后端/认证/网关 |
 | 所属模块 | 认证 / 网关 / 用户服务 |
 | 关联联调场景 | IT-004 / IT-005 |
@@ -636,6 +636,8 @@
 #### 实际结果
 
 - 修复前 Refresh Token 已失效，但原 Access Token 在过期前仍可通过 Gateway 访问 `/api/users/me`。
+- 修复后使用登录后的 Access Token 和 Refresh Token 调用 logout，再使用同一个 Access Token 调用 `/api/users/me`，Gateway 返回 `401/UNAUTHORIZED`，`message=Access Token已失效`。
+- 修复后使用已登出的 Refresh Token 调用 `/api/auth/refresh`，认证服务返回 `401/UNAUTHORIZED`，`message=Refresh Token已失效`。
 
 #### 前端日志和现象摘要
 
@@ -647,8 +649,8 @@
 
 #### 后端日志摘要
 
-- `requestId`：待真实复测补充。
-- `traceId`：待真实复测补充。
+- `requestId`：接口工具复测未提供，后续日志证据补齐时追加。
+- `traceId`：接口工具复测未提供，后续日志证据补齐时追加。
 - 服务：`foodmap-gateway-service`、`foodmap-auth-service`。
 - 接口：`POST /api/auth/logout`、`GET /api/users/me`。
 - 日志等级：待真实复测补充。
@@ -667,12 +669,12 @@
 | 项目 | 内容 |
 | --- | --- |
 | 修复负责人 | Codex |
-| 修复提交 | 本次后端 denylist 修复提交 |
-| 复测时间 | 2026-06-29 自动测试；真实接口复测待执行 |
-| 复测步骤 | 自动测试覆盖 auth logout 写入 denylist、gateway 命中 denylist 返回 `401` |
-| 复测结果 | `AuthServiceImplTest` 与 `GatewayAuthFilterTest` 通过；待用户使用接口工具验证真实 Redis 链路 |
-| 关闭人和关闭时间 |  |
-| 是否关闭 | 否 |
+| 修复提交 | `5994d70` |
+| 复测时间 | 2026-06-29 自动测试；2026-06-29 用户真实接口复测 |
+| 复测步骤 | 先登录，再登出；使用登录后的 Access Token 调用 `/api/users/me`；使用已登出的 Refresh Token 调用 `/api/auth/refresh` |
+| 复测结果 | `/api/users/me` 返回 `401 Access Token已失效`；`/api/auth/refresh` 返回 `401 Refresh Token已失效`，通过 |
+| 关闭人和关闭时间 | Codex，2026-06-29 |
+| 是否关闭 | 是 |
 
 新增问题时复制以下模板。
 

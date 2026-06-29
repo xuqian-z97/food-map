@@ -28,7 +28,7 @@
 - [ ] 注册成功后认证服务通过用户服务创建用户资料，随后可查询 `/api/users/me`；主链路可用，待补脱敏网络摘要和后端日志证据。
 - [ ] iOS 使用 Access Token 通过 Gateway 查询 `/api/users/me`，展示或缓存真实当前用户身份；从最新前端代码路径看登录后进入地图依赖该接口成功，仍待补请求证据。
 - [x] 后端通过 Gateway 验证注册、登录、当前用户、内部接口拦截、accountId 归属校验和失败回滚。
-- [ ] 后端通过 Gateway 验证退出登录后 Refresh Token 失效，且携带 `Authorization` 登出时原 Access Token 再访问 `/api/users/me` 返回 `401`；自动测试已覆盖，待真实接口复测。
+- [x] 后端通过 Gateway 验证退出登录后 Refresh Token 失效，且携带 `Authorization` 登出时原 Access Token 再访问 `/api/users/me` 返回 `401`；自动测试和真实接口复测均已通过。
 - [ ] 登录失败、参数错误、账号不存在、密码错误、未认证、权限不足和服务异常时，前端展示明确错误。
 - [ ] Token、密码、完整手机号、完整邮箱不出现在前端日志、后端日志、网络摘要或问题记录中。
 - [ ] 后端访问日志包含 `requestId`、`traceId`、`serviceName`，并能串起 Gateway/Auth/User 调用链路。
