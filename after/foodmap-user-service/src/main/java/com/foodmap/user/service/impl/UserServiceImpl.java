@@ -41,15 +41,11 @@ public class UserServiceImpl implements UserService {
     @Override
     public CurrentUserResponse currentUser(CurrentUser currentUser) {
         Long userId = Check.positive("userId", currentUser.userId());
-        Long accountId = Check.positive("accountId", currentUser.accountId());
         UserEntity entity = userRepository.findByUserId(userId)
                 .orElseThrow(() -> new FoodMapException(CommonErrorCode.NOT_FOUND, "用户资料不存在"));
-        if (!accountId.equals(entity.getAccountId())) {
-            throw new FoodMapException(CommonErrorCode.FORBIDDEN, "当前账号与用户资料不匹配");
-        }
         return new CurrentUserResponse(
                 entity.getUserId(),
-                entity.getAccountId(),
+                null,
                 currentUser.accountName(),
                 entity.getNickname(),
                 entity.getAvatarMediaId(),

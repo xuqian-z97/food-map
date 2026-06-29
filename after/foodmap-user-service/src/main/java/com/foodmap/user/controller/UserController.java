@@ -28,10 +28,9 @@ public class UserController {
      */
     @GetMapping("/me")
     public ApiResponse<CurrentUserResponse> me(
-            @RequestHeader(FoodMapAuthHeaders.USER_ID) String userId,
-            @RequestHeader(FoodMapAuthHeaders.ACCOUNT_ID) String accountId
+            @RequestHeader(FoodMapAuthHeaders.USER_ID) String userId
     ) {
-        CurrentUser currentUser = CurrentUserResolver.fromTrustedHeaders(userId, accountId);
+        CurrentUser currentUser = CurrentUserResolver.fromTrustedHeaders(userId);
         return ApiResponse.ok(userService.currentUser(currentUser));
     }
 }

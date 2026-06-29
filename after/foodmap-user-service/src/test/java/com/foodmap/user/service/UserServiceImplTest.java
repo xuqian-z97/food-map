@@ -1,7 +1,6 @@
 package com.foodmap.user.service;
 
 import com.foodmap.common.security.CurrentUser;
-import com.foodmap.common.exception.FoodMapException;
 import com.foodmap.user.application.port.UserBusinessIdGenerator;
 import com.foodmap.user.domain.UserStatus;
 import com.foodmap.user.dto.CurrentUserResponse;
@@ -12,7 +11,6 @@ import com.foodmap.user.service.impl.UserServiceImpl;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class UserServiceImplTest {
 
@@ -55,7 +53,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void rejectsCurrentUserWhenAccountIdDoesNotMatchUserProfile() {
+    void ignoresLegacyAccountIdMismatchWhenResolvingCurrentUserByUserId() {
         InMemoryUserRepository repository = new InMemoryUserRepository();
         UserEntity entity = new UserEntity();
         entity.setUserId(1001L);
@@ -65,9 +63,31 @@ class UserServiceImplTest {
         repository.save(entity);
         UserService service = new UserServiceImpl(repository, new TestUserBusinessIdGenerator());
 
-        assertThatThrownBy(() -> service.currentUser(new CurrentUser(1001L, 2999L, "foodie_01")))
-                .isInstanceOf(FoodMapException.class)
-                .hasMessageContaining("当前账号与用户资料不匹配");
+        CurrentUserResponse response = service.currentUser(new CurrentUser(1001L, 2999L, "foodie_01"));
+
+        assertThat(response.userId()).isEqualTo(1001L);
+        assertThat(response.accountId()).isNull();
+        assertThat(response.nickname()).isEqualTo("小张");
+    }
+
+    @Test
+    void returnsCurrentUserByUserIdWhenAccountIdIsAbsent() {
+        InMemoryUserRepository repository = new InMemoryUserRepository();
+        UserEntity entity = new UserEntity();
+        entity.setUserId(1001L);
+        entity.setAccountId(2001L);
+        entity.setNickname("小张");
+        entity.setAvatarMediaId(3001L);
+        entity.setUserStatus(UserStatus.NORMAL.name());
+        entity.setSearchable((short) 1);
+        repository.save(entity);
+        UserService service = new UserServiceImpl(repository, new TestUserBusinessIdGenerator());
+
+        CurrentUserResponse response = service.currentUser(new CurrentUser(1001L, null, null));
+
+        assertThat(response.userId()).isEqualTo(1001L);
+        assertThat(response.accountId()).isNull();
+        assertThat(response.nickname()).isEqualTo("小张");
     }
 
     private static class TestUserBusinessIdGenerator implements UserBusinessIdGenerator {

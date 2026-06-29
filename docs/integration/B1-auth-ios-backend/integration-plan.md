@@ -44,7 +44,7 @@
 
 完整 iOS 前后端联调当前主链路已手工走通，结论为：`有条件通过，待补 requestId/traceId 与错误态证据后再判定完整 L2 通过`。
 
-2026-06-29 身份模型决策更新：后续目标模型调整为 `userId-only`，`accountId` 不再作为长期主体。本文档中的 accountId 归属校验、旧注册回滚和旧响应字段仅代表 B1 历史联调证据；身份重构完成后，认证注册、登录、刷新、退出和 `/api/users/me` 必须重新执行 L2 联调。
+2026-06-29 身份模型决策更新：后续目标模型调整为 `userId-only`，`accountId` 不再作为长期主体。本文档中的 accountId 归属校验、旧注册回滚和旧响应字段仅代表 B1 历史联调证据；身份重构完成后，认证注册、登录、刷新、退出和 `/api/users/me` 必须重新执行 L2 联调。当前后端 common/gateway/auth/user 运行时 `userId-only` 收口切片已完成，但尚未形成真实 iOS L2 重联调结论。
 
 已具备的能力：
 
@@ -58,10 +58,12 @@
 - `APIClient` 已支持 GET/POST、Bearer Token、`X-Request-Id`、`X-Trace-Id`、统一响应 `success/status/code/message/data` 和非 2xx 错误体解析。
 - 登录成功和 Token 恢复都会通过 Gateway `GET /api/users/me` 拉取真实用户资料，运行时不再使用 `accountId/userId = 0` 占位会话。
 - 本地 Token 清理条件已收窄为 401/403 或明确账号/用户失效业务码，网络失败、5xx 和临时响应异常不应误清 Keychain。
+- 后端 common/gateway/auth/user 已完成 `userId-only` 运行时收口单元验证：新签发 Token 不携带 `accountId`，Gateway 只透传 `X-FoodMap-User-Id`，用户服务当前用户接口不再要求 `X-FoodMap-Account-Id`。
 
 剩余未完成的完整 L2 事项：
 
 - 需要补充 iOS 注册、登录、当前用户请求的脱敏网络摘要和后端 `requestId/traceId` 证据。
+- 需要使用 `userId-only` 后端链路重新执行 iOS 注册、登录、刷新、当前用户和退出登录主链路。
 - 需要继续执行登录失败、短密码注册、401/403、5xx/断网等错误态真实链路。
 - 当前 Xcode 工程尚未配置测试 Target，网络层和会话层自动化测试仍是 P1 风险。
 - 仍需保留登录成功、注册成功、当前用户成功、登录失败等截图或脱敏网络摘要作为证据。

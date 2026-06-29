@@ -3,6 +3,7 @@ package com.foodmap.auth.service;
 import com.foodmap.auth.application.NoopUserProfileProvisionClient;
 import com.foodmap.auth.domain.HmacTokenIssuer;
 import com.foodmap.auth.domain.Pbkdf2PasswordHashService;
+import com.foodmap.auth.domain.TokenStatus;
 import com.foodmap.auth.dto.CurrentAuthResponse;
 import com.foodmap.auth.dto.LoginRequest;
 import com.foodmap.auth.dto.LoginResponse;
@@ -10,48 +11,37 @@ import com.foodmap.auth.dto.LogoutRequest;
 import com.foodmap.auth.dto.RefreshTokenRequest;
 import com.foodmap.auth.dto.RegisterRequest;
 import com.foodmap.auth.dto.RegisterResponse;
+import com.foodmap.auth.infrastructure.persistence.entity.RefreshTokenEntity;
 import com.foodmap.auth.infrastructure.persistence.memory.InMemoryAuthAccountRepository;
 import com.foodmap.auth.infrastructure.persistence.memory.InMemoryAuthCredentialRepository;
 import com.foodmap.auth.infrastructure.persistence.memory.InMemoryLoginLogRepository;
 import com.foodmap.auth.infrastructure.persistence.memory.InMemoryRefreshTokenRepository;
 import com.foodmap.auth.service.impl.AuthServiceImpl;
 import com.foodmap.common.exception.FoodMapException;
+import com.foodmap.common.security.HmacTokenCodec;
+import com.foodmap.common.security.TokenClaims;
 import org.junit.jupiter.api.Test;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.lang.reflect.Method;
+import java.time.OffsetDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class AuthServiceImplTest {
+    private static final String TOKEN_SECRET = "0123456789abcdef0123456789abcdef";
 
     @Test
-    void registersAccountAndLogsInWithAccountName() {
-        AuthService service = new AuthServiceImpl(
-                new TestAuthBusinessIdGenerator(),
-                new InMemoryAuthAccountRepository(),
-                new InMemoryAuthCredentialRepository(),
-                new InMemoryRefreshTokenRepository(),
-                new InMemoryLoginLogRepository(),
-                new Pbkdf2PasswordHashService("test-pepper"),
-                new HmacTokenIssuer("0123456789abcdef0123456789abcdef"),
-                new NoopUserProfileProvisionClient()
-        );
+    void registersUserAndLogsInWithAccountName() {
+        AuthService service = newAuthService(new InMemoryRefreshTokenRepository(), new HmacTokenIssuer(TOKEN_SECRET));
 
-        RegisterResponse registerResponse = service.register(new RegisterRequest(
-                "foodie_01",
-                "13800138000",
-                "foodie@example.com",
-                "secret123",
-                "小张",
-                "IOS"
-        ));
+        RegisterResponse registerResponse = service.register(defaultRegisterRequest());
         LoginResponse loginResponse = service.login(new LoginRequest("foodie_01", "secret123"));
 
-        assertThat(registerResponse.accountId()).isPositive();
+        assertThat(registerResponse.accountId()).isNull();
         assertThat(registerResponse.userId()).isPositive();
-        assertThat(loginResponse.accountId()).isEqualTo(registerResponse.accountId());
+        assertThat(loginResponse.accountId()).isNull();
         assertThat(loginResponse.userId()).isEqualTo(registerResponse.userId());
         assertThat(loginResponse.accessToken()).isNotBlank();
         assertThat(loginResponse.refreshToken()).isNotBlank();
@@ -59,11 +49,11 @@ class AuthServiceImplTest {
         LoginResponse refreshed = service.refresh(new RefreshTokenRequest(loginResponse.refreshToken()));
         CurrentAuthResponse currentAuth = service.current(refreshed.accessToken());
 
-        assertThat(refreshed.accountId()).isEqualTo(registerResponse.accountId());
+        assertThat(refreshed.accountId()).isNull();
         assertThat(refreshed.userId()).isEqualTo(registerResponse.userId());
         assertThat(refreshed.accessToken()).isNotBlank();
         assertThat(refreshed.refreshToken()).isEqualTo(loginResponse.refreshToken());
-        assertThat(currentAuth.accountId()).isEqualTo(registerResponse.accountId());
+        assertThat(currentAuth.accountId()).isNull();
         assertThat(currentAuth.userId()).isEqualTo(registerResponse.userId());
 
         service.logout(new LogoutRequest(loginResponse.refreshToken()));
@@ -80,5 +70,94 @@ class AuthServiceImplTest {
 
         assertThat(transactional).isNotNull();
         assertThat(transactional.rollbackFor()).contains(Exception.class);
+    }
+
+    @Test
+    void registerLoginRefreshAndCurrentResponsesUseUserIdOnlyIdentity() {
+        AuthService service = newAuthService(new InMemoryRefreshTokenRepository(), new HmacTokenIssuer(TOKEN_SECRET));
+
+        RegisterResponse registerResponse = service.register(defaultRegisterRequest());
+        LoginResponse loginResponse = service.login(new LoginRequest("foodie_01", "secret123"));
+        LoginResponse refreshed = service.refresh(new RefreshTokenRequest(loginResponse.refreshToken()));
+        CurrentAuthResponse currentAuth = service.current(refreshed.accessToken());
+
+        assertThat(registerResponse.accountId()).isNull();
+        assertThat(registerResponse.userId()).isPositive();
+        assertThat(loginResponse.accountId()).isNull();
+        assertThat(loginResponse.userId()).isEqualTo(registerResponse.userId());
+        assertThat(refreshed.accountId()).isNull();
+        assertThat(refreshed.userId()).isEqualTo(registerResponse.userId());
+        assertThat(currentAuth.accountId()).isNull();
+        assertThat(currentAuth.userId()).isEqualTo(registerResponse.userId());
+    }
+
+    @Test
+    void loginIssuedTokensCarryUserIdOnlyClaims() {
+        HmacTokenIssuer tokenIssuer = new HmacTokenIssuer(TOKEN_SECRET);
+        AuthService service = newAuthService(new InMemoryRefreshTokenRepository(), tokenIssuer);
+
+        RegisterResponse registerResponse = service.register(defaultRegisterRequest());
+        LoginResponse loginResponse = service.login(new LoginRequest("foodie_01", "secret123"));
+
+        TokenClaims accessClaims = tokenIssuer.parseAccessToken(loginResponse.accessToken());
+        TokenClaims refreshClaims = tokenIssuer.parseRefreshToken(loginResponse.refreshToken());
+        assertThat(accessClaims.accountId()).isNull();
+        assertThat(accessClaims.userId()).isEqualTo(registerResponse.userId());
+        assertThat(refreshClaims.accountId()).isNull();
+        assertThat(refreshClaims.userId()).isEqualTo(registerResponse.userId());
+    }
+
+    @Test
+    void refreshAcceptsUserIdOnlyRefreshTokenWhenStoredTokenIsUsable() {
+        HmacTokenIssuer tokenIssuer = new HmacTokenIssuer(TOKEN_SECRET);
+        InMemoryRefreshTokenRepository refreshTokenRepository = new InMemoryRefreshTokenRepository();
+        AuthService service = newAuthService(refreshTokenRepository, tokenIssuer);
+        RegisterResponse registerResponse = service.register(defaultRegisterRequest());
+        OffsetDateTime expiresTime = OffsetDateTime.now().plusDays(30);
+        String userIdOnlyRefreshToken = new HmacTokenCodec(TOKEN_SECRET)
+                .issueRefreshToken(registerResponse.userId(), expiresTime);
+        RefreshTokenEntity storedRefreshToken = new RefreshTokenEntity();
+        storedRefreshToken.setTokenId(9001L);
+        storedRefreshToken.setAccountId(100001L);
+        storedRefreshToken.setTokenHash(tokenIssuer.tokenHash(userIdOnlyRefreshToken));
+        storedRefreshToken.setExpiresTime(expiresTime);
+        storedRefreshToken.setTokenStatus(TokenStatus.ACTIVE.name());
+        storedRefreshToken.setCreatedTime(OffsetDateTime.now());
+        storedRefreshToken.setUpdatedTime(OffsetDateTime.now());
+        storedRefreshToken.setIsDelete((short) 0);
+        refreshTokenRepository.save(storedRefreshToken);
+
+        LoginResponse refreshed = service.refresh(new RefreshTokenRequest(userIdOnlyRefreshToken));
+
+        assertThat(refreshed.accountId()).isNull();
+        assertThat(refreshed.userId()).isEqualTo(registerResponse.userId());
+        assertThat(tokenIssuer.parseAccessToken(refreshed.accessToken()).accountId()).isNull();
+    }
+
+    private static AuthService newAuthService(
+            InMemoryRefreshTokenRepository refreshTokenRepository,
+            HmacTokenIssuer tokenIssuer
+    ) {
+        return new AuthServiceImpl(
+                new TestAuthBusinessIdGenerator(),
+                new InMemoryAuthAccountRepository(),
+                new InMemoryAuthCredentialRepository(),
+                refreshTokenRepository,
+                new InMemoryLoginLogRepository(),
+                new Pbkdf2PasswordHashService("test-pepper"),
+                tokenIssuer,
+                new NoopUserProfileProvisionClient()
+        );
+    }
+
+    private static RegisterRequest defaultRegisterRequest() {
+        return new RegisterRequest(
+                "foodie_01",
+                "13800138000",
+                "foodie@example.com",
+                "secret123",
+                "小张",
+                "IOS"
+        );
     }
 }

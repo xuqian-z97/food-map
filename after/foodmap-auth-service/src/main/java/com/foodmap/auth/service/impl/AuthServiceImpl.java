@@ -72,10 +72,10 @@ public class AuthServiceImpl implements AuthService {
     }
 
     /**
-     * 注册账号并保存密码哈希，返回账号和用户业务主键。
+     * 注册登录身份并保存密码哈希，返回标准用户业务主键。
      *
      * @param request 注册请求，包含账号标识、密码和昵称等信息。
-     * @return 注册成功后的账号和用户业务主键信息。
+     * @return 注册成功后的用户业务主键和账号状态。
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -110,14 +110,14 @@ public class AuthServiceImpl implements AuthService {
         credentialRepository.save(credential);
 
         userProfileProvisionClient.provision(accountId, userId, request);
-        return new RegisterResponse(accountId, userId, account.getAccountStatus());
+        return new RegisterResponse(null, userId, account.getAccountStatus());
     }
 
     /**
      * 使用账号名、手机号或邮箱登录，成功后签发 Access Token 和 Refresh Token。
      *
      * @param request 登录请求，包含登录标识和明文密码。
-     * @return 登录成功后的 Token、过期时间和业务主键。
+     * @return 登录成功后的 Token、过期时间和用户业务主键。
      */
     @Override
     public LoginResponse login(LoginRequest request) {
@@ -140,14 +140,14 @@ public class AuthServiceImpl implements AuthService {
         OffsetDateTime now = OffsetDateTime.now();
         OffsetDateTime accessExpiresTime = now.plusHours(2);
         OffsetDateTime refreshExpiresTime = now.plusDays(30);
-        String accessToken = tokenIssuer.issueAccessToken(account.getAccountId(), account.getUserId(), accessExpiresTime);
-        String refreshToken = tokenIssuer.issueRefreshToken(account.getAccountId(), account.getUserId(), refreshExpiresTime);
+        String accessToken = tokenIssuer.issueAccessToken(account.getUserId(), accessExpiresTime);
+        String refreshToken = tokenIssuer.issueRefreshToken(account.getUserId(), refreshExpiresTime);
         saveRefreshToken(account.getAccountId(), refreshToken, refreshExpiresTime, now);
         account.setLastLoginTime(now);
         account.setUpdatedTime(now);
         accountRepository.save(account);
         writeLoginLog(account.getAccountId(), request.loginIdentifier(), LoginResult.SUCCESS);
-        return new LoginResponse(account.getAccountId(), account.getUserId(), accessToken, refreshToken, accessExpiresTime, refreshExpiresTime);
+        return new LoginResponse(null, account.getUserId(), accessToken, refreshToken, accessExpiresTime, refreshExpiresTime);
     }
 
     /**
@@ -166,16 +166,21 @@ public class AuthServiceImpl implements AuthService {
                 .orElseThrow(() -> new FoodMapException(CommonErrorCode.UNAUTHORIZED, "Refresh Token无效"));
         ensureRefreshTokenUsable(refreshTokenEntity, now);
 
-        AuthAccountEntity account = accountRepository.findByAccountId(claims.accountId())
+        Long legacyAccountId = refreshTokenEntity.getAccountId();
+        if (legacyAccountId == null) {
+            throw new FoodMapException(CommonErrorCode.UNAUTHORIZED, "Refresh Token会话无效");
+        }
+        AuthAccountEntity account = accountRepository.findByAccountId(legacyAccountId)
                 .orElseThrow(() -> new FoodMapException(CommonErrorCode.UNAUTHORIZED, "账号不存在"));
+        ensureRefreshTokenUserMatches(account, claims);
         if (!AccountStatus.NORMAL.name().equals(account.getAccountStatus())) {
             throw new FoodMapException(CommonErrorCode.FORBIDDEN, "账号状态不允许刷新登录状态");
         }
 
         OffsetDateTime accessExpiresTime = now.plusHours(2);
-        String accessToken = tokenIssuer.issueAccessToken(account.getAccountId(), account.getUserId(), accessExpiresTime);
+        String accessToken = tokenIssuer.issueAccessToken(account.getUserId(), accessExpiresTime);
         return new LoginResponse(
-                account.getAccountId(),
+                null,
                 account.getUserId(),
                 accessToken,
                 request.refreshToken(),
@@ -202,17 +207,17 @@ public class AuthServiceImpl implements AuthService {
     }
 
     /**
-     * 解析当前 Access Token，返回账号和用户业务主键，供前端启动时确认会话状态。
+     * 解析当前 Access Token，返回用户业务主键，供前端启动时确认会话状态。
      *
      * @param accessToken 当前客户端持有的 Access Token。
-     * @return 当前认证会话中的账号和用户业务主键信息。
+     * @return 当前认证会话中的用户业务主键信息。
      */
     @Override
     public CurrentAuthResponse current(String accessToken) {
         OffsetDateTime now = OffsetDateTime.now();
         TokenClaims claims = tokenIssuer.parseAccessToken(accessToken);
         ensureTokenNotExpired(claims, now, "Access Token已过期");
-        return new CurrentAuthResponse(claims.accountId(), claims.userId(), claims.expiresTime());
+        return new CurrentAuthResponse(null, claims.userId(), claims.expiresTime());
     }
 
     private void ensureLoginIdentifierAvailable(String accountName, String phone, String email) {
@@ -246,6 +251,18 @@ public class AuthServiceImpl implements AuthService {
         }
         if (!entity.getExpiresTime().isAfter(now)) {
             throw new FoodMapException(CommonErrorCode.UNAUTHORIZED, "Refresh Token已过期");
+        }
+    }
+
+    /**
+     * 校验 Refresh Token 声明的用户业务主键与落库会话关联账号一致，避免刷新链路继续信任 legacy accountId claims。
+     *
+     * @param account 落库 Refresh Token 记录关联的 legacy 账号。
+     * @param claims Refresh Token 解析出的身份声明。
+     */
+    private void ensureRefreshTokenUserMatches(AuthAccountEntity account, TokenClaims claims) {
+        if (!claims.userId().equals(account.getUserId())) {
+            throw new FoodMapException(CommonErrorCode.UNAUTHORIZED, "Refresh Token会话不匹配");
         }
     }
 

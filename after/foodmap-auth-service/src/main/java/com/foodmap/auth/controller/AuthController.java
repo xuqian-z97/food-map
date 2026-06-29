@@ -32,10 +32,10 @@ public class AuthController {
     }
 
     /**
-     * 注册 FoodMap 账号，返回账号和用户业务主键。
+     * 注册 FoodMap 登录身份，返回标准用户业务主键。
      *
      * @param request 注册请求，包含账号名、联系方式、昵称和密码。
-     * @return 注册后的账号业务主键、用户业务主键和账号状态。
+     * @return 注册后的用户业务主键和账号状态，旧 accountId 兼容字段返回 null。
      */
     @PostMapping("/register")
     public ApiResponse<RegisterResponse> register(@Valid @RequestBody RegisterRequest request) {
@@ -80,7 +80,7 @@ public class AuthController {
      * 查询当前 Access Token 对应的认证会话。
      *
      * @param authorization HTTP Authorization 请求头。
-     * @return 当前认证会话中的账号和用户业务主键。
+     * @return 当前认证会话中的用户业务主键，旧 accountId 兼容字段返回 null。
      */
     @GetMapping("/me")
     public ApiResponse<CurrentAuthResponse> current(@RequestHeader(value = "Authorization", required = false) String authorization) {

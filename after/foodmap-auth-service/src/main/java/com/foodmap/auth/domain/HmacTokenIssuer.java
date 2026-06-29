@@ -34,25 +34,51 @@ public class HmacTokenIssuer {
     }
 
     /**
-     * 签发 Access Token，载荷包含账号和用户业务主键，供网关和服务端提取身份。
+     * 签发 Access Token，新身份模型只把用户业务主键写入载荷。
+     *
+     * @param userId 用户业务主键。
+     * @param expiresTime Access Token 过期时间。
+     * @return 可返回给客户端使用的 Access Token。
+     */
+    public String issueAccessToken(Long userId, OffsetDateTime expiresTime) {
+        return tokenCodec.issueAccessToken(userId, expiresTime);
+    }
+
+    /**
+     * 签发 Refresh Token，新身份模型只把用户业务主键写入载荷。
+     *
+     * @param userId 用户业务主键。
+     * @param expiresTime Refresh Token 过期时间。
+     * @return 可返回给客户端保存的 Refresh Token。
+     */
+    public String issueRefreshToken(Long userId, OffsetDateTime expiresTime) {
+        return tokenCodec.issueRefreshToken(userId, expiresTime);
+    }
+
+    /**
+     * 签发 Access Token，载荷包含账号和用户业务主键，仅用于 B1 旧身份模型兼容期。
      *
      * @param accountId 账号业务主键。
      * @param userId 用户业务主键。
      * @param expiresTime Access Token 过期时间。
      * @return 可返回给客户端使用的 Access Token。
+     * @deprecated 新签发链路应使用 {@link #issueAccessToken(Long, OffsetDateTime)}，避免继续扩大 accountId 依赖。
      */
+    @Deprecated
     public String issueAccessToken(Long accountId, Long userId, OffsetDateTime expiresTime) {
         return tokenCodec.issueAccessToken(accountId, userId, expiresTime);
     }
 
     /**
-     * 签发 Refresh Token，载荷包含随机 nonce，降低刷新令牌碰撞和重放排查难度。
+     * 签发 Refresh Token，载荷包含账号业务主键，仅用于 B1 旧身份模型兼容期。
      *
      * @param accountId 账号业务主键。
      * @param userId 用户业务主键。
      * @param expiresTime Refresh Token 过期时间。
      * @return 可返回给客户端保存的 Refresh Token。
+     * @deprecated 新签发链路应使用 {@link #issueRefreshToken(Long, OffsetDateTime)}，避免继续扩大 accountId 依赖。
      */
+    @Deprecated
     public String issueRefreshToken(Long accountId, Long userId, OffsetDateTime expiresTime) {
         return tokenCodec.issueRefreshToken(accountId, userId, expiresTime);
     }
