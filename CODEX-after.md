@@ -2048,6 +2048,8 @@ GET /api/admin/operations
 - Refresh Token 明文不落库，认证服务数据库只保存 Refresh Token 哈希和会话状态。
 - Redis 用于认证会话热缓存、Access Token denylist、登录失败计数、验证码和 OAuth state 等短期状态；Redis 不能作为长期认证凭证和会话事实的唯一来源，除非明确接受 Redis 丢失导致全员重新登录。
 - 支持 Token 撤销。
+- 退出登录时，请求体中的 Refresh Token 用于撤销长期会话；如请求同时携带 `Authorization: Bearer <access-token>`，认证服务必须将 Access Token 摘要写入 Redis denylist，TTL 截止到该 Access Token 原过期时间。
+- 网关校验非公开 `/api/**` 请求时，必须在签名和过期时间校验通过后检查 Access Token denylist；命中 denylist 时返回 `401`，不能继续向下游服务透传可信用户身份头。
 
 ### 11.2 授权
 
@@ -2831,6 +2833,7 @@ FoodMap 后端必须把数据库、Redis 和请求线程看成一组受限资源
 - `prod MVP` 阶段当前服务器资源有限，不能让 8 个微服务每个都默认占用 20 个数据库连接，否则 PostgreSQL 很容易先被连接数拖垮。
 - `leak-detection-threshold` 在本地建议开启，用来发现事务过长、连接未释放和慢 SQL；生产可设置为更高阈值，避免正常慢请求造成噪音。
 - Redis pool 的 `max-active` 要和 Web 请求线程、Redis 命令耗时、锁续期任务数量一起评估；锁看门狗数量增长时必须关注 Redis pool 等待时间。
+- 普通业务服务可以按需启用 Redisson；认证服务和网关服务从 B1 Token denylist 修复后必须默认启用 Redisson，以便登出后的 Access Token 能被立即阻断。
 
 配置模板：
 
@@ -2936,6 +2939,7 @@ sequenceDiagram
 - JWT 必须校验签名、过期时间、签发方和目标受众。
 - 禁止接受 `alg=none` 等不安全 JWT。
 - Refresh Token 必须哈希存储且支持撤销。
+- 登出或强制下线场景必须维护 Access Token denylist 或等价机制；denylist 只能保存 Token 摘要、会话标识或 Token ID，不能保存明文 Token，且必须设置 TTL。
 - 每个非公开接口都必须在服务端做权限校验，不能只依赖网关或前端。
 - CORS 必须按环境配置允许来源，不能在生产使用无限制 `*`。
 - 日志中必须脱敏手机号、邮箱、Token、密码、密钥和私密内容。
@@ -2943,7 +2947,6 @@ sequenceDiagram
 
 建议逐步补齐：
 
-- 对登出或强制下线场景维护 Token denylist 或等价机制。
 - 对登录、注册、上传、评论等接口启用限流。
 - 对管理后台和内部运维接口使用更强认证策略。
 

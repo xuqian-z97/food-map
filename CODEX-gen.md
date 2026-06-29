@@ -97,7 +97,7 @@ Stage 1：后端认证用户基础能力与 iOS 认证测试壳已完成
 - `foodmap-auth-service` 和 `foodmap-user-service` 已完成 `userId-only` 运行时收口切片：认证新签发 Token、注册/登录/刷新/当前会话响应、用户当前资料查询和 `/api/users/me` 网关链路均以 `userId` 为标准身份；旧 `accountId` 仍作为数据库兼容字段保留，尚未做认证身份绑定表和会话表的大规模迁移。
 - 认证服务业务主键已从内存计数器调整为 Flyway 管理的 PostgreSQL sequence，身份重构后将移除 `accountId` 长期主体语义。
 - 认证服务已补齐 Refresh Token 刷新、退出登录撤销和当前会话查询接口。
-- 网关已具备 Access Token 校验和可信用户身份请求头透传能力，外部客户端伪造的 FoodMap 身份头会被移除。
+- 网关已具备 Access Token 校验和可信用户身份请求头透传能力，外部客户端伪造的 FoodMap 身份头会被移除；B1 当前收口目标是补齐 logout 后 Access Token Redis denylist，命中 denylist 的请求由网关返回 `401`。
 - `foodmap-common` 已提供 Token 编解码、内部身份请求头常量和当前用户解析工具。
 - `foodmap-admin-service` 已生成首个后台服务代码切片，包含后台管理员创建用例、`admin_users` Flyway 表结构、业务主键 sequence、MyBatis Mapper/XML 和本地/profile 配置。
 - `foodmap-log-service` 已生成接口访问摘要消费落库代码切片，负责从 `foodmap.logs.api-access` 消费并幂等写入 `foodmap_log_db.api_access_log`。

@@ -28,6 +28,7 @@
 - [ ] 注册成功后认证服务通过用户服务创建用户资料，随后可查询 `/api/users/me`；主链路可用，待补脱敏网络摘要和后端日志证据。
 - [ ] iOS 使用 Access Token 通过 Gateway 查询 `/api/users/me`，展示或缓存真实当前用户身份；从最新前端代码路径看登录后进入地图依赖该接口成功，仍待补请求证据。
 - [x] 后端通过 Gateway 验证注册、登录、当前用户、内部接口拦截、accountId 归属校验和失败回滚。
+- [ ] 后端通过 Gateway 验证退出登录后 Refresh Token 失效，且携带 `Authorization` 登出时原 Access Token 再访问 `/api/users/me` 返回 `401`；自动测试已覆盖，待真实接口复测。
 - [ ] 登录失败、参数错误、账号不存在、密码错误、未认证、权限不足和服务异常时，前端展示明确错误。
 - [ ] Token、密码、完整手机号、完整邮箱不出现在前端日志、后端日志、网络摘要或问题记录中。
 - [ ] 后端访问日志包含 `requestId`、`traceId`、`serviceName`，并能串起 Gateway/Auth/User 调用链路。
@@ -156,10 +157,12 @@
 | --- | --- | --- | --- | --- | --- | --- |
 | gateway | `/api/auth/login` | POST | 登录标识、密码 | Access Token、Refresh Token、过期时间 | 400/401/500 | 生成或透传 `requestId`、`traceId` |
 | gateway | `/api/auth/register` | POST | 账号、手机号、邮箱、密码、昵称、渠道 | 账号业务主键和用户业务主键 | 400/409/500/504 | 生成或透传 `requestId`、`traceId` |
+| gateway | `/api/auth/logout` | POST | Bearer Access Token、Refresh Token | 空响应 | 401/500 | 登出后 Access Token denylist 命中返回 401 |
 | gateway | `/api/users/me` | GET | Bearer Token | 当前用户资料 | 401/403/404/500 | 覆盖外部伪造身份头，透传可信身份 |
 | gateway | `/internal/users/provision` | POST | 用户开通载荷 | 外部访问返回 403 | 403 | 不转发到用户服务 |
 | auth-service | `/api/auth/login` | POST | 登录标识、密码 | Token 结果 | 400/401/500 | 不记录密码和 Token 明文 |
 | auth-service | `/api/auth/register` | POST | 注册参数 | 注册结果 | 400/409/504/500 | 用户开通失败时回滚 auth 写入 |
+| auth-service | `/api/auth/logout` | POST | Refresh Token、可选 Bearer Access Token | 空响应 | 401/500 | 撤销 Refresh Token；Access Token 只写摘要到 Redis denylist |
 | user-service | `/api/users/me` | GET | 当前用户身份 | 用户资料 | 401/403/404/500 | 校验 `userId/accountId` 归属，不记录敏感信息 |
 
 后端必须说明：

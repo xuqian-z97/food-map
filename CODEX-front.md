@@ -224,7 +224,7 @@ ViewModel：
 - POST /api/auth/login，B1 已落地最小契约
 - GET /api/users/me，B1 已落地最小契约
 - POST /api/auth/refresh，后续实现
-- POST /api/auth/logout，后续实现
+- POST /api/auth/logout，B1 后端已支持；iOS 调用时必须同时发送 `Authorization: Bearer <access-token>` 和请求体中的 Refresh Token，确保当前 Access Token 进入短期失效名单
 
 当前实现：
 

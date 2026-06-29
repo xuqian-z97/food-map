@@ -65,14 +65,18 @@ public class AuthController {
     }
 
     /**
-     * 退出登录并撤销 Refresh Token。
+     * 退出登录并撤销 Refresh Token，可选携带当前 Access Token 以便写入拒绝名单。
      *
      * @param request 退出登录请求，包含待撤销的 Refresh Token。
+     * @param authorization HTTP Authorization 请求头，存在 Bearer Access Token 时会同步触发短期失效。
      * @return 空响应体，用于表示退出登录处理完成。
      */
     @PostMapping("/logout")
-    public ApiResponse<Void> logout(@Valid @RequestBody LogoutRequest request) {
-        authService.logout(request);
+    public ApiResponse<Void> logout(
+            @Valid @RequestBody LogoutRequest request,
+            @RequestHeader(value = "Authorization", required = false) String authorization
+    ) {
+        authService.logout(request, authorization);
         return ApiResponse.ok(null);
     }
 

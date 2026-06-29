@@ -1,5 +1,6 @@
 package com.foodmap.gateway.filter;
 
+import com.foodmap.common.security.AccessTokenDenylistClient;
 import com.foodmap.common.security.FoodMapAuthHeaders;
 import com.foodmap.common.security.HmacTokenCodec;
 import org.junit.jupiter.api.Test;
@@ -15,6 +16,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@SuppressWarnings("deprecation")
 class GatewayAuthFilterTest {
     private static final String TOKEN_SECRET = "0123456789abcdef0123456789abcdef";
 
@@ -80,6 +82,27 @@ class GatewayAuthFilterTest {
     }
 
     @Test
+    void shouldRejectProtectedApiWhenAccessTokenIsDenylisted() {
+        HmacTokenCodec tokenCodec = new HmacTokenCodec(TOKEN_SECRET);
+        String token = tokenCodec.issueAccessToken(2001L, OffsetDateTime.now().plusHours(1));
+        RecordingAccessTokenDenylist recordingDenylist = new RecordingAccessTokenDenylist(tokenCodec.tokenHash(token));
+        GatewayAuthFilter filter = new GatewayAuthFilter(TOKEN_SECRET, recordingDenylist);
+        MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.get("/api/users/me")
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                .build());
+        AtomicReference<ServerWebExchange> downstreamExchange = new AtomicReference<>();
+
+        filter.filter(exchange, chainExchange -> {
+            downstreamExchange.set(chainExchange);
+            return Mono.empty();
+        }).block();
+
+        assertThat(recordingDenylist.queriedHash()).isEqualTo(tokenCodec.tokenHash(token));
+        assertThat(downstreamExchange.get()).isNull();
+        assertThat(exchange.getResponse().getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+    }
+
+    @Test
     void shouldRejectInternalProvisionPathThroughExternalGateway() {
         GatewayAuthFilter filter = new GatewayAuthFilter(TOKEN_SECRET);
         MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.post("/internal/users/provision").build());
@@ -106,5 +129,29 @@ class GatewayAuthFilterTest {
         }).block();
 
         assertThat(downstreamExchange.get()).isNotNull();
+    }
+
+    private static final class RecordingAccessTokenDenylist implements AccessTokenDenylistClient {
+        private final String deniedHash;
+        private String queriedHash;
+
+        private RecordingAccessTokenDenylist(String deniedHash) {
+            this.deniedHash = deniedHash;
+        }
+
+        @Override
+        public void deny(String accessTokenHash, OffsetDateTime expiresTime) {
+            // Gateway only reads the denylist.
+        }
+
+        @Override
+        public boolean contains(String accessTokenHash) {
+            queriedHash = accessTokenHash;
+            return deniedHash.equals(queriedHash);
+        }
+
+        private String queriedHash() {
+            return queriedHash;
+        }
     }
 }

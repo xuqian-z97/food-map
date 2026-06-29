@@ -4,9 +4,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.foodmap.common.api.ApiResponse;
 import com.foodmap.common.exception.CommonErrorCode;
 import com.foodmap.common.exception.FoodMapException;
+import com.foodmap.common.security.AccessTokenDenylistClient;
 import com.foodmap.common.security.FoodMapAuthHeaders;
 import com.foodmap.common.security.HmacTokenCodec;
+import com.foodmap.common.security.NoopAccessTokenDenylistClient;
 import com.foodmap.common.security.TokenClaims;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
@@ -42,17 +45,33 @@ public class GatewayAuthFilter implements GlobalFilter, Ordered {
     );
 
     private final HmacTokenCodec tokenCodec;
+    private final AccessTokenDenylistClient accessTokenDenylistClient;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     /**
-     * 使用配置中的 Token 密钥创建网关认证过滤器，默认值必须与认证服务本地默认值保持一致。
+     * 使用配置中的 Token 密钥创建网关认证过滤器，测试未注入拒绝名单时使用空操作客户端。
      *
      * @param tokenSecret 网关用于校验 Access Token 的 HMAC 密钥。
      */
     public GatewayAuthFilter(
             @Value("${foodmap.security.token-secret:foodmap-local-token-secret-please-change}") String tokenSecret
     ) {
+        this(tokenSecret, new NoopAccessTokenDenylistClient());
+    }
+
+    /**
+     * 使用配置中的 Token 密钥和拒绝名单客户端创建网关认证过滤器。
+     *
+     * @param tokenSecret 网关用于校验 Access Token 的 HMAC 密钥。
+     * @param accessTokenDenylistClient Access Token 拒绝名单客户端。
+     */
+    @Autowired
+    public GatewayAuthFilter(
+            @Value("${foodmap.security.token-secret:foodmap-local-token-secret-please-change}") String tokenSecret,
+            AccessTokenDenylistClient accessTokenDenylistClient
+    ) {
         this.tokenCodec = new HmacTokenCodec(tokenSecret);
+        this.accessTokenDenylistClient = accessTokenDenylistClient;
     }
 
     /**
@@ -82,6 +101,9 @@ public class GatewayAuthFilter implements GlobalFilter, Ordered {
             TokenClaims claims = tokenCodec.parseAccessToken(token);
             if (claims.isExpiredAt(OffsetDateTime.now())) {
                 return unauthorized(sanitizedExchange, "Access Token已过期");
+            }
+            if (accessTokenDenylistClient.contains(tokenCodec.tokenHash(token))) {
+                return unauthorized(sanitizedExchange, "Access Token已失效");
             }
             ServerHttpRequest requestWithIdentity = sanitizedExchange.getRequest().mutate()
                     .header(FoodMapAuthHeaders.USER_ID, String.valueOf(claims.userId()))

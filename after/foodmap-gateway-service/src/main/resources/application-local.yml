@@ -3,3 +3,18 @@ spring:
     nacos:
       discovery:
         server-addr: ${NACOS_SERVER_ADDR:127.0.0.1:8848}
+
+foodmap:
+  redis:
+    redisson:
+      enabled: ${FOODMAP_REDISSON_ENABLED:true}
+      address: ${FOODMAP_REDISSON_ADDRESS:redis://127.0.0.1:${REDIS_PORT:6379}}
+      password: ${FOODMAP_REDISSON_PASSWORD:${REDIS_PASSWORD:}}
+      database: ${FOODMAP_REDISSON_DATABASE:0}
+      connection-pool-size: ${FOODMAP_REDISSON_POOL_SIZE:8}
+      connection-minimum-idle-size: ${FOODMAP_REDISSON_MIN_IDLE:1}
+      connect-timeout: ${FOODMAP_REDISSON_CONNECT_TIMEOUT_MS:3000}
+      timeout: ${FOODMAP_REDISSON_TIMEOUT_MS:2000}
+      retry-attempts: ${FOODMAP_REDISSON_RETRY_ATTEMPTS:2}
+      retry-interval: ${FOODMAP_REDISSON_RETRY_INTERVAL_MS:500}
+      client-name: ${FOODMAP_REDISSON_CLIENT_NAME:foodmap-gateway-redisson-local}

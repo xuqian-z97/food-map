@@ -158,7 +158,20 @@ Token 存储原则：
 
 所属服务：`foodmap-auth-service`
 
-用途：退出登录并撤销当前 Refresh Token 对应的 session。
+用途：退出登录并撤销当前 Refresh Token 对应的 session；如请求携带当前 Access Token，则同步让该 Access Token 立即失效。
+
+请求头：
+
+```http
+Authorization: Bearer <access-token>
+```
+
+说明：
+
+- `Authorization` 推荐传入当前登录会话持有的 Access Token。
+- 认证服务不会把 Access Token 明文落库或写入 Redis。
+- 认证服务只把 Access Token 摘要写入 Redis denylist，并设置 TTL 到该 Access Token 原过期时间。
+- 如果不传 `Authorization`，接口仍会兼容只撤销请求体中的 Refresh Token，但当前未过期 Access Token 无法被立即加入 denylist。
 
 请求体：
 
@@ -173,6 +186,11 @@ Token 存储原则：
 ```json
 {}
 ```
+
+错误响应：
+
+- `401 UNAUTHORIZED`：Refresh Token 无效、已过期或已失效；Access Token 已过期、签名无效或命中 denylist。
+- `403 FORBIDDEN`：已认证但账号状态不允许继续使用。
 
 ## 7. GET /api/users/me
 

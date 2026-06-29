@@ -1,6 +1,7 @@
 com.foodmap.common.web.FoodMapWebExceptionAutoConfiguration
 com.foodmap.common.feign.FoodMapFeignAutoConfiguration
 com.foodmap.common.redis.redisson.FoodMapRedissonAutoConfiguration
+com.foodmap.common.security.FoodMapAccessTokenDenylistAutoConfiguration
 com.foodmap.common.logging.FoodMapLoggingAutoConfiguration
 com.foodmap.common.logging.mybatis.FoodMapMyBatisLoggingAutoConfiguration
 com.foodmap.common.search.elasticsearch.FoodMapSearchAutoConfiguration

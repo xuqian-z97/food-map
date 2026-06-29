@@ -18,6 +18,7 @@ import com.foodmap.auth.infrastructure.persistence.memory.InMemoryLoginLogReposi
 import com.foodmap.auth.infrastructure.persistence.memory.InMemoryRefreshTokenRepository;
 import com.foodmap.auth.service.impl.AuthServiceImpl;
 import com.foodmap.common.exception.FoodMapException;
+import com.foodmap.common.security.AccessTokenDenylistClient;
 import com.foodmap.common.security.HmacTokenCodec;
 import com.foodmap.common.security.TokenClaims;
 import org.junit.jupiter.api.Test;
@@ -29,6 +30,7 @@ import java.time.OffsetDateTime;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+@SuppressWarnings("deprecation")
 class AuthServiceImplTest {
     private static final String TOKEN_SECRET = "0123456789abcdef0123456789abcdef";
 
@@ -58,6 +60,28 @@ class AuthServiceImplTest {
 
         service.logout(new LogoutRequest(loginResponse.refreshToken()));
 
+        assertThatThrownBy(() -> service.refresh(new RefreshTokenRequest(loginResponse.refreshToken())))
+                .isInstanceOf(FoodMapException.class);
+    }
+
+    @Test
+    void logoutShouldDenylistUsableAccessTokenUntilOriginalAccessExpiry() {
+        HmacTokenIssuer tokenIssuer = new HmacTokenIssuer(TOKEN_SECRET);
+        RecordingAccessTokenDenylist recordingDenylist = new RecordingAccessTokenDenylist();
+        AuthService service = newAuthServiceWithDenylist(
+                new InMemoryRefreshTokenRepository(),
+                tokenIssuer,
+                recordingDenylist
+        );
+        RegisterResponse registerResponse = service.register(defaultRegisterRequest());
+        LoginResponse loginResponse = service.login(new LoginRequest("foodie_01", "secret123"));
+        TokenClaims accessClaims = tokenIssuer.parseAccessToken(loginResponse.accessToken());
+
+        service.logout(new LogoutRequest(loginResponse.refreshToken()), "Bearer " + loginResponse.accessToken());
+
+        assertThat(registerResponse.userId()).isPositive();
+        assertThat(recordingDenylist.deniedHash()).isEqualTo(tokenIssuer.tokenHash(loginResponse.accessToken()));
+        assertThat(recordingDenylist.expiresTime()).isEqualTo(accessClaims.expiresTime());
         assertThatThrownBy(() -> service.refresh(new RefreshTokenRequest(loginResponse.refreshToken())))
                 .isInstanceOf(FoodMapException.class);
     }
@@ -150,6 +174,24 @@ class AuthServiceImplTest {
         );
     }
 
+    private static AuthService newAuthServiceWithDenylist(
+            InMemoryRefreshTokenRepository refreshTokenRepository,
+            HmacTokenIssuer tokenIssuer,
+            AccessTokenDenylistClient denylist
+    ) {
+        return new AuthServiceImpl(
+                new TestAuthBusinessIdGenerator(),
+                new InMemoryAuthAccountRepository(),
+                new InMemoryAuthCredentialRepository(),
+                refreshTokenRepository,
+                new InMemoryLoginLogRepository(),
+                new Pbkdf2PasswordHashService("test-pepper"),
+                tokenIssuer,
+                new NoopUserProfileProvisionClient(),
+                denylist
+        );
+    }
+
     private static RegisterRequest defaultRegisterRequest() {
         return new RegisterRequest(
                 "foodie_01",
@@ -159,5 +201,29 @@ class AuthServiceImplTest {
                 "小张",
                 "IOS"
         );
+    }
+
+    private static final class RecordingAccessTokenDenylist implements AccessTokenDenylistClient {
+        private String deniedHash;
+        private OffsetDateTime expiresTime;
+
+        @Override
+        public void deny(String accessTokenHash, OffsetDateTime expiresTime) {
+            this.deniedHash = accessTokenHash;
+            this.expiresTime = expiresTime;
+        }
+
+        @Override
+        public boolean contains(String accessTokenHash) {
+            return false;
+        }
+
+        private String deniedHash() {
+            return deniedHash;
+        }
+
+        private OffsetDateTime expiresTime() {
+            return expiresTime;
+        }
     }
 }

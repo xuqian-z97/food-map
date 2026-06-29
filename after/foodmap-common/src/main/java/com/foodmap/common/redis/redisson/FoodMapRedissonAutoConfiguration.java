@@ -1,6 +1,7 @@
 package com.foodmap.common.redis.redisson;
 
 import com.foodmap.common.redis.DistributedLockClient;
+import com.foodmap.common.security.AccessTokenDenylistClient;
 import org.redisson.Redisson;
 import org.redisson.api.RedissonClient;
 import org.redisson.config.Config;
@@ -13,9 +14,10 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 
 /**
- * FoodMap Redisson 自动配置，仅在显式启用时创建分布式锁基础设施 Bean。
+ * FoodMap Redisson 自动配置，仅在显式启用时创建 Redis 基础设施 Bean。
  *
- * <p>本配置不会替换业务缓存的 Lettuce 客户端，Redisson 只作为 {@link DistributedLockClient} 的实现细节存在。</p>
+ * <p>本配置不会替换业务缓存的 Lettuce 客户端。Redisson 当前用于 {@link DistributedLockClient}
+ * 和 Access Token 拒绝名单等需要原子 Redis 命令或短 TTL 状态的基础设施适配器。</p>
  */
 @AutoConfiguration
 @ConditionalOnClass(RedissonClient.class)
@@ -70,5 +72,17 @@ public class FoodMapRedissonAutoConfiguration {
     @ConditionalOnMissingBean(DistributedLockClient.class)
     public DistributedLockClient redissonDistributedLockClient(RedissonClient redissonClient) {
         return new RedissonDistributedLockClient(redissonClient);
+    }
+
+    /**
+     * 创建基于 Redisson 的 Access Token 拒绝名单客户端，供认证服务写入、网关读取登出失效状态。
+     *
+     * @param redissonClient Redisson 客户端。
+     * @return Access Token 拒绝名单客户端。
+     */
+    @Bean
+    @ConditionalOnMissingBean(AccessTokenDenylistClient.class)
+    public AccessTokenDenylistClient redissonAccessTokenDenylistClient(RedissonClient redissonClient) {
+        return new RedissonAccessTokenDenylistClient(redissonClient);
     }
 }

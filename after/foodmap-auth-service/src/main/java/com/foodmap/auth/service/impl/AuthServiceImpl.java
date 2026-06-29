@@ -28,7 +28,10 @@ import com.foodmap.auth.infrastructure.persistence.entity.LoginLogEntity;
 import com.foodmap.auth.infrastructure.persistence.entity.RefreshTokenEntity;
 import com.foodmap.common.exception.CommonErrorCode;
 import com.foodmap.common.exception.FoodMapException;
+import com.foodmap.common.security.AccessTokenDenylistClient;
+import com.foodmap.common.security.NoopAccessTokenDenylistClient;
 import com.foodmap.common.security.TokenClaims;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,6 +45,8 @@ import java.time.OffsetDateTime;
  */
 @Service
 public class AuthServiceImpl implements AuthService {
+    private static final String BEARER_PREFIX = "Bearer ";
+
     private final AuthBusinessIdGenerator businessIdGenerator;
     private final AuthAccountRepository accountRepository;
     private final AuthCredentialRepository credentialRepository;
@@ -50,6 +55,7 @@ public class AuthServiceImpl implements AuthService {
     private final Pbkdf2PasswordHashService passwordHashService;
     private final HmacTokenIssuer tokenIssuer;
     private final UserProfileProvisionClient userProfileProvisionClient;
+    private final AccessTokenDenylistClient accessTokenDenylistClient;
 
     public AuthServiceImpl(
             AuthBusinessIdGenerator businessIdGenerator,
@@ -61,6 +67,44 @@ public class AuthServiceImpl implements AuthService {
             HmacTokenIssuer tokenIssuer,
             UserProfileProvisionClient userProfileProvisionClient
     ) {
+        this(
+                businessIdGenerator,
+                accountRepository,
+                credentialRepository,
+                refreshTokenRepository,
+                loginLogRepository,
+                passwordHashService,
+                tokenIssuer,
+                userProfileProvisionClient,
+                new NoopAccessTokenDenylistClient()
+        );
+    }
+
+    /**
+     * 创建认证业务服务实现，并注入 Access Token 拒绝名单客户端。
+     *
+     * @param businessIdGenerator 认证业务主键生成器。
+     * @param accountRepository 认证账号仓储端口。
+     * @param credentialRepository 认证凭证仓储端口。
+     * @param refreshTokenRepository Refresh Token 仓储端口。
+     * @param loginLogRepository 登录日志仓储端口。
+     * @param passwordHashService 密码哈希服务。
+     * @param tokenIssuer Token 签发和解析服务。
+     * @param userProfileProvisionClient 用户资料开通客户端。
+     * @param accessTokenDenylistClient Access Token 拒绝名单客户端。
+     */
+    @Autowired
+    public AuthServiceImpl(
+            AuthBusinessIdGenerator businessIdGenerator,
+            AuthAccountRepository accountRepository,
+            AuthCredentialRepository credentialRepository,
+            RefreshTokenRepository refreshTokenRepository,
+            LoginLogRepository loginLogRepository,
+            Pbkdf2PasswordHashService passwordHashService,
+            HmacTokenIssuer tokenIssuer,
+            UserProfileProvisionClient userProfileProvisionClient,
+            AccessTokenDenylistClient accessTokenDenylistClient
+    ) {
         this.businessIdGenerator = businessIdGenerator;
         this.accountRepository = accountRepository;
         this.credentialRepository = credentialRepository;
@@ -69,6 +113,7 @@ public class AuthServiceImpl implements AuthService {
         this.passwordHashService = passwordHashService;
         this.tokenIssuer = tokenIssuer;
         this.userProfileProvisionClient = userProfileProvisionClient;
+        this.accessTokenDenylistClient = accessTokenDenylistClient;
     }
 
     /**
@@ -196,6 +241,17 @@ public class AuthServiceImpl implements AuthService {
      */
     @Override
     public void logout(LogoutRequest request) {
+        logout(request, null);
+    }
+
+    /**
+     * 退出登录并撤销 Refresh Token；请求携带未过期 Bearer Access Token 时同步写入 Redis 拒绝名单。
+     *
+     * @param request 退出登录请求，包含待撤销的 Refresh Token。
+     * @param authorization HTTP Authorization 请求头，允许为空以兼容旧调用方。
+     */
+    @Override
+    public void logout(LogoutRequest request, String authorization) {
         OffsetDateTime now = OffsetDateTime.now();
         tokenIssuer.parseRefreshToken(request.refreshToken());
         refreshTokenRepository.findByTokenHash(tokenIssuer.tokenHash(request.refreshToken()))
@@ -204,6 +260,7 @@ public class AuthServiceImpl implements AuthService {
                         refreshTokenRepository.revoke(entity, now);
                     }
                 });
+        denyAccessTokenIfPresent(authorization, now);
     }
 
     /**
@@ -252,6 +309,38 @@ public class AuthServiceImpl implements AuthService {
         if (!entity.getExpiresTime().isAfter(now)) {
             throw new FoodMapException(CommonErrorCode.UNAUTHORIZED, "Refresh Token已过期");
         }
+    }
+
+    /**
+     * 从 Authorization 请求头中提取 Bearer Access Token，校验未过期后写入拒绝名单。
+     *
+     * @param authorization HTTP Authorization 请求头。
+     * @param now 当前业务时间，用于判断 Access Token 是否仍需拒绝。
+     */
+    private void denyAccessTokenIfPresent(String authorization, OffsetDateTime now) {
+        String accessToken = extractBearerToken(authorization);
+        if (accessToken == null) {
+            return;
+        }
+        TokenClaims accessClaims = tokenIssuer.parseAccessToken(accessToken);
+        if (accessClaims.isExpiredAt(now)) {
+            return;
+        }
+        accessTokenDenylistClient.deny(tokenIssuer.tokenHash(accessToken), accessClaims.expiresTime());
+    }
+
+    /**
+     * 提取 Bearer Token，非 Bearer 或空白请求头按未携带 Access Token 处理。
+     *
+     * @param authorization HTTP Authorization 请求头。
+     * @return Bearer Token 明文；不存在时返回 null。
+     */
+    private String extractBearerToken(String authorization) {
+        if (authorization == null || !authorization.startsWith(BEARER_PREFIX)) {
+            return null;
+        }
+        String token = authorization.substring(BEARER_PREFIX.length()).trim();
+        return token.isBlank() ? null : token;
     }
 
     /**

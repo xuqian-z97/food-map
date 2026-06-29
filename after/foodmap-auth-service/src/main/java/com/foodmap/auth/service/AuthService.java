@@ -47,6 +47,14 @@ public interface AuthService {
     void logout(LogoutRequest request);
 
     /**
+     * 退出登录并撤销 Refresh Token，可选把当前 Access Token 摘要写入拒绝名单。
+     *
+     * @param request 退出登录请求。
+     * @param authorization HTTP Authorization 请求头，存在 Bearer Access Token 时用于短期失效。
+     */
+    void logout(LogoutRequest request, String authorization);
+
+    /**
      * 解析当前 Access Token，返回用户业务主键。
      *
      * @param accessToken 当前 Access Token。
