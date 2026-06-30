@@ -3,16 +3,35 @@ import SwiftUI
 /// 登录后的地图首页壳，承载地图优先、温馨私密和轻量添加推荐的核心体验。
 struct MapHomeView: View {
     let session: AuthSession
+    let onRefreshCurrentUser: () async throws -> CurrentUserResponse
     let onSignOut: () -> Void
 
     @StateObject private var viewModel: MapHomeViewModel
+    @State private var isRefreshingCurrentUser = false
+    @State private var currentUserDebugMessage: String?
+    @State private var currentUserDebugIsError = false
 
     /// 创建地图首页。
     /// - Parameters:
     ///   - session: 当前认证会话。
+    ///   - onRefreshCurrentUser: B1 L2 临时当前用户刷新动作。
     ///   - onSignOut: 退出登录动作。
-    init(session: AuthSession, onSignOut: @escaping () -> Void) {
+    init(
+        session: AuthSession,
+        onRefreshCurrentUser: @escaping () async throws -> CurrentUserResponse = {
+            CurrentUserResponse(
+                userId: 0,
+                accountId: nil,
+                accountName: nil,
+                nickname: "",
+                avatarMediaId: nil,
+                userStatus: ""
+            )
+        },
+        onSignOut: @escaping () -> Void
+    ) {
         self.session = session
+        self.onRefreshCurrentUser = onRefreshCurrentUser
         self.onSignOut = onSignOut
         _viewModel = StateObject(wrappedValue: MapHomeViewModel(session: session))
     }
@@ -29,6 +48,7 @@ struct MapHomeView: View {
                 VStack(spacing: 12) {
                     topBar
                     offlineMapBar
+                    currentUserDebugBar
                     scopePicker
                     Spacer()
                     bottomContent
@@ -97,6 +117,20 @@ struct MapHomeView: View {
             .buttonStyle(FoodMapIconButtonStyle())
             .accessibilityLabel("刷新当前地图范围")
 
+            Button {
+                Task { await refreshCurrentUserForDebug() }
+            } label: {
+                if isRefreshingCurrentUser {
+                    ProgressView()
+                        .tint(FoodMapTheme.teaGreen)
+                } else {
+                    Image(systemName: "person.crop.circle.badge.checkmark")
+                }
+            }
+            .buttonStyle(FoodMapIconButtonStyle())
+            .disabled(isRefreshingCurrentUser)
+            .accessibilityLabel("临时请求当前用户")
+
             Button(action: onSignOut) {
                 Image(systemName: "rectangle.portrait.and.arrow.right")
             }
@@ -104,6 +138,24 @@ struct MapHomeView: View {
             .accessibilityLabel("退出登录")
         }
         .foodMapCard(padding: 14)
+    }
+
+    @ViewBuilder
+    private var currentUserDebugBar: some View {
+        if let currentUserDebugMessage {
+            HStack(spacing: 10) {
+                Image(systemName: currentUserDebugIsError ? "exclamationmark.triangle.fill" : "checkmark.seal.fill")
+                    .font(.subheadline.weight(.bold))
+                    .foregroundStyle(currentUserDebugIsError ? FoodMapTheme.persimmon : FoodMapTheme.teaGreen)
+                Text(currentUserDebugMessage)
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(FoodMapTheme.ink)
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.82)
+                Spacer(minLength: 0)
+            }
+            .foodMapCard(padding: 10)
+        }
     }
 
     private var offlineMapBar: some View {
@@ -214,6 +266,25 @@ struct MapHomeView: View {
         }
         .buttonStyle(FoodMapPrimaryButtonStyle())
         .accessibilityLabel("添加推荐")
+    }
+
+    /// TODO: B1 L2 完成后移除该临时联调入口。
+    private func refreshCurrentUserForDebug() async {
+        guard !isRefreshingCurrentUser else {
+            return
+        }
+
+        isRefreshingCurrentUser = true
+        defer { isRefreshingCurrentUser = false }
+
+        do {
+            let currentUser = try await onRefreshCurrentUser()
+            currentUserDebugIsError = false
+            currentUserDebugMessage = "当前用户 userId \(currentUser.userId)，昵称 \(currentUser.nickname)，状态 \(currentUser.userStatus)"
+        } catch {
+            currentUserDebugIsError = true
+            currentUserDebugMessage = error.localizedDescription
+        }
     }
 }
 
@@ -567,6 +638,16 @@ private struct OfflineStoreSummaryView: View {
             accessTokenExpiresTime: "",
             refreshTokenExpiresTime: ""
         ),
+        onRefreshCurrentUser: {
+            CurrentUserResponse(
+                userId: 200001,
+                accountId: nil,
+                accountName: "preview",
+                nickname: "预览用户",
+                avatarMediaId: nil,
+                userStatus: "NORMAL"
+            )
+        },
         onSignOut: {}
     )
 }

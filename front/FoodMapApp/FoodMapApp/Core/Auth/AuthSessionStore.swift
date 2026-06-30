@@ -97,6 +97,25 @@ final class AuthSessionStore: ObservableObject {
         }
     }
 
+    /// B1 L2 联调用临时刷新当前用户入口；成功后用 `/api/users/me` 返回值更新运行时 session。
+    /// - Parameter baseURL: Gateway 服务地址。
+    /// - Returns: 后端返回的当前用户资料。
+    func refreshCurrentUserForDebug(baseURL: String = APIClient.preferredBaseURLString()) async throws -> CurrentUserResponse {
+        guard let tokens = tokenStore.load() else {
+            throw NetworkError.server(status: 401, code: "UNAUTHORIZED", message: "本地没有 Access Token，请重新登录")
+        }
+
+        let client = try APIClient(baseURLString: baseURL, session: urlSession)
+        let currentUser = try await client.currentUser(accessToken: tokens.accessToken)
+        session = makeSession(
+            currentUser: currentUser,
+            accessTokenExpiresTime: session?.accessTokenExpiresTime ?? "",
+            refreshTokenExpiresTime: session?.refreshTokenExpiresTime ?? ""
+        )
+        restoreErrorMessage = nil
+        return currentUser
+    }
+
     /// 清理本地 Token 并回到未登录状态。
     func signOut() {
         tokenStore.clear()

@@ -9,9 +9,15 @@ struct AppRouter: View {
             if sessionStore.isRestoringSession {
                 startupLoadingView
             } else if let session = sessionStore.session {
-                MapHomeView(session: session) {
-                    sessionStore.signOut()
-                }
+                MapHomeView(
+                    session: session,
+                    onRefreshCurrentUser: {
+                        try await sessionStore.refreshCurrentUserForDebug()
+                    },
+                    onSignOut: {
+                        sessionStore.signOut()
+                    }
+                )
             } else {
                 loginRoute
             }

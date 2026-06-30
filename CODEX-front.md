@@ -88,6 +88,7 @@ FoodMapApp
 - 登录、注册和当前用户请求已通过统一 `APIClient` 调用后端；B1 完整联调前端统一通过 Gateway 调用，不再以直连 Auth 服务作为默认联调入口。
 - Access Token 和 Refresh Token 已通过 Keychain 封装持久化。
 - 登录成功后会先通过 Gateway `GET /api/users/me` 拉取真实当前用户资料，再进入 `MapHomeView` 地图首页壳；当前地图点位仍使用本地样例和低风险缓存，不作为门店地图业务联调证据。
+- B1 L2 真实联调期间，地图页临时提供“当前用户”调试按钮，用 Keychain 中的 Access Token 重新请求 Gateway `GET /api/users/me` 并只展示 userId、昵称和用户状态；该入口仅用于联调证据收集，B1 L2 收口后移除。
 - 当前代码默认服务地址为本地 Gateway `http://127.0.0.1:18080`；如果本机保存过早期 Auth 直连地址 `http://127.0.0.1:8081`，App 会自动回到 Gateway 默认值。
 - 当前 `APIClient` 已支持 GET/POST、Bearer Token、`X-Request-Id`、`X-Trace-Id`、`success/status/code/message/data` 成功响应和非 2xx 统一错误响应解析。
 - Token 恢复时必须先调用 `/api/users/me` 校验真实当前用户，不允许使用 `accountId/userId = 0` 作为运行时已登录会话。
