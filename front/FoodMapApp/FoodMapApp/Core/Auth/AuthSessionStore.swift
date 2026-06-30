@@ -2,8 +2,8 @@ import Foundation
 
 /// 当前 App 认证会话快照，保存 UI 路由所需的最小用户身份信息。
 struct AuthSession: Equatable {
-    /// 认证服务账号业务 ID。
-    let accountId: Int64
+    /// B1 旧身份模型兼容字段；userId-only 链路可为空，运行时以 userId 为准。
+    let accountId: Int64?
     /// 用户服务用户业务 ID。
     let userId: Int64
     /// 登录账号名，由后端当前用户接口确认。
@@ -19,7 +19,7 @@ struct AuthSession: Equatable {
 
     /// 创建认证会话；预览或占位代码可不传展示字段，运行时必须来自当前用户接口。
     init(
-        accountId: Int64,
+        accountId: Int64? = nil,
         userId: Int64,
         accessTokenExpiresTime: String,
         refreshTokenExpiresTime: String,

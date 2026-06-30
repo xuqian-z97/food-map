@@ -166,7 +166,7 @@ struct RegisterView: View {
             )
             UserDefaults.standard.set(apiBaseURL, forKey: APIClient.baseURLDefaultsKey)
             let response = try await sessionStore.register(request: request, baseURL: apiBaseURL)
-            message = "注册成功：\(response.accountId)"
+            message = "注册成功：userId \(response.userId)"
         } catch {
             message = error.localizedDescription
         }

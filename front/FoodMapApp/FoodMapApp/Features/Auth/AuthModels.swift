@@ -10,8 +10,8 @@ struct LoginRequest: Encodable {
 
 /// 登录响应模型，包含认证会话和 Token 过期时间。
 struct LoginResponse: Decodable {
-    /// 认证服务账号业务 ID。
-    let accountId: Int64
+    /// B1 旧身份模型兼容字段；userId-only 链路返回 nil，客户端不能依赖。
+    let accountId: Int64?
     /// 用户服务用户业务 ID。
     let userId: Int64
     /// 短期访问令牌。
@@ -42,8 +42,8 @@ struct RegisterRequest: Encodable {
 
 /// 注册响应模型，返回账号和用户业务 ID，便于联调排查。
 struct RegisterResponse: Decodable {
-    /// 认证服务账号业务 ID。
-    let accountId: Int64
+    /// B1 旧身份模型兼容字段；userId-only 链路返回 nil，客户端不能依赖。
+    let accountId: Int64?
     /// 用户服务用户业务 ID。
     let userId: Int64
     /// 账号状态，例如 NORMAL。
@@ -54,8 +54,8 @@ struct RegisterResponse: Decodable {
 struct CurrentUserResponse: Decodable, Equatable {
     /// 用户服务用户业务 ID。
     let userId: Int64
-    /// 认证服务账号业务 ID。
-    let accountId: Int64
+    /// B1 旧身份模型兼容字段；userId-only 链路返回 nil，客户端不能依赖。
+    let accountId: Int64?
     /// 登录账号名，由后端当前用户接口返回；B1 网关当前可能不透传该字段。
     let accountName: String?
     /// 当前展示昵称。

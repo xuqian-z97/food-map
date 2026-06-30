@@ -114,7 +114,7 @@ final class MapHomeViewModel: ObservableObject {
 
     private func loadCachedStores() {
         let cachedSummaries = cacheStore.loadStoreSummaries(
-            accountId: session.accountId,
+            userId: session.userId,
             cityCode: selectedCity.cityCode
         )
 

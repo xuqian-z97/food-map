@@ -71,9 +71,11 @@ struct MapHomePlaceholderView: View {
             Text("userId: \(session.userId)")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
-            Text("accountId: \(session.accountId)")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
+            if let accountId = session.accountId {
+                Text("accountId: \(accountId)")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
         }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)

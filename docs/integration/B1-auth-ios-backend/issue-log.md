@@ -13,10 +13,11 @@
 | BUG-007 | iOS 当前用户临时失败时可能误清有效 Token | 前端代码审查 | Major | P0 | 已修复待复测 | 前端 | IT-002/IT-004 | 本次前端数据链路提交 | 代码审查通过，真实 iOS 联调未复测 |
 | BUG-008 | iOS 注册页未在提交前校验密码长度 | 真实 iOS L2 联调 | Major | P1 | 已部分复测待证据 | 前端/契约 | IT-001/IT-003 | 本次注册校验修复提交 | 8 位以上注册主链路已手工确认；短密码前端拦截待复测 |
 | BUG-009 | 登出后未过期 Access Token 仍可访问受保护接口 | 真实后端 L2 联调 | Critical | P0 | 已关闭 | 后端/认证/网关 | IT-004/IT-005 | `5994d70` | 真实接口复测通过 |
+| BUG-010 | iOS 注册响应无法解析 userId-only `accountId=null` | 真实 iOS L2 联调 | Critical | P0 | 已修复待复测 | 前端/契约 | IT-001/IT-002/IT-004 | 本次前端模型修复提交 | Swift 解码复现和 iOS Debug 构建通过，待模拟器注册复测 |
 
 ## 2. 问题详情
 
-本次后端联调已记录并关闭 BUG-001 至 BUG-003。2026-06-22 前端联调安全点审查新增 BUG-004 至 BUG-006；2026-06-24 前端代码审查新增 BUG-007；2026-06-25 真实 iOS L2 注册联调新增 BUG-008；2026-06-29 后端 Token 退出登录联调新增 BUG-009 并已关闭。当前 BUG-004、BUG-005 已经由用户手工确认主链路复测可用，BUG-008 的 8 位以上注册主链路已确认可用；BUG-009 已完成自动测试和真实接口复测；BUG-006、BUG-007 和错误态仍需补充真实 iOS 复测，所有前端问题关闭前还需补脱敏网络摘要和后端 `requestId/traceId`。
+本次后端联调已记录并关闭 BUG-001 至 BUG-003。2026-06-22 前端联调安全点审查新增 BUG-004 至 BUG-006；2026-06-24 前端代码审查新增 BUG-007；2026-06-25 真实 iOS L2 注册联调新增 BUG-008；2026-06-29 后端 Token 退出登录联调新增 BUG-009 并已关闭；2026-06-30 真实 iOS L2 注册联调新增 BUG-010。当前 BUG-004、BUG-005 已经由用户手工确认主链路复测可用，BUG-008 的 8 位以上注册主链路已确认可用；BUG-009 已完成自动测试和真实接口复测；BUG-010 已完成前端模型修复和构建验证，待模拟器注册复测；BUG-006、BUG-007 和错误态仍需补充真实 iOS 复测，所有前端问题关闭前还需补网络摘要和后端 `requestId/traceId`。
 
 ### BUG-001 Gateway 暴露用户开通内部接口
 
@@ -675,6 +676,85 @@
 | 复测结果 | `/api/users/me` 返回 `401 Access Token已失效`；`/api/auth/refresh` 返回 `401 Refresh Token已失效`，通过 |
 | 关闭人和关闭时间 | Codex，2026-06-29 |
 | 是否关闭 | 是 |
+
+### BUG-010 iOS 注册响应无法解析 userId-only `accountId=null`
+
+| 项目 | 内容 |
+| --- | --- |
+| 发现时间 | 2026-06-30 |
+| 发现人/Agent | 用户 / Codex |
+| 发现阶段 | 真实 iOS L2 联调 |
+| 严重级别 | Critical |
+| 优先级 | P0 |
+| 当前状态 | 已修复待复测 |
+| 责任侧 | 前端/契约 |
+| 所属模块 | iOS / 认证 |
+| 关联联调场景 | IT-001、IT-002、IT-004 |
+| 关联接口/页面 | `RegisterView`、`AuthModels`、`AuthSessionStore`、Gateway `POST /api/auth/register`、`GET /api/users/me` |
+| 环境信息 | local，iPhone 17 Pro Simulator，iOS 26.5 |
+
+#### 复现步骤
+
+1. 打开 iOS 注册页。
+2. Base URL 填写 Gateway 地址 `http://127.0.0.1:8080`。
+3. 输入账号名、手机号、昵称、密码后点击注册。
+
+#### 测试数据
+
+| 数据类型 | 数据值 | 说明 |
+| --- | --- | --- |
+| 账号 | `zxq_cs_4` | 用户截图中的测试账号 |
+| 请求参数 | 注册请求，包含账号名、手机号、昵称、密码和 `registeredChannel=IOS` | 测试数据场景，报告中可保留测试数据；长期提交证据仍建议避免 Token 和密码 |
+| 业务数据 | 后端 userId-only 注册响应中 `accountId=null` | `accountId` 为旧身份模型兼容字段 |
+
+#### 期望结果
+
+- iOS 能解析后端 userId-only 注册响应。
+- 注册成功后展示 `userId` 或注册成功状态，不再依赖 `accountId`。
+- 登录和 `/api/users/me` 也能解析 `accountId=null` 的响应。
+
+#### 实际结果
+
+- 修复前 iOS 显示“服务响应格式不符合约定，请联系开发者排查”。
+- Swift 临时解码复现得到 `DecodingError.valueNotFound: Expected value of type Int64 but found null instead. Path: accountId`。
+- 修复后 `RegisterResponse`、`LoginResponse`、`CurrentUserResponse` 和 `AuthSession` 的 `accountId` 改为可空兼容字段，运行时身份以 `userId` 为准。
+
+#### 前端日志和现象摘要
+
+- 页面：RegisterView。
+- 操作：点击注册。
+- 网络请求：`POST /api/auth/register`，后端响应 data 中 `accountId=null`。
+- 状态展示：修复前显示响应格式不符合约定；修复后待用户在模拟器复测。
+- 截图/录屏：用户聊天记录中提供截图。
+
+#### 后端日志摘要
+
+- `requestId`：待真实复测补充。
+- `traceId`：待真实复测补充。
+- 服务：`foodmap-gateway-service`、`foodmap-auth-service`、`foodmap-user-service`。
+- 接口：`POST /api/auth/register`，后续登录复测涉及 `POST /api/auth/login`、`GET /api/users/me`。
+- 日志等级：待真实复测补充。
+- 关键摘要：后端返回符合当前 userId-only 契约的 `accountId=null`，前端旧模型按非空 `Int64` 解码失败。
+- 数据库/中间件状态：注册是否落库待用户复测时确认；本次根因在前端响应模型。
+
+#### 初步分析
+
+- 可能原因：后端已按 userId-only 返回旧 `accountId` 兼容字段为 null，但 iOS 注册、登录和当前用户模型仍把 `accountId` 定义为非空 `Int64`。
+- 影响范围：注册成功响应解析、登录后当前用户解析、Token 恢复当前用户解析都可能失败，阻断 B1 iOS L2 主链路。
+- 建议修复范围：iOS 认证响应模型和运行时会话以 `userId` 为主，`accountId` 只保留可空兼容；地图本地缓存隔离改用 `userId`。
+- 是否涉及权限、隐私、Token、可见范围或 PUBLIC 统计口径：涉及认证主链路和身份模型一致性，按 Critical 处理。
+
+#### 修复和复测
+
+| 项目 | 内容 |
+| --- | --- |
+| 修复负责人 | Codex |
+| 修复提交 | 本次前端模型修复提交 |
+| 复测时间 | 2026-06-30 Swift 解码检查；2026-06-30 iOS Debug 构建 |
+| 复测步骤 | 使用 `accountId=null` 的注册、登录和当前用户 JSON 执行 Swift 解码检查；执行 iOS Debug 构建 |
+| 复测结果 | Swift 解码检查输出 `decode-ok`；`xcodebuild` Debug 构建通过；真实模拟器注册复测待用户执行 |
+| 关闭人和关闭时间 |  |
+| 是否关闭 | 否 |
 
 新增问题时复制以下模板。
 

@@ -3,8 +3,8 @@ import Foundation
 /// 地图弱网降级缓存，只保存低风险摘要，不保存社交推荐详情和评论正文。
 final class MapBusinessCacheStore {
     private enum Key {
-        static func storeSummaries(accountId: Int64, cityCode: String) -> String {
-            "foodmap.cache.storeSummaries.\(accountId).\(cityCode)"
+        static func storeSummaries(userId: Int64, cityCode: String) -> String {
+            "foodmap.cache.storeSummaries.\(userId).\(cityCode)"
         }
     }
 
@@ -18,13 +18,13 @@ final class MapBusinessCacheStore {
         self.defaults = defaults
     }
 
-    /// 读取指定账号和城市下仍未过期的门店摘要缓存。
+    /// 读取指定用户和城市下仍未过期的门店摘要缓存。
     /// - Parameters:
-    ///   - accountId: 当前账号 ID，用于隔离不同用户缓存。
+    ///   - userId: 当前用户 ID，用于隔离不同用户缓存。
     ///   - cityCode: 当前城市编码。
     /// - Returns: 可展示的门店摘要缓存。
-    func loadStoreSummaries(accountId: Int64, cityCode: String) -> [CachedStoreSummary] {
-        let key = Key.storeSummaries(accountId: accountId, cityCode: cityCode)
+    func loadStoreSummaries(userId: Int64, cityCode: String) -> [CachedStoreSummary] {
+        let key = Key.storeSummaries(userId: userId, cityCode: cityCode)
         guard
             let data = defaults.data(forKey: key),
             let summaries = try? decoder.decode([CachedStoreSummary].self, from: data)
@@ -34,23 +34,23 @@ final class MapBusinessCacheStore {
         return summaries.filter { !$0.isExpired }
     }
 
-    /// 保存指定账号和城市的门店摘要缓存。
+    /// 保存指定用户和城市的门店摘要缓存。
     /// - Parameters:
     ///   - summaries: 可缓存的低风险门店摘要。
-    ///   - accountId: 当前账号 ID。
+    ///   - userId: 当前用户 ID。
     ///   - cityCode: 当前城市编码。
-    func saveStoreSummaries(_ summaries: [CachedStoreSummary], accountId: Int64, cityCode: String) {
-        let key = Key.storeSummaries(accountId: accountId, cityCode: cityCode)
+    func saveStoreSummaries(_ summaries: [CachedStoreSummary], userId: Int64, cityCode: String) {
+        let key = Key.storeSummaries(userId: userId, cityCode: cityCode)
         guard let data = try? encoder.encode(summaries) else {
             return
         }
         defaults.set(data, forKey: key)
     }
 
-    /// 清理指定账号在当前设备上的地图业务缓存。
-    /// - Parameter accountId: 当前账号 ID。
-    func clearAccountCache(accountId: Int64) {
-        let prefix = "foodmap.cache.storeSummaries.\(accountId)."
+    /// 清理指定用户在当前设备上的地图业务缓存。
+    /// - Parameter userId: 当前用户 ID。
+    func clearUserCache(userId: Int64) {
+        let prefix = "foodmap.cache.storeSummaries.\(userId)."
         for key in defaults.dictionaryRepresentation().keys where key.hasPrefix(prefix) {
             defaults.removeObject(forKey: key)
         }
