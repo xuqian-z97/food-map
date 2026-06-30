@@ -8,6 +8,12 @@ struct LoginRequest: Encodable {
     let password: String
 }
 
+/// 退出登录请求模型，Refresh Token 放在请求体，Access Token 通过 Authorization Header 传入。
+struct LogoutRequest: Encodable {
+    /// 需要撤销的 Refresh Token；客户端禁止记录明文日志。
+    let refreshToken: String
+}
+
 /// 登录响应模型，包含认证会话和 Token 过期时间。
 struct LoginResponse: Decodable {
     /// B1 旧身份模型兼容字段；userId-only 链路返回 nil，客户端不能依赖。

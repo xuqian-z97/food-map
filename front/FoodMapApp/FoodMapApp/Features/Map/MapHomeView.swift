@@ -4,10 +4,11 @@ import SwiftUI
 struct MapHomeView: View {
     let session: AuthSession
     let onRefreshCurrentUser: () async throws -> CurrentUserResponse
-    let onSignOut: () -> Void
+    let onSignOut: () async -> Void
 
     @StateObject private var viewModel: MapHomeViewModel
     @State private var isRefreshingCurrentUser = false
+    @State private var isSigningOut = false
     @State private var currentUserDebugMessage: String?
     @State private var currentUserDebugIsError = false
 
@@ -28,7 +29,7 @@ struct MapHomeView: View {
                 userStatus: ""
             )
         },
-        onSignOut: @escaping () -> Void
+        onSignOut: @escaping () async -> Void
     ) {
         self.session = session
         self.onRefreshCurrentUser = onRefreshCurrentUser
@@ -131,10 +132,18 @@ struct MapHomeView: View {
             .disabled(isRefreshingCurrentUser)
             .accessibilityLabel("临时请求当前用户")
 
-            Button(action: onSignOut) {
-                Image(systemName: "rectangle.portrait.and.arrow.right")
+            Button {
+                Task { await performSignOut() }
+            } label: {
+                if isSigningOut {
+                    ProgressView()
+                        .tint(FoodMapTheme.persimmon)
+                } else {
+                    Image(systemName: "rectangle.portrait.and.arrow.right")
+                }
             }
             .buttonStyle(FoodMapIconButtonStyle())
+            .disabled(isSigningOut)
             .accessibilityLabel("退出登录")
         }
         .foodMapCard(padding: 14)
@@ -285,6 +294,16 @@ struct MapHomeView: View {
             currentUserDebugIsError = true
             currentUserDebugMessage = error.localizedDescription
         }
+    }
+
+    private func performSignOut() async {
+        guard !isSigningOut else {
+            return
+        }
+
+        isSigningOut = true
+        defer { isSigningOut = false }
+        await onSignOut()
     }
 }
 

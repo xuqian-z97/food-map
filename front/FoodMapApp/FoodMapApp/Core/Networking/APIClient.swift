@@ -53,6 +53,18 @@ struct APIClient {
         try await authenticatedGet(path: "/api/users/me", accessToken: accessToken)
     }
 
+    /// 调用退出登录接口，同时携带 Access Token 和 Refresh Token 以触发服务端双 Token 失效。
+    func logout(accessToken: String, refreshToken: String) async throws {
+        let request = LogoutRequest(refreshToken: refreshToken)
+        try await requestNoData(
+            path: "/api/auth/logout",
+            method: "POST",
+            timeout: APIRequestTimeout.submit,
+            accessToken: accessToken,
+            body: request
+        )
+    }
+
     /// 发送需要 Bearer Token 的 GET 请求。
     func authenticatedGet<ResponseBody: Decodable>(
         path: String,
@@ -87,40 +99,14 @@ struct APIClient {
         accessToken: String?,
         body: RequestBody?
     ) async throws -> ResponseBody {
-        let url = try makeURL(path: path)
-        var request = URLRequest(url: url)
-        request.httpMethod = method
-        request.timeoutInterval = timeout
-        request.setValue("application/json", forHTTPHeaderField: "Accept")
-        request.setValue(makeRequestID(), forHTTPHeaderField: "X-Request-Id")
-        request.setValue(makeRequestID(), forHTTPHeaderField: "X-Trace-Id")
-
-        if let accessToken {
-            request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
-        }
-
-        if let body {
-            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-            request.httpBody = try encoder.encode(body)
-        }
-
-        let data: Data
-        let response: URLResponse
-        do {
-            (data, response) = try await session.data(for: request)
-        } catch let error as URLError {
-            throw NetworkError.transport(error)
-        } catch {
-            throw NetworkError.invalidResponse
-        }
-
-        guard let httpResponse = response as? HTTPURLResponse else {
-            throw NetworkError.invalidResponse
-        }
-
-        guard (200..<300).contains(httpResponse.statusCode) else {
-            throw parseErrorResponse(data: data, fallbackStatusCode: httpResponse.statusCode)
-        }
+        let request = try makeURLRequest(
+            path: path,
+            method: method,
+            timeout: timeout,
+            accessToken: accessToken,
+            body: body
+        )
+        let data = try await send(request)
 
         let envelope: APIResponse<ResponseBody>
         do {
@@ -142,6 +128,87 @@ struct APIClient {
         }
 
         return responseData
+    }
+
+    private func requestNoData<RequestBody: Encodable>(
+        path: String,
+        method: String,
+        timeout: TimeInterval,
+        accessToken: String?,
+        body: RequestBody?
+    ) async throws {
+        let request = try makeURLRequest(
+            path: path,
+            method: method,
+            timeout: timeout,
+            accessToken: accessToken,
+            body: body
+        )
+        let data = try await send(request)
+
+        let envelope: APINoDataResponse
+        do {
+            envelope = try decoder.decode(APINoDataResponse.self, from: data)
+        } catch {
+            throw NetworkError.decodingFailed
+        }
+
+        guard envelope.success else {
+            throw NetworkError.server(
+                status: envelope.status,
+                code: envelope.code,
+                message: envelope.message
+            )
+        }
+    }
+
+    private func makeURLRequest<RequestBody: Encodable>(
+        path: String,
+        method: String,
+        timeout: TimeInterval,
+        accessToken: String?,
+        body: RequestBody?
+    ) throws -> URLRequest {
+        let url = try makeURL(path: path)
+        var request = URLRequest(url: url)
+        request.httpMethod = method
+        request.timeoutInterval = timeout
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
+        request.setValue(makeRequestID(), forHTTPHeaderField: "X-Request-Id")
+        request.setValue(makeRequestID(), forHTTPHeaderField: "X-Trace-Id")
+
+        if let accessToken {
+            request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        }
+
+        if let body {
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            request.httpBody = try encoder.encode(body)
+        }
+
+        return request
+    }
+
+    private func send(_ request: URLRequest) async throws -> Data {
+        let data: Data
+        let response: URLResponse
+        do {
+            (data, response) = try await session.data(for: request)
+        } catch let error as URLError {
+            throw NetworkError.transport(error)
+        } catch {
+            throw NetworkError.invalidResponse
+        }
+
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw NetworkError.invalidResponse
+        }
+
+        guard (200..<300).contains(httpResponse.statusCode) else {
+            throw parseErrorResponse(data: data, fallbackStatusCode: httpResponse.statusCode)
+        }
+
+        return data
     }
 
     /// 根据后端 API path 生成完整 URL，避免将 `/api/auth/login` 作为单个 path component 后被错误转义。
@@ -183,4 +250,12 @@ private struct APIErrorResponse: Decodable {
     let status: Int?
     let code: String?
     let message: String?
+}
+
+/// 成功但 `data` 为 null 的统一响应信封，例如退出登录接口。
+private struct APINoDataResponse: Decodable {
+    let success: Bool
+    let status: Int
+    let code: String
+    let message: String
 }

@@ -15,7 +15,7 @@ struct AppRouter: View {
                         try await sessionStore.refreshCurrentUserForDebug()
                     },
                     onSignOut: {
-                        sessionStore.signOut()
+                        await sessionStore.signOut()
                     }
                 )
             } else {

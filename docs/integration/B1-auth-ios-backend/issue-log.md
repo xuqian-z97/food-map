@@ -14,10 +14,11 @@
 | BUG-008 | iOS 注册页未在提交前校验密码长度 | 真实 iOS L2 联调 | Major | P1 | 已部分复测待证据 | 前端/契约 | IT-001/IT-003 | 本次注册校验修复提交 | 8 位以上注册主链路已手工确认；短密码前端拦截待复测 |
 | BUG-009 | 登出后未过期 Access Token 仍可访问受保护接口 | 真实后端 L2 联调 | Critical | P0 | 已关闭 | 后端/认证/网关 | IT-004/IT-005 | `5994d70` | 真实接口复测通过 |
 | BUG-010 | iOS 注册响应无法解析 userId-only `accountId=null` | 真实 iOS L2 联调 | Critical | P0 | 已修复待复测 | 前端/契约 | IT-001/IT-002/IT-004 | 本次前端模型修复提交 | Swift 解码复现和 iOS Debug 构建通过，待模拟器注册复测 |
+| BUG-011 | iOS 退出登录按钮未调用后端 logout | 真实 iOS L2 联调报告审查 | Critical | P0 | 已修复待复测 | 前端 | IT-005/IT-006/IT-007 | 本次 iOS logout 修复提交 | 待模拟器重新执行退出登录和旧 Token 失效验证 |
 
 ## 2. 问题详情
 
-本次后端联调已记录并关闭 BUG-001 至 BUG-003。2026-06-22 前端联调安全点审查新增 BUG-004 至 BUG-006；2026-06-24 前端代码审查新增 BUG-007；2026-06-25 真实 iOS L2 注册联调新增 BUG-008；2026-06-29 后端 Token 退出登录联调新增 BUG-009 并已关闭；2026-06-30 真实 iOS L2 注册联调新增 BUG-010。当前 BUG-004、BUG-005 已经由用户手工确认主链路复测可用，BUG-008 的 8 位以上注册主链路已确认可用；BUG-009 已完成自动测试和真实接口复测；BUG-010 已完成前端模型修复和构建验证，待模拟器注册复测；BUG-006、BUG-007 和错误态仍需补充真实 iOS 复测，所有前端问题关闭前还需补网络摘要和后端 `requestId/traceId`。
+本次后端联调已记录并关闭 BUG-001 至 BUG-003。2026-06-22 前端联调安全点审查新增 BUG-004 至 BUG-006；2026-06-24 前端代码审查新增 BUG-007；2026-06-25 真实 iOS L2 注册联调新增 BUG-008；2026-06-29 后端 Token 退出登录联调新增 BUG-009 并已关闭；2026-06-30 真实 iOS L2 注册联调新增 BUG-010；2026-06-30 自测报告审查新增 BUG-011。当前 BUG-004、BUG-005 已经由用户手工确认主链路复测可用，BUG-008 的 8 位以上注册主链路已确认可用；BUG-009 已完成自动测试和真实接口复测；BUG-010 已完成前端模型修复和构建验证，待模拟器注册复测；BUG-011 已完成 iOS 退出登录请求接入，待模拟器重新执行退出登录和旧 Token 失效验证；BUG-006、BUG-007 和错误态仍需补充真实 iOS 复测，所有前端问题关闭前还需补网络摘要和后端 `requestId/traceId`。
 
 ### BUG-001 Gateway 暴露用户开通内部接口
 
@@ -753,6 +754,89 @@
 | 复测时间 | 2026-06-30 Swift 解码检查；2026-06-30 iOS Debug 构建 |
 | 复测步骤 | 使用 `accountId=null` 的注册、登录和当前用户 JSON 执行 Swift 解码检查；执行 iOS Debug 构建 |
 | 复测结果 | Swift 解码检查输出 `decode-ok`；`xcodebuild` Debug 构建通过；真实模拟器注册复测待用户执行 |
+| 关闭人和关闭时间 |  |
+| 是否关闭 | 否 |
+
+### BUG-011 iOS 退出登录按钮未调用后端 logout
+
+| 项目 | 内容 |
+| --- | --- |
+| 发现时间 | 2026-06-30 |
+| 发现人/Agent | 用户 / Codex |
+| 发现阶段 | 真实 iOS L2 联调报告审查 |
+| 严重级别 | Critical |
+| 优先级 | P0 |
+| 当前状态 | 已修复待复测 |
+| 责任侧 | 前端 |
+| 所属模块 | iOS / 认证 |
+| 关联联调场景 | IT-005、IT-006、IT-007 |
+| 关联接口/页面 | `MapHomeView`、`AuthSessionStore`、`POST /api/auth/logout` |
+| 环境信息 | local |
+
+#### 复现步骤
+
+1. 在模拟器登录成功并进入地图页。
+2. 点击地图页退出登录按钮。
+3. 使用登录后或刷新后的旧 Access Token 请求 `GET /api/users/me`。
+4. 使用已退出会话的 Refresh Token 请求 `POST /api/auth/refresh`。
+
+#### 测试数据
+
+| 数据类型 | 数据值 | 说明 |
+| --- | --- | --- |
+| 账号 | B1 iOS L2 自测报告账号 | 不记录密码明文 |
+| 请求参数 | logout 需要 `Authorization: Bearer <access-token>` 和请求体 Refresh Token | 不记录 Token 明文 |
+| 业务数据 | `userId` 以自测报告实际注册返回为准 | 用于验证当前用户接口是否被拦截 |
+
+#### 期望结果
+
+- iOS 退出登录按钮请求 Gateway `POST /api/auth/logout`。
+- 请求同时携带当前 Access Token 和 Refresh Token。
+- 后端返回成功后，旧 Access Token 访问 `/api/users/me` 返回 `401/UNAUTHORIZED`。
+- 旧 Refresh Token 调用 `/api/auth/refresh` 返回 `401/UNAUTHORIZED`。
+- iOS 本地 Keychain 和运行时 session 被清理，页面回到登录态。
+
+#### 实际结果
+
+- 修复前 `AuthSessionStore.signOut()` 只清理本地 Token 和 session，没有调用后端 `POST /api/auth/logout`。
+- 自测报告中 IT-005 的 logout 未携带 Authorization，导致 Access Token 无法进入服务端 denylist。
+- 自测报告中 IT-006 旧 Access Token 访问 `/api/users/me` 仍返回 `200`，当前报告证据不能作为后端 BUG 判断，前端必须先补齐真实 logout 调用。
+- 修复后 iOS 退出按钮会调用 Gateway logout；后端成功或失败后都会清理本地认证状态，失败时在登录页保留提示。
+
+#### 前端日志和现象摘要
+
+- 页面：MapHomeView。
+- 操作：点击退出登录图标按钮。
+- 网络请求：修复后应出现 `POST /api/auth/logout`，Header 包含 Authorization，请求体包含 Refresh Token。
+- 状态展示：按钮请求期间显示进度状态；请求结束后回到登录页。
+- 截图/录屏：待模拟器复测补充。
+
+#### 后端日志摘要
+
+- `requestId`：待真实复测补充。
+- `traceId`：待真实复测补充。
+- 服务：`foodmap-gateway-service`、`foodmap-auth-service`。
+- 接口：`POST /api/auth/logout`，后续验证涉及 `GET /api/users/me`、`POST /api/auth/refresh`。
+- 日志等级：待真实复测补充。
+- 关键摘要：logout 应撤销 Refresh Token，并将当前 Access Token 摘要写入 Redis denylist。
+- 数据库/中间件状态：Refresh Token 会话撤销；Access Token 摘要写入 Redis denylist，TTL 到原过期时间。
+
+#### 初步分析
+
+- 可能原因：前端登录和当前用户能力已接入后端，但退出登录仍停留在本地状态清理，未完成 B1 logout 契约闭环。
+- 影响范围：用户从 iOS 退出后，服务端 Refresh Token 和 Access Token 状态可能未立即失效，阻断 B1 认证安全验收。
+- 建议修复范围：iOS `APIClient` 增加 logout；`AuthSessionStore.signOut` 先调用后端 logout；`MapHomeView` 退出按钮改为异步动作并展示请求中状态。
+- 是否涉及权限、隐私、Token、可见范围或 PUBLIC 统计口径：涉及认证状态失效和 Token 安全。
+
+#### 修复和复测
+
+| 项目 | 内容 |
+| --- | --- |
+| 修复负责人 | Codex |
+| 修复提交 | 本次 iOS logout 修复提交 |
+| 复测时间 | 待真实模拟器复测 |
+| 复测步骤 | 登录进入地图页，点击退出登录；使用旧 Access Token 请求 `/api/users/me`；使用旧 Refresh Token 请求 `/api/auth/refresh` |
+| 复测结果 | 未复测 |
 | 关闭人和关闭时间 |  |
 | 是否关闭 | 否 |
 

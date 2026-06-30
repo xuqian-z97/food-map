@@ -116,11 +116,22 @@ final class AuthSessionStore: ObservableObject {
         return currentUser
     }
 
-    /// 清理本地 Token 并回到未登录状态。
-    func signOut() {
+    /// 调用后端退出登录接口后清理本地 Token；后端不可用时仍清理本地会话并保留错误提示。
+    func signOut(baseURL: String = APIClient.preferredBaseURLString()) async {
+        var signOutError: Error?
+
+        if let tokens = tokenStore.load() {
+            do {
+                let client = try APIClient(baseURLString: baseURL, session: urlSession)
+                try await client.logout(accessToken: tokens.accessToken, refreshToken: tokens.refreshToken)
+            } catch {
+                signOutError = error
+            }
+        }
+
         tokenStore.clear()
         session = nil
-        restoreErrorMessage = nil
+        restoreErrorMessage = signOutError.map { "已清理本地登录状态；后端退出请求失败：\($0.localizedDescription)" }
         isRestoringSession = false
     }
 
