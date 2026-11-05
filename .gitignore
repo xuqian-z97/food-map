@@ -41,3 +41,5 @@ hs_err_pid*
 replay_pid*
 # Xcode 本地构建产物（xcodebuild -target 使用项目内 build 目录）
 /front/FoodMapApp/build/
+# verify 工具的默认证据目录（证据只进 CI artifact，不进仓库）
+/tools/verify/evidence/

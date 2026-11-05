@@ -1,0 +1,39 @@
+name: B1 iOS 登录后登出链路
+description: "模拟器启动 Debug 构建，用探针完成登录→登出→检查探针日志与数据库 token 状态；Release 包不含探针"
+config:
+  platform: ios
+  udid: A77A2428-9576-4533-8B62-0C267A395B29
+  baseUrl: http://127.0.0.1:8080
+vars:
+  bundleId: com.foodmap.FoodMapApp
+  account: zxq_ios_152532
+  password: Foodmap@123
+  dbContainer: foodmap-postgres
+steps:
+  - app: terminate ${udid} ${bundleId}
+
+  - app: launch ${udid} ${bundleId}
+    env:
+      FOODMAP_AUTOMATION: login-then-logout
+      FOODMAP_ACCOUNT: ${account}
+      FOODMAP_PASSWORD: ${password}
+      FOODMAP_BASE_URL: ${baseUrl}
+
+  - sleep: 12000
+
+  - app: readlog ${udid} ${bundleId} Documents/foodmap-automation.log
+    expect:
+      contains:
+        - "login.ok"
+        - "logout.begin hasSession=true"
+        - "logout.end sessionNil=true"
+
+  - command: "docker exec ${dbContainer} psql -U foodmap -d foodmap_auth_db -tAc \"select count(*) from refresh_tokens rt join auth_accounts a on a.account_id = rt.account_id where a.account_name = '${account}' and rt.token_status = 'REVOKED'\""
+    capture:
+      revoked: value
+    expect:
+      exitCode: 0
+
+  - command: "[ ${revoked} -ge 1 ]"
+    expect:
+      exitCode: 0

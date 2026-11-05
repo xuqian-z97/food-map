@@ -1,0 +1,18 @@
+# 设备示例：启动 App，等待项目自己的探针写日志，再读取日志断言。
+# UDID 和 bundleId 都是占位值；真机/模拟器运行前请用 --var udid=... 覆盖。
+name: iOS 模拟器探针
+description: 演示 app launch/readlog/terminate 和项目探针日志
+config:
+  platform: ios
+  appTimeoutMs: 30000
+vars:
+  udid: 00000000-0000-0000-0000-000000000000
+steps:
+  - app: launch ${udid} com.example.app
+    env: { PROBE: 1 }
+  - sleep: 1000
+  - app: readlog ${udid} com.example.app Documents/probe.log
+    expect:
+      contains: ["probe.ready"]
+      matches: ["probe\\.ready"]
+  - app: terminate ${udid} com.example.app

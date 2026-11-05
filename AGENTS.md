@@ -259,6 +259,18 @@ FoodMap 默认按可联调业务切片推进。每完成一个前端或后端功
 - `status/` 内不写业务代码，不引用 `after/` 与 `front/` 的实现；`status/tool/` 必须保持可整体搬移，FoodMap 专属路径只能出现在 `status/config/`。
 - `status/` 是单用户本地工具：不引入账号、权限、通知、附件上传和数据库。
 
+### 6.3 通用验证工具
+
+`tools/verify/` 是与项目解耦的零依赖验证工具（Node ≥ 20），`harness/scenarios/` 存放 FoodMap 自己的场景。
+
+规则：
+
+- 新增联调切片或修完 BUG，优先补 scenario，再写台账；`status/data/runs/` 的运行记录应能指向某个场景。
+- scenario 只断言可观测事实（状态码、业务码、Redis key 数量、数据库状态、探针日志），不写“界面看起来正常”这类主观判断。
+- 场景里不得出现 Token、密码、完整手机号；账号名按时间生成，避免脏数据。
+- `tools/verify/` 核心不得出现 FoodMap 专属路径、端口或容器名；这些只能出现在 `harness/scenarios/`。
+- iOS UI 自动化仍依赖项目自己的 DEBUG 探针，工具只负责启动、读沙盒日志和断言。
+
 ## 7. 前端 Agent
 
 ### 7.1 前端职责

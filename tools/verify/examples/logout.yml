@@ -1,0 +1,32 @@
+# 通用示例：HTTP 登录 → Redis key 计数 → SQL 标量检查。
+# 连接信息全部是占位值，运行前请通过 --config 或直接修改本文件。
+name: 退出登录链路
+description: 演示 HTTP、Redis、SQL 适配器和 capture 变量
+config:
+  baseUrl: http://127.0.0.1:8080
+  redisPrefix: demo:auth
+  redis:
+    host: 127.0.0.1
+    port: 6379
+    db: 0
+  databaseUrl: postgresql://demo:demo@127.0.0.1:5432/demo
+  httpTimeoutMs: 3000
+  redisTimeoutMs: 3000
+  sqlTimeoutMs: 3000
+vars:
+  account: demo
+  password: demo
+steps:
+  - http: POST /api/auth/login
+    json: { accountName: ${account}, password: ${password} }
+    headers: { X-Trace: ${runId} }
+    expect:
+      status: 200
+      json: { code: OK }
+    capture:
+      access: data.accessToken
+  - redis: count "token-denylist:v1:*"
+    expect: { equals: 2 }
+  - sql: "select token_status from refresh_tokens where id = 1"
+    expect: { equals: REVOKED }
+  - sleep: 100

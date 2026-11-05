@@ -1,0 +1,92 @@
+name: B1 退出登录链路（接口级）
+description: "真实网关复跑 B1 登出链路：注册→登录→当前用户→登出→旧 Token 失效；Redis 与 PostgreSQL 走 docker exec，不落 Token"
+config:
+  baseUrl: http://127.0.0.1:8080
+vars:
+  password: Foodmap@123
+  redisContainer: foodmap-redis
+  dbContainer: foodmap-postgres
+steps:
+  - command: "date +%s"
+    capture:
+      stamp: value
+    expect:
+      exitCode: 0
+
+  - http: POST /api/auth/register
+    json:
+      accountName: zxq_vk_${stamp}
+      phone: null
+      email: null
+      password: ${password}
+      nickname: verify-kit
+      registeredChannel: IOS
+    expect:
+      status: 200
+      json: { code: OK }
+
+  - http: POST /api/auth/login
+    json:
+      loginIdentifier: zxq_vk_${stamp}
+      password: ${password}
+    expect:
+      status: 200
+      json: { code: OK }
+    capture:
+      access: data.accessToken
+      refresh: data.refreshToken
+
+  - http: GET /api/users/me
+    headers:
+      Authorization: Bearer ${access}
+    expect:
+      status: 200
+      json: { code: OK }
+
+  - command: "docker exec ${redisContainer} redis-cli --scan --pattern 'foodmap:auth:access-token-denylist:v1:*' | wc -l"
+    capture:
+      before: value
+    expect:
+      exitCode: 0
+
+  - http: POST /api/auth/logout
+    headers:
+      Authorization: Bearer ${access}
+    json:
+      refreshToken: ${refresh}
+    expect:
+      status: 200
+
+  - command: "docker exec ${redisContainer} redis-cli --scan --pattern 'foodmap:auth:access-token-denylist:v1:*' | wc -l"
+    capture:
+      after: value
+    expect:
+      exitCode: 0
+
+  - command: "[ ${after} -eq $(( ${before} + 1 )) ]"
+    expect:
+      exitCode: 0
+
+  - http: GET /api/users/me
+    headers:
+      Authorization: Bearer ${access}
+    expect:
+      status: 401
+      json: { code: UNAUTHORIZED }
+
+  - http: POST /api/auth/refresh
+    json:
+      refreshToken: ${refresh}
+    expect:
+      status: 401
+      json: { code: UNAUTHORIZED }
+
+  - command: "docker exec ${dbContainer} psql -U foodmap -d foodmap_auth_db -tAc \"select count(*) from refresh_tokens rt join auth_accounts a on a.account_id = rt.account_id where a.account_name = 'zxq_vk_${stamp}' and rt.token_status = 'REVOKED'\""
+    capture:
+      revoked: value
+    expect:
+      exitCode: 0
+
+  - command: "[ ${revoked} -eq 1 ]"
+    expect:
+      exitCode: 0
