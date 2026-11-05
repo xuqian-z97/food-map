@@ -260,18 +260,41 @@ function cmdTaskDone(positional, flags) {
   return writeWithGate(file, stringifyYaml(data, TASK_KEYS)) ? 0 : 1;
 }
 
+function cmdTaskSet(positional, flags) {
+  const id = positional[2];
+  if (!id) throw new Error('缺少任务 id');
+  const { project, view } = load();
+  const task = view.tasks.find((item) => item.id === id);
+  if (!task) throw new Error(`找不到任务 ${id}`);
+  const data = { ...task.raw };
+  if (flags.status) {
+    if (!['todo', 'doing', 'done', 'dropped'].includes(flags.status)) throw new Error(`未知任务状态 ${flags.status}`);
+    data.status = flags.status;
+    if (flags.status === 'done' && !data.doneAt) data.doneAt = flags.at || commitDate(ROOT, data.commit) || nowIso();
+  }
+  if (flags.priority) {
+    if (!PRIORITIES.includes(flags.priority)) throw new Error(`未知优先级 ${flags.priority}`);
+    data.priority = flags.priority;
+  }
+  if (flags.owner) data.owner = flags.owner;
+  if (flags.note) data.notes = flags.note;
+  const file = join(resolve(ROOT, project.config.paths.data), 'tasks', `${id}.yml`);
+  return writeWithGate(file, stringifyYaml(data, TASK_KEYS)) ? 0 : 1;
+}
+
 function cmdTestImport(flags) {
   const { project, view } = load();
   const covers = flags.covers ? String(flags.covers).split(',').map((item) => item.trim()).filter(Boolean) : [];
   for (const featureId of covers) {
     if (!view.features.some((feature) => feature.id === featureId)) throw new Error(`未知功能点 ${featureId}`);
   }
-  const summary = importSurefire(ROOT, project.config.surefireGlob || project.config.backend.surefireGlob);
+  const modules = flags.modules ? String(flags.modules).split(',').map((item) => item.trim()).filter(Boolean) : [];
+  const summary = importSurefire(ROOT, project.config.backend.surefireGlob, modules);
   if (summary.total === 0) {
     console.error('没有找到 surefire 报告，先执行 Maven 测试。');
     return 1;
   }
-  const id = runId('backend');
+  const id = runId(flags.scope || 'backend');
   const record = {
     schemaVersion: 1,
     id,
@@ -281,6 +304,7 @@ function cmdTestImport(flags) {
     env: 'local',
     result: { total: summary.total, passed: summary.passed, failed: summary.failed, skipped: summary.skipped },
     perModule: summary.perModule,
+    modules: modules.length > 0 ? modules : Object.keys(summary.perModule),
     covers,
     evidence: [summary.reports[0] ? dirname(summary.reports[0]) : 'after'],
   };
@@ -309,6 +333,7 @@ function main() {
       case 'task':
         if (positional[1] === 'add') return cmdTaskAdd(positional, flags);
         if (positional[1] === 'done') return cmdTaskDone(positional, flags);
+        if (positional[1] === 'set') return cmdTaskSet(positional, flags);
         throw new Error('未知 task 子命令');
       case 'test':
         if (positional[1] === 'import') return cmdTestImport(flags);

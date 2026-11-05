@@ -5,4 +5,4 @@ title: "模拟器复测退出登录与旧 Token 失效（BUG-011）"
 status: todo
 priority: P0
 owner: human
-notes: "需要模拟器与本地 Gateway/Auth/Redis"
+notes: "阻塞于环境：无 Xcode 模拟器（xcode-select 指向 CommandLineTools）、Docker/OrbStack 未运行"

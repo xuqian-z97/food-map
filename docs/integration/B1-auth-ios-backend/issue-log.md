@@ -16,6 +16,23 @@
 | BUG-010 | iOS 注册响应无法解析 userId-only `accountId=null` | 真实 iOS L2 联调 | Critical | P0 | 已修复待复测 | 前端/契约 | IT-001/IT-002/IT-004 | 本次前端模型修复提交 | Swift 解码复现和 iOS Debug 构建通过，待模拟器注册复测 |
 | BUG-011 | iOS 退出登录按钮未调用后端 logout | 真实 iOS L2 联调报告审查 | Critical | P0 | 已修复待复测 | 前端 | IT-005/IT-006/IT-007 | 本次 iOS logout 修复提交 | 待模拟器重新执行退出登录和旧 Token 失效验证 |
 
+### 1.1 本轮收口口径（2026-11-05）
+
+L2 测试报告中有两处判定错误，已修正，B1 结论随之调整：
+
+1. **IT-011「缺少 phone 仍注册成功」不是缺陷**。`RegisterRequest` 允许 `phone` / `email` 为空，`AuthServiceImpl.ensureLoginIdentifierAvailable` 对两者先判空，原预期把可选字段当成了必填。
+2. **IT-006 / IT-007 的「不通过」不构成后端缺陷**。该轮 iOS 登出没有发起请求（LOG-001 中登出场景无 `requestId`），服务端从未把 Access Token 写入拒绝名单，旧 Token 返回 `200` 属预期行为。两项改判为「无法判定」。
+
+据此 B1 现状：
+
+- 代码层已闭环：`AuthSessionStore.signOut` 调用 `client.logout(accessToken:refreshToken:)`（`cb1145e`），`APIClient` 注入 `Authorization: Bearer`，`AuthServiceImpl.logout` 撤销 Refresh Token 并写拒绝名单，网关命中拒绝名单返回 `401`。
+- 后端半程已有自动证据：`AuthServiceImplTest.logoutShouldDenylistUsableAccessTokenUntilOriginalAccessExpiry` 与 `GatewayAuthFilterTest` 共 12 项通过，记录在 `status/data/runs/2026-11-05T15-07-logout.json`。
+- 运行时仍未验证：登出后旧 Access / Refresh 的真实 `401`、LOG-002 敏感信息逐项、截图与网络摘要。
+
+阻塞原因（环境，不是代码）：当前机器没有 Xcode 模拟器（`xcode-select` 指向 CommandLineTools），且 Docker / OrbStack 未运行，无法启动 Gateway、Auth、User、PostgreSQL、Redis 后操作 iOS 登录登出。
+
+剩余阻塞项：BUG-011 复测；BUG-004 / 005 / 008 / 010 证据归档；BUG-006 / 007 错误态复测。
+
 ## 2. 问题详情
 
 本次后端联调已记录并关闭 BUG-001 至 BUG-003。2026-06-22 前端联调安全点审查新增 BUG-004 至 BUG-006；2026-06-24 前端代码审查新增 BUG-007；2026-06-25 真实 iOS L2 注册联调新增 BUG-008；2026-06-29 后端 Token 退出登录联调新增 BUG-009 并已关闭；2026-06-30 真实 iOS L2 注册联调新增 BUG-010；2026-06-30 自测报告审查新增 BUG-011。当前 BUG-004、BUG-005 已经由用户手工确认主链路复测可用，BUG-008 的 8 位以上注册主链路已确认可用；BUG-009 已完成自动测试和真实接口复测；BUG-010 已完成前端模型修复和构建验证，待模拟器注册复测；BUG-011 已完成 iOS 退出登录请求接入，待模拟器重新执行退出登录和旧 Token 失效验证；BUG-006、BUG-007 和错误态仍需补充真实 iOS 复测，所有前端问题关闭前还需补网络摘要和后端 `requestId/traceId`。

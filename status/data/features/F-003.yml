@@ -21,4 +21,4 @@ tasks:
   - T-007
   - T-008
 integrationCase: IT-009
-notes: "BUG-011 已修复待复测；自动刷新尚未实现"
+notes: "后端拒名单与 iOS 登出调用已在代码层闭环（cb1145e + 5994d70），单元测试 12 项通过；运行时复测阻塞于环境：无 Xcode 模拟器、Docker 未启动"
