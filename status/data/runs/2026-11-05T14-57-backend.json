@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-05T14-57-backend",
+  "at": "2026-11-05T14:57:35+08:00",
+  "kind": "unit",
+  "command": "cd after && mvn -pl foodmap-common,foodmap-gateway-service,foodmap-auth-service,foodmap-user-service,foodmap-admin-service,foodmap-log-service -am test -Dstyle.color=never",
+  "env": "local",
+  "result": {
+    "total": 116,
+    "passed": 116,
+    "failed": 0,
+    "skipped": 0
+  },
+  "perModule": {
+    "foodmap-admin-service": 7,
+    "foodmap-auth-service": 15,
+    "foodmap-common": 68,
+    "foodmap-gateway-service": 8,
+    "foodmap-log-service": 11,
+    "foodmap-user-service": 7
+  },
+  "covers": [
+    "F-001",
+    "F-002",
+    "F-003",
+    "F-004",
+    "F-018",
+    "F-019",
+    "F-020"
+  ],
+  "evidence": [
+    "after/foodmap-admin-service/target/surefire-reports"
+  ]
+}

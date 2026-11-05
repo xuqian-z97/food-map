@@ -1,0 +1,7 @@
+schemaVersion: 1
+id: T-022
+feature: F-006
+title: 完整业务导航与 Tab 骨架
+status: todo
+priority: P1
+owner: agent

@@ -1,0 +1,18 @@
+schemaVersion: 1
+id: F-007
+title: 地图首页与范围切换
+layer: fullstack
+phase: B2
+priority: P1
+status: in_progress
+summary: "地图首页可切换我的／好友／情侣／公开范围，当前为样例点位"
+backendModules:
+  - foodmap-store-service
+frontendModules:
+  - Features/Map
+paths:
+  - after/foodmap-store-service/src/**
+  - front/FoodMapApp/FoodMapApp/Features/Map/**
+tasks:
+  - T-011
+notes: "未接入高德 SDK，样例坐标不是真实门店数据"

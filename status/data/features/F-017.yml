@@ -1,0 +1,15 @@
+schemaVersion: 1
+id: F-017
+title: "上传、头像与媒体引用"
+layer: fullstack
+phase: B6
+priority: P1
+status: todo
+summary: "图片校验、归属、签名访问与引用清理"
+backendModules:
+  - foodmap-media-service
+frontendModules:
+  - Features/Profile
+paths:
+  - after/foodmap-media-service/src/**
+notes: 生产阿里云 OSS 适配器顺延到本阶段

@@ -1,0 +1,28 @@
+schemaVersion: 1
+id: IT-001
+title: 注册成功
+features:
+  - F-001
+services:
+  - gateway
+  - auth
+  - user
+needChain: "true"
+review: approved
+reviewedAt: 2026-06-22T17:43:51+08:00
+reviewNote: "必须经真实网关，服务直连不算通过"
+scenarios:
+  - id: S1
+    name: 合法信息注册
+    method: POST
+    path: "/api/auth/register"
+    auth: none
+    expectStatus: "200"
+    expectCode: OK
+  - id: S2
+    name: 重复账号注册
+    method: POST
+    path: "/api/auth/register"
+    auth: none
+    expectStatus: "409"
+    expectCode: ACCOUNT_EXISTS

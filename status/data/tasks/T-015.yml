@@ -1,0 +1,7 @@
+schemaVersion: 1
+id: T-015
+feature: F-011
+title: "推荐最小闭环：文本创建与读回"
+status: todo
+priority: P1
+owner: agent

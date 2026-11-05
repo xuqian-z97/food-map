@@ -1,0 +1,9 @@
+schemaVersion: 1
+id: T-003
+feature: F-002
+title: 修复 iOS 对 userId-only 响应的解码
+status: done
+priority: P0
+owner: agent
+doneAt: 2026-06-30T10:19:26+08:00
+commit: 4d32875

@@ -1,0 +1,9 @@
+schemaVersion: 1
+id: T-018
+feature: F-019
+title: "日志平台 B1.5 代码、查询入口与归档骨架"
+status: done
+priority: P2
+owner: agent
+doneAt: 2026-06-22T17:22:24+08:00
+commit: b37929c

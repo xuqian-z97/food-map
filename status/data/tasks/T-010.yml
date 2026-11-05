@@ -1,0 +1,7 @@
+schemaVersion: 1
+id: T-010
+feature: F-004
+title: "新增 auth_identity_bindings / auth_sessions 迁移与数据核验"
+status: todo
+priority: P0
+owner: agent

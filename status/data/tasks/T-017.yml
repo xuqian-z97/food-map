@@ -1,0 +1,9 @@
+schemaVersion: 1
+id: T-017
+feature: F-018
+title: "foodmap-common 统一响应、异常与持久化基线"
+status: done
+priority: P2
+owner: agent
+doneAt: 2026-06-22T17:22:24+08:00
+commit: b37929c

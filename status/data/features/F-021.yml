@@ -1,0 +1,18 @@
+schemaVersion: 1
+id: F-021
+title: 测试与部署
+layer: fullstack
+phase: B1
+priority: P2
+status: in_progress
+summary: "Harness 基础校验可用；缺 CI、iOS 测试 Target 与生产镜像"
+backendModules:
+  - foodmap-common
+frontendModules:
+  - App
+paths:
+  - harness/**
+  - deploy/**
+tasks:
+  - T-020
+notes: 生产 Compose 业务容器仍为占位

@@ -1,0 +1,17 @@
+schemaVersion: 1
+id: F-011
+title: 推荐菜单与标签
+layer: fullstack
+phase: B3
+priority: P1
+status: todo
+summary: "菜名纯文字必填，其余字段可选，保存后可读回"
+backendModules:
+  - foodmap-recommendation-service
+frontendModules:
+  - Features/Recommendation
+paths:
+  - after/foodmap-recommendation-service/src/**
+  - front/FoodMapApp/FoodMapApp/Features/Recommendation/**
+tasks:
+  - T-015

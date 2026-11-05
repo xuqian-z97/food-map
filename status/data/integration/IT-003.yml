@@ -1,0 +1,19 @@
+schemaVersion: 1
+id: IT-003
+title: 登录失败
+features:
+  - F-001
+services:
+  - gateway
+  - auth
+needChain: "true"
+review: pending
+reviewNote: 前端错误态未复测
+scenarios:
+  - id: S1
+    name: 错误密码登录
+    method: POST
+    path: "/api/auth/login"
+    auth: none
+    expectStatus: "401"
+    expectCode: INVALID_CREDENTIALS

@@ -1,0 +1,19 @@
+schemaVersion: 1
+id: IT-002
+title: 登录成功
+features:
+  - F-001
+services:
+  - gateway
+  - auth
+needChain: "true"
+review: approved
+reviewedAt: 2026-06-22T17:43:51+08:00
+scenarios:
+  - id: S1
+    name: 账号密码登录
+    method: POST
+    path: "/api/auth/login"
+    auth: none
+    expectStatus: "200"
+    expectCode: OK

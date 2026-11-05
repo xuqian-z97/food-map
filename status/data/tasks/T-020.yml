@@ -1,0 +1,7 @@
+schemaVersion: 1
+id: T-020
+feature: F-021
+title: harness 增加 validate-status 并把 status check 接入 run-all
+status: todo
+priority: P2
+owner: agent

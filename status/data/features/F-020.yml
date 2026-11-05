@@ -1,0 +1,15 @@
+schemaVersion: 1
+id: F-020
+title: 管理后台
+layer: backend
+phase: B1.5
+priority: P2
+status: in_progress
+summary: "管理员创建用例、日志查询代理与 LOG_ACCESS_READ 权限骨架"
+backendModules:
+  - foodmap-admin-service
+paths:
+  - after/foodmap-admin-service/src/**
+tasks:
+  - T-019
+notes: "审核、举报、门店合并与用户管理闭环未实现"

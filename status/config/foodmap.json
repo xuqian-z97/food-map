@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 1,
+  "project": "foodmap",
+  "displayName": "FoodMap",
+  "timezone": "Asia/Shanghai",
+  "paths": {
+    "data": "status/data",
+    "dist": "status/dist/index.html",
+    "reports": "docs/reports",
+    "integration": "docs/integration"
+  },
+  "backend": {
+    "root": "after",
+    "modulePattern": "foodmap-*-service",
+    "businessModules": [
+      "foodmap-common",
+      "foodmap-gateway-service",
+      "foodmap-auth-service",
+      "foodmap-user-service",
+      "foodmap-admin-service",
+      "foodmap-log-service"
+    ],
+    "skeletonModules": [
+      "foodmap-store-service",
+      "foodmap-recommendation-service",
+      "foodmap-relation-service",
+      "foodmap-community-service",
+      "foodmap-media-service"
+    ],
+    "testCommand": "cd after && mvn -pl foodmap-common,foodmap-gateway-service,foodmap-auth-service,foodmap-user-service,foodmap-admin-service,foodmap-log-service -am test -Dstyle.color=never",
+    "surefireGlob": "after/*/target/surefire-reports/TEST-*.xml"
+  },
+  "frontend": {
+    "root": "front/FoodMapApp/FoodMapApp",
+    "businessModules": [
+      "Features/Auth",
+      "Features/Map"
+    ],
+    "plannedModules": [
+      "Features/Store",
+      "Features/Recommendation",
+      "Features/Friends",
+      "Features/Couple",
+      "Features/Community",
+      "Features/Profile"
+    ],
+    "infraModules": [
+      "App",
+      "Core/Auth",
+      "Core/City",
+      "Core/DesignSystem",
+      "Core/Networking",
+      "Core/OfflineMap",
+      "Core/Storage"
+    ]
+  },
+  "harness": {
+    "runner": "harness/scripts/run-all.sh",
+    "validators": [
+      "validate-docs",
+      "validate-api",
+      "validate-backend",
+      "validate-logging",
+      "validate-integration",
+      "validate-ios",
+      "validate-git"
+    ]
+  },
+  "integration": {
+    "baseUrl": "http://127.0.0.1:8080",
+    "levelDoc": "docs/integration/README.md"
+  },
+  "checks": {
+    "staleCommitDays": 30
+  }
+}

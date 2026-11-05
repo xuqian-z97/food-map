@@ -1,0 +1,8 @@
+schemaVersion: 1
+id: T-013
+feature: F-010
+title: "门店 bbox / 搜索 / 创建 API 契约"
+status: todo
+priority: P1
+owner: agent
+planRef: docs/api/auth-user.md

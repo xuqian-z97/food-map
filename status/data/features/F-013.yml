@@ -1,0 +1,18 @@
+schemaVersion: 1
+id: F-013
+title: 六类可见范围
+layer: fullstack
+phase: B3
+priority: P1
+status: todo
+summary: "PRIVATE / SPECIFIC_USERS / FRIENDS / COUPLE / GROUP / PUBLIC 的服务端校验"
+backendModules:
+  - foodmap-recommendation-service
+  - foodmap-relation-service
+frontendModules:
+  - Features/Recommendation
+paths:
+  - after/foodmap-recommendation-service/src/**
+tasks:
+  - T-016
+notes: "GROUP 产品能力延后，不得开放无校验入口"

@@ -1,0 +1,10 @@
+schemaVersion: 1
+id: T-005
+feature: F-003
+title: iOS logout 同时携带 Access 与 Refresh Token
+status: done
+priority: P0
+owner: agent
+startedAt: 2026-06-30T10:50:00+08:00
+doneAt: 2026-06-30T11:45:18+08:00
+commit: cb1145e

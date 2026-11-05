@@ -1,0 +1,8 @@
+schemaVersion: 1
+id: T-007
+feature: F-003
+title: "模拟器复测退出登录与旧 Token 失效（BUG-011）"
+status: todo
+priority: P0
+owner: human
+notes: "需要模拟器与本地 Gateway/Auth/Redis"

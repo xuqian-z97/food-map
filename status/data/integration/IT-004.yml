@@ -1,0 +1,26 @@
+schemaVersion: 1
+id: IT-004
+title: 当前用户
+features:
+  - F-002
+services:
+  - gateway
+  - user
+needChain: "true"
+review: approved
+reviewedAt: 2026-06-22T17:43:51+08:00
+scenarios:
+  - id: S1
+    name: 有效 Token 查询当前用户
+    method: GET
+    path: "/api/users/me"
+    auth: accessToken
+    expectStatus: "200"
+    expectCode: OK
+  - id: S2
+    name: 无 Token 查询
+    method: GET
+    path: "/api/users/me"
+    auth: none
+    expectStatus: "401"
+    expectCode: UNAUTHORIZED

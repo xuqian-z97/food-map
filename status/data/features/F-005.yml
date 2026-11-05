@@ -1,0 +1,18 @@
+schemaVersion: 1
+id: F-005
+title: 个人资料与设置
+layer: fullstack
+phase: B1
+priority: P2
+status: in_progress
+summary: "当前用户资料查询可用；编辑、隐私设置页面未实现"
+backendModules:
+  - foodmap-user-service
+  - foodmap-common
+frontendModules:
+  - Features/Profile
+paths:
+  - after/foodmap-user-service/src/**
+tasks:
+  - T-021
+notes: 头像依赖媒体服务 B6

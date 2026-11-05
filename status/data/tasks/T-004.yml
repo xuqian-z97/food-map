@@ -1,0 +1,9 @@
+schemaVersion: 1
+id: T-004
+feature: F-002
+title: 当前用户调试入口与刷新能力
+status: done
+priority: P1
+owner: agent
+doneAt: 2026-06-30T10:45:55+08:00
+commit: f9ce3a5

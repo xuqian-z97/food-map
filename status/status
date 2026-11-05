@@ -1,0 +1,4 @@
+#!/usr/bin/env sh
+# FoodMap 进度台账入口：./status/status <command>
+set -eu
+exec node "$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)/tool/cli.mjs" "$@"

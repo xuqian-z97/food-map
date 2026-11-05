@@ -1,0 +1,7 @@
+schemaVersion: 1
+id: T-002
+feature: F-001
+title: "统一 B1 用例编号、构建号与证据归档"
+status: todo
+priority: P0
+owner: agent

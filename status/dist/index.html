@@ -1,0 +1,1280 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="status-digest" content="0a8362de5dc2">
+<meta name="description" content="FoodMap 项目进度台账看板：功能点、任务、测试证据与验收门禁。生成物，请勿手改。">
+<title>FoodMap 进度看板 · 625f911</title>
+<style>
+:root{--paper:#faf8f3;--white:#fffefa;--ink:#24352e;--muted:#65746c;--line:#dedfd5;--green:#265b47;--green-soft:#e8f0e8;--orange:#a94a2b;--orange-soft:#faeee3;--red:#9c4037;--blue:#3d5a80;--radius:8px}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.75 -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif}
+a{color:var(--green);text-decoration:none}a:hover{text-decoration:underline}
+code{font:12px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;background:#f1f0e8;padding:1px 5px;border-radius:4px}
+h1,h2,h3,h4{margin:0;line-height:1.35}
+.wrap{max-width:1400px;margin:0 auto;padding:40px 28px 80px}
+header.top{border-bottom:1px solid var(--line);padding-bottom:22px;margin-bottom:26px}
+.eyebrow{font-size:11px;font-weight:700;letter-spacing:2px;color:var(--green)}
+h1{font-size:clamp(28px,3vw,42px);letter-spacing:-1px;margin:14px 0 12px}
+h1 em{font-style:normal;color:var(--green)}
+.meta{display:flex;gap:22px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+.meta code{background:transparent;padding:0}
+.kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin:26px 0 8px}
+.kpi{background:var(--white);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px}
+.kpi span{display:block;font-size:11px;color:var(--muted);letter-spacing:1px}
+.kpi strong{font-size:30px;line-height:1.2}
+.kpi small{font-size:12px;color:var(--muted)}
+.bar{position:sticky;top:0;z-index:5;display:flex;gap:12px;flex-wrap:wrap;align-items:center;background:rgba(250,248,243,.94);backdrop-filter:blur(6px);border-bottom:1px solid var(--line);padding:12px 0;margin:22px 0 30px}
+.bar input,.bar select{font:inherit;padding:7px 10px;border:1px solid var(--line);border-radius:6px;background:var(--white);color:var(--ink)}
+.bar input{width:260px}
+.bar button{font:inherit;padding:7px 12px;border:1px solid var(--line);border-radius:6px;background:var(--white);color:var(--ink);cursor:pointer}
+.bar button:hover{border-color:var(--green);background:var(--green-soft)}
+#count{margin-left:auto;font-size:12px;color:var(--muted)}
+section{margin:44px 0}
+section>h2{font-size:22px;margin-bottom:6px}
+section>.lead{color:var(--muted);font-size:13px;margin:0 0 16px}
+.table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius);background:var(--white)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:11px;letter-spacing:1px;color:var(--muted);background:#f4f3ec;font-weight:600}
+tr:last-child td{border-bottom:0}
+.t{font-size:13px}
+.nowrap{white-space:nowrap}
+.muted{color:var(--muted)}
+.st,.pr,.ly,.flag,.blk{display:inline-block;font-size:11px;line-height:1.6;border-radius:999px;padding:1px 9px;border:1px solid transparent;white-space:nowrap}
+.st{background:var(--green-soft);color:var(--green)}
+.st-todo,.st-cancelled{background:#f0efe8;color:var(--muted)}
+.st-in_progress,.st-planned{background:var(--orange-soft);color:var(--orange)}
+.st-implemented{background:#eef0f7;color:var(--blue)}
+.st-testing{background:#fdeee9;color:var(--red);border-color:#f0d3c9}
+.st-accepted{background:var(--green);color:#fff}
+.pr{border-color:var(--line);color:var(--muted);font-family:ui-monospace,Menlo,monospace}
+.pr-P0{border-color:#e2b8a9;color:var(--red);background:#fdf1ed}
+.pr-P1{border-color:#e8cdb6;color:var(--orange)}
+.ly{background:#f0efe8;color:var(--muted)}
+.flag{background:#fdf1ed;color:var(--red);border-color:#eed3c8}
+.blk{background:#f7f4ec;color:#6b5f4a;border-color:#e6dfcd}
+.chip{display:inline-block;margin:1px 4px 1px 0;font-size:11px}
+.grp{margin:20px 0}
+.grp h3{font-size:14px;display:flex;gap:10px;align-items:center;margin-bottom:10px}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+.card{background:var(--white);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px}
+.card-top{display:flex;gap:8px;align-items:center;margin-bottom:6px;flex-wrap:wrap}
+.card h4{font-size:15px;margin:2px 0 6px}
+.card p{font-size:12px;margin:0 0 10px}
+.card-meta{display:flex;gap:6px;flex-wrap:wrap;font-size:11px}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.panel{background:var(--white);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px}
+.panel-err{border-color:#e3c0b4;background:#fdf6f3}
+.panel-ok{border-color:#c8dbcc;background:#f3f8f3}
+.panel h3{font-size:14px;margin-bottom:8px}
+.plain{list-style:none;padding:0;margin:0;font-size:12px}
+.plain li{padding:4px 0;border-bottom:1px dashed var(--line)}
+.plain li:last-child{border-bottom:0}
+.blk.err{background:#fbe3dc;color:var(--red)}
+.blk.warn{background:#fbf1dd;color:#8a6520}
+.item{background:var(--white);border:1px solid var(--line);border-radius:var(--radius);margin-bottom:8px}
+.item summary{cursor:pointer;padding:12px 16px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.item-body{padding:0 16px 16px;border-top:1px solid var(--line)}
+.item-body p{margin:12px 0}
+dl{display:grid;grid-template-columns:110px 1fr;gap:6px 12px;font-size:12px;margin:12px 0}
+dt{color:var(--muted)}dd{margin:0}
+.item-body h4{font-size:12px;color:var(--muted);margin:14px 0 4px;letter-spacing:1px}
+.item-body ul{margin:0;padding-left:18px;font-size:12px}
+footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--line);font-size:12px;color:var(--muted);display:flex;gap:18px;flex-wrap:wrap}
+[hidden]{display:none!important}
+@media(max-width:1100px){.kpis{grid-template-columns:repeat(3,1fr)}.two-col{grid-template-columns:1fr}}
+@media(max-width:700px){.kpis{grid-template-columns:repeat(2,1fr)}.bar input{width:100%}#count{margin-left:0}}
+@media print{@page{size:A4;margin:12mm}body{background:#fff;font-size:10pt}.bar{display:none}.item{break-inside:avoid}section{break-after:auto}h2{break-after:avoid}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <div class="eyebrow">FOODMAP · PROJECT LEDGER</div>
+  <h1>事实台账，<em>已完成 1</em> / 待验收 3</h1>
+  <div class="meta">
+    <span>生成 <code>2026-11-05 14:58</code></span>
+    <span>HEAD <code>625f911</code> main</span>
+    <span>数据摘要 <code>0a8362de5dc2</code></span>
+    <span>功能点 21 · 跨端 16 · 仅前端 2 · 仅后端 3</span>
+  </div>
+</header>
+
+<div class="kpis">
+  <div class="kpi"><span>功能点</span><strong>21</strong><small>含未开始</small></div>
+  <div class="kpi"><span>已完成</span><strong>1</strong><small>通过验收</small></div>
+  <div class="kpi"><span>待验收</span><strong>3</strong><small>已实现或已提测</small></div>
+  <div class="kpi"><span>未排任务</span><strong>5</strong><small>未完成且无任务</small></div>
+  <div class="kpi"><span>P0 未完成</span><strong>4</strong><small>最高优先级</small></div>
+  <div class="kpi"><span>任务</span><strong>9<small>/23</small></strong><small>已完成 / 总数</small></div>
+</div>
+
+<div class="bar">
+  <input id="q" type="search" placeholder="搜索功能点、任务、模块…">
+  <select id="state"><option value="">全部状态</option><option value="todo">未开始</option><option value="planned">已排期</option><option value="in_progress">进行中</option><option value="implemented">已实现·待测试</option><option value="testing">待验收</option><option value="accepted">已完成</option><option value="cancelled">已取消</option></select>
+  <select id="priority"><option value="">全部优先级</option><option value="P0">P0 最高</option><option value="P1">P1 高</option><option value="P2">P2 中</option><option value="P3">P3 低</option></select>
+  <select id="layer"><option value="">全部端</option><option value="backend">后端</option><option value="frontend">前端</option><option value="fullstack">跨端</option></select>
+  <button id="expand" type="button">展开全部</button>
+  <button id="collapse" type="button">收起全部</button>
+  <span id="count" role="status" aria-live="polite"></span>
+</div>
+
+<section id="backend">
+  <h2>后端功能点（微服务视角）</h2>
+  <p class="lead">共 19 项（含跨端 16 项，只显示后端一侧）。模块为后端微服务名。</p>
+  <div class="table-wrap"><table><thead><tr><th>功能点</th><th>状态</th><th>优先级</th><th>微服务</th><th>任务</th><th>验收单</th><th>最近提交</th></tr></thead><tbody>
+<tr data-row data-state="testing" data-priority="P0" data-layer="fullstack">
+  <td><a href="#F-001"><code>F-001</code></a><div class="t">账号注册与登录</div></td>
+  <td><span class="st st-testing">待验收</span></td>
+  <td><span class="pr pr-P0">P0</span></td>
+  <td><code class="chip">foodmap-auth-service</code></td>
+  <td>2 项</td>
+  <td><span class="muted">—</span></td>
+  <td class="nowrap">cb1145e<div class="muted">2026-06-30</div></td>
+</tr>
+<tr data-row data-state="testing" data-priority="P0" data-layer="fullstack">
+  <td><a href="#F-002"><code>F-002</code></a><div class="t">当前用户与启动恢复</div></td>
+  <td><span class="st st-testing">待验收</span></td>
+  <td><span class="pr pr-P0">P0</span></td>
+  <td><code class="chip">foodmap-user-service</code><code class="chip">foodmap-gateway-service</code></td>
+  <td>2 项</td>
+  <td><span class="muted">—</span></td>
+  <td class="nowrap">cb1145e<div class="muted">2026-06-30</div></td>
+</tr>
+<tr data-row data-state="in_progress" data-priority="P0" data-layer="fullstack">
+  <td><a href="#F-003"><code>F-003</code></a><div class="t">刷新与退出登录</div></td>
+  <td><span class="st st-in_progress">进行中</span></td>
+  <td><span class="pr pr-P0">P0</span></td>
+  <td><code class="chip">foodmap-auth-service</code><code class="chip">foodmap-gateway-service</code></td>
+  <td>4 项</td>
+  <td><span class="muted">—</span></td>
+  <td class="nowrap">cb1145e<div class="muted">2026-06-30</div></td>
+</tr>
+<tr data-row data-state="in_progress" data-priority="P0" data-layer="fullstack">
+  <td><a href="#F-004"><code>F-004</code></a><div class="t">userId-only 身份迁移</div></td>
+  <td><span class="st st-in_progress">进行中</span></td>
+  <td><span class="pr pr-P0">P0</span></td>
+  <td><code class="chip">foodmap-auth-service</code><code class="chip">foodmap-user-service</code><code class="chip">foodmap-gateway-service</code><code class="chip">foodmap-common</code></td>
+  <td>2 项</td>
+  <td><span class="muted">—</span></td>
+  <td class="nowrap">cb1145e<div class="muted">2026-06-30</div></td>
+</tr>
+<tr data-row data-state="in_progress" data-priority="P1" data-layer="fullstack">
+  <td><a href="#F-007"><code>F-007</code></a><div class="t">地图首页与范围切换</div></td>
+  <td><span class="st st-in_progress">进行中</span></td>
+  <td><span class="pr pr-P1">P1</span></td>
+  <td><code class="chip">foodmap-store-service</code></td>
+  <td>1 项</td>
+  <td><span class="muted">—</span></td>
+  <td class="nowrap">cb1145e<div class="muted">2026-06-30</div></td>
+</tr>
+<tr data-row data-state="todo" data-priority="P1" data-layer="fullstack">
+  <td><a href="#F-010"><code>F-010</code></a><div class="t">门店搜索、创建、详情与地图查询</div></td>
+  <td><span class="st st-todo">未开始</span></td>
+  <td><span class="pr pr-P1">P1</span></td>
+  <td><code class="chip">foodmap-store-service</code></td>
+  <td>2 项</td>
+  <td><span class="muted">—</span></td>
+  <td class="nowrap">b37929c<div class="muted">2026-06-22</div></td>
+</tr>
+<tr data-row data-state="todo" data-priority="P1" data-layer="fullstack">
+  <td><a href="#F-011"><code>F-011</code></a><div class="t">推荐菜单与标签</div></td>
+  <td><span class="st st-todo">未开始</span></td>
+  <td><span class="pr pr-P1">P1</span></td>
+  <td><code class="chip">foodmap-recommendation-service</code></td>
+  <td>1 项</td>
+  <td><span class="muted">—</span></td>
+  <td class="nowrap">b37929c<div class="muted">2026-06-22</div></td>
+</tr>
+<tr data-row data-state="todo" data-priority="P1" data-layer="fullstack">
+  <td><a href="#F-012"><code>F-012</code></a><div class="t">推荐评论与评论图片</div></td>
+  <td><span class="st st-todo">未开始</span></td>
+  <td><span class="pr pr-P1">P1</span></td>
+  <td><code class="chip">foodmap-recommendation-service</code><code class="chip">foodmap-media-service</code></td>
+  <td><span class="flag">未排期</span></td>
+  <td><span class="muted">—</span></td>
+  <td class="nowrap">b37929c<div class="muted">2026-06-22</div></td>
+</tr>
+<tr data-row data-state="todo" data-priority="P1" data-layer="fullstack">
+  <td><a href="#F-013"><code>F-013</code></a><div class="t">六类可见范围</div></td>
+  <td><span class="st st-todo">未开始</span></td>
+  <td><span class="pr pr-P1">P1</span></td>
+  <td><code class="chip">foodmap-recommendation-service</code><code class="chip">foodmap-relation-service</code></td>
+  <td>1 项</td>
+  <td><span class="muted">—</span></td>
+  <td class="nowrap">b37929c<div class="muted">2026-06-22</div></td>
+</tr>
+<tr data-row data-state="todo" data-priority="P1" data-layer="fullstack">
+  <td><a href="#F-014"><code>F-014</code></a><div class="t">好友关系</div></td>
+  <td><span class="st st-todo">未开始</span></td>
+  <td><span class="pr pr-P1">P1</span></td>
+  <td><code class="chip">foodmap-relation-service</code></td>
+  <td><span class="flag">未排期</span></td>
+  <td><span class="muted">—</span></td>
+  <td class="nowrap">b37929c<div class="muted">2026-06-22</div></td>
+</tr>
+<tr data-row data-state="todo" data-priority="P1" data-layer="fullstack">
+  <td><a href="#F-015"><code>F-015</code></a><div class="t">情侣关系</div></td>
+  <td><span class="st st-todo">未开始</span></td>
+  <td><span class="pr pr-P1">P1</span></td>
+  <td><code class="chip">foodmap-relation-service</code></td>
+  <td><span class="flag">未排期</span></td>
+  <td><span class="muted">—</span></td>
+  <td class="nowrap">b37929c<div class="muted">2026-06-22</div></td>
+</tr>
+<tr data-row data-state="todo" data-priority="P1" data-layer="fullstack">
+  <td><a href="#F-016"><code>F-016</code></a><div class="t">公开推荐与统计</div></td>
+  <td><span class="st st-todo">未开始</span></td>
+  <td><span class="pr pr-P1">P1</span></td>
+  <td><code class="chip">foodmap-community-service</code><code class="chip">foodmap-recommendation-service</code></td>
+  <td><span class="flag">未排期</span></td>
+  <td><span class="muted">—</span></td>
+  <td class="nowrap">b37929c<div class="muted">2026-06-22</div></td>
+</tr>
+<tr data-row data-state="todo" data-priority="P1" data-layer="fullstack">
+  <td><a href="#F-017"><code>F-017</code></a><div class="t">上传、头像与媒体引用</div></td>
+  <td><span class="st st-todo">未开始</span></td>
+  <td><span class="pr pr-P1">P1</span></td>
+  <td><code class="chip">foodmap-media-service</code></td>
+  <td><span class="flag">未排期</span></td>
+  <td><span class="muted">—</span></td>
+  <td class="nowrap">b37929c<div class="muted">2026-06-22</div></td>
+</tr>
+<tr data-row data-state="accepted" data-priority="P2" data-layer="backend">
+  <td><a href="#F-018"><code>F-018</code></a><div class="t">后端骨架与公共能力</div></td>
+  <td><span class="st st-accepted">已完成</span></td>
+  <td><span class="pr pr-P2">P2</span></td>
+  <td><code class="chip">foodmap-common</code><code class="chip">foodmap-gateway-service</code></td>
+  <td>1 项</td>
+  <td>A-001 · pass</td>
+  <td class="nowrap">5994d70<div class="muted">2026-06-29</div></td>
+</tr>
+<tr data-row data-state="in_progress" data-priority="P2" data-layer="fullstack">
+  <td><a href="#F-005"><code>F-005</code></a><div class="t">个人资料与设置</div></td>
+  <td><span class="st st-in_progress">进行中</span></td>
+  <td><span class="pr pr-P2">P2</span></td>
+  <td><code class="chip">foodmap-user-service</code><code class="chip">foodmap-common</code></td>
+  <td>1 项</td>
+  <td><span class="muted">—</span></td>
+  <td class="nowrap">8c07e80<div class="muted">2026-06-29</div></td>
+</tr>
+<tr data-row data-state="in_progress" data-priority="P2" data-layer="fullstack">
+  <td><a href="#F-021"><code>F-021</code></a><div class="t">测试与部署</div></td>
+  <td><span class="st st-in_progress">进行中</span></td>
+  <td><span class="pr pr-P2">P2</span></td>
+  <td><code class="chip">foodmap-common</code></td>
+  <td>1 项</td>
+  <td><span class="muted">—</span></td>
+  <td class="nowrap">5994d70<div class="muted">2026-06-29</div></td>
+</tr>
+<tr data-row data-state="testing" data-priority="P2" data-layer="backend">
+  <td><a href="#F-019"><code>F-019</code></a><div class="t">日志采集、查询与归档</div></td>
+  <td><span class="st st-testing">待验收</span></td>
+  <td><span class="pr pr-P2">P2</span></td>
+  <td><code class="chip">foodmap-log-service</code><code class="chip">foodmap-admin-service</code><code class="chip">foodmap-common</code></td>
+  <td>1 项</td>
+  <td><span class="muted">—</span></td>
+  <td class="nowrap">5994d70<div class="muted">2026-06-29</div></td>
+</tr>
+<tr data-row data-state="in_progress" data-priority="P2" data-layer="backend">
+  <td><a href="#F-020"><code>F-020</code></a><div class="t">管理后台</div></td>
+  <td><span class="st st-in_progress">进行中</span></td>
+  <td><span class="pr pr-P2">P2</span></td>
+  <td><code class="chip">foodmap-admin-service</code></td>
+  <td>1 项</td>
+  <td><span class="muted">—</span></td>
+  <td class="nowrap">b37929c<div class="muted">2026-06-22</div></td>
+</tr>
+<tr data-row data-state="in_progress" data-priority="P2" data-layer="fullstack">
+  <td><a href="#F-009"><code>F-009</code></a><div class="t">弱网摘要缓存</div></td>
+  <td><span class="st st-in_progress">进行中</span></td>
+  <td><span class="pr pr-P2">P2</span></td>
+  <td><code class="chip">foodmap-store-service</code></td>
+  <td>1 项</td>
+  <td><span class="muted">—</span></td>
+  <td class="nowrap">4d32875<div class="muted">2026-06-30</div></td>
+</tr>
+  </tbody></table></div>
+</section>
+
+<section id="frontend">
+  <h2>前端功能点（iOS 模块视角）</h2>
+  <p class="lead">共 18 项（含跨端 16 项，只显示前端一侧）。模块为 <code>Features/*</code> 业务模块与 <code>Core/*</code> 基础设施模块。</p>
+  <div class="table-wrap"><table><thead><tr><th>功能点</th><th>状态</th><th>优先级</th><th>模块</th><th>任务</th><th>验收单</th><th>最近提交</th></tr></thead><tbody>
+<tr data-row data-state="testing" data-priority="P0" data-layer="fullstack">
+  <td><a href="#F-001"><code>F-001</code></a><div class="t">账号注册与登录</div></td>
+  <td><span class="st st-testing">待验收</span></td>
+  <td><span class="pr pr-P0">P0</span></td>
+  <td><code class="chip">Features/Auth</code><code class="chip">Core/Auth</code></td>
+  <td>2 项</td>
+  <td><span class="muted">—</span></td>
+  <td class="nowrap">cb1145e<div class="muted">2026-06-30</div></td>
+</tr>
+<tr data-row data-state="testing" data-priority="P0" data-layer="fullstack">
+  <td><a href="#F-002"><code>F-002</code></a><div class="t">当前用户与启动恢复</div></td>
+  <td><span class="st st-testing">待验收</span></td>
+  <td><span class="pr pr-P0">P0</span></td>
+  <td><code class="chip">Core/Auth</code><code class="chip">Core/Networking</code></td>
+  <td>2 项</td>
+  <td><span class="muted">—</span></td>
+  <td class="nowrap">cb1145e<div class="muted">2026-06-30</div></td>
+</tr>
+<tr data-row data-state="in_progress" data-priority="P0" data-layer="fullstack">
+  <td><a href="#F-003"><code>F-003</code></a><div class="t">刷新与退出登录</div></td>
+  <td><span class="st st-in_progress">进行中</span></td>
+  <td><span class="pr pr-P0">P0</span></td>
+  <td><code class="chip">Core/Networking</code><code class="chip">Core/Auth</code></td>
+  <td>4 项</td>
+  <td><span class="muted">—</span></td>
+  <td class="nowrap">cb1145e<div class="muted">2026-06-30</div></td>
+</tr>
+<tr data-row data-state="in_progress" data-priority="P0" data-layer="fullstack">
+  <td><a href="#F-004"><code>F-004</code></a><div class="t">userId-only 身份迁移</div></td>
+  <td><span class="st st-in_progress">进行中</span></td>
+  <td><span class="pr pr-P0">P0</span></td>
+  <td><code class="chip">Core/Auth</code></td>
+  <td>2 项</td>
+  <td><span class="muted">—</span></td>
+  <td class="nowrap">cb1145e<div class="muted">2026-06-30</div></td>
+</tr>
+<tr data-row data-state="in_progress" data-priority="P1" data-layer="frontend">
+  <td><a href="#F-006"><code>F-006</code></a><div class="t">iOS 应用壳与导航</div></td>
+  <td><span class="st st-in_progress">进行中</span></td>
+  <td><span class="pr pr-P1">P1</span></td>
+  <td><code class="chip">App</code><code class="chip">Core/DesignSystem</code></td>
+  <td>1 项</td>
+  <td><span class="muted">—</span></td>
+  <td class="nowrap">cb1145e<div class="muted">2026-06-30</div></td>
+</tr>
+<tr data-row data-state="in_progress" data-priority="P1" data-layer="fullstack">
+  <td><a href="#F-007"><code>F-007</code></a><div class="t">地图首页与范围切换</div></td>
+  <td><span class="st st-in_progress">进行中</span></td>
+  <td><span class="pr pr-P1">P1</span></td>
+  <td><code class="chip">Features/Map</code></td>
+  <td>1 项</td>
+  <td><span class="muted">—</span></td>
+  <td class="nowrap">cb1145e<div class="muted">2026-06-30</div></td>
+</tr>
+<tr data-row data-state="todo" data-priority="P1" data-layer="fullstack">
+  <td><a href="#F-010"><code>F-010</code></a><div class="t">门店搜索、创建、详情与地图查询</div></td>
+  <td><span class="st st-todo">未开始</span></td>
+  <td><span class="pr pr-P1">P1</span></td>
+  <td><code class="chip">Features/Store</code></td>
+  <td>2 项</td>
+  <td><span class="muted">—</span></td>
+  <td class="nowrap">b37929c<div class="muted">2026-06-22</div></td>
+</tr>
+<tr data-row data-state="todo" data-priority="P1" data-layer="fullstack">
+  <td><a href="#F-011"><code>F-011</code></a><div class="t">推荐菜单与标签</div></td>
+  <td><span class="st st-todo">未开始</span></td>
+  <td><span class="pr pr-P1">P1</span></td>
+  <td><code class="chip">Features/Recommendation</code></td>
+  <td>1 项</td>
+  <td><span class="muted">—</span></td>
+  <td class="nowrap">b37929c<div class="muted">2026-06-22</div></td>
+</tr>
+<tr data-row data-state="todo" data-priority="P1" data-layer="fullstack">
+  <td><a href="#F-012"><code>F-012</code></a><div class="t">推荐评论与评论图片</div></td>
+  <td><span class="st st-todo">未开始</span></td>
+  <td><span class="pr pr-P1">P1</span></td>
+  <td><code class="chip">Features/Recommendation</code></td>
+  <td><span class="flag">未排期</span></td>
+  <td><span class="muted">—</span></td>
+  <td class="nowrap">b37929c<div class="muted">2026-06-22</div></td>
+</tr>
+<tr data-row data-state="todo" data-priority="P1" data-layer="fullstack">
+  <td><a href="#F-013"><code>F-013</code></a><div class="t">六类可见范围</div></td>
+  <td><span class="st st-todo">未开始</span></td>
+  <td><span class="pr pr-P1">P1</span></td>
+  <td><code class="chip">Features/Recommendation</code></td>
+  <td>1 项</td>
+  <td><span class="muted">—</span></td>
+  <td class="nowrap">b37929c<div class="muted">2026-06-22</div></td>
+</tr>
+<tr data-row data-state="todo" data-priority="P1" data-layer="fullstack">
+  <td><a href="#F-014"><code>F-014</code></a><div class="t">好友关系</div></td>
+  <td><span class="st st-todo">未开始</span></td>
+  <td><span class="pr pr-P1">P1</span></td>
+  <td><code class="chip">Features/Friends</code></td>
+  <td><span class="flag">未排期</span></td>
+  <td><span class="muted">—</span></td>
+  <td class="nowrap">b37929c<div class="muted">2026-06-22</div></td>
+</tr>
+<tr data-row data-state="todo" data-priority="P1" data-layer="fullstack">
+  <td><a href="#F-015"><code>F-015</code></a><div class="t">情侣关系</div></td>
+  <td><span class="st st-todo">未开始</span></td>
+  <td><span class="pr pr-P1">P1</span></td>
+  <td><code class="chip">Features/Couple</code></td>
+  <td><span class="flag">未排期</span></td>
+  <td><span class="muted">—</span></td>
+  <td class="nowrap">b37929c<div class="muted">2026-06-22</div></td>
+</tr>
+<tr data-row data-state="todo" data-priority="P1" data-layer="fullstack">
+  <td><a href="#F-016"><code>F-016</code></a><div class="t">公开推荐与统计</div></td>
+  <td><span class="st st-todo">未开始</span></td>
+  <td><span class="pr pr-P1">P1</span></td>
+  <td><code class="chip">Features/Community</code></td>
+  <td><span class="flag">未排期</span></td>
+  <td><span class="muted">—</span></td>
+  <td class="nowrap">b37929c<div class="muted">2026-06-22</div></td>
+</tr>
+<tr data-row data-state="todo" data-priority="P1" data-layer="fullstack">
+  <td><a href="#F-017"><code>F-017</code></a><div class="t">上传、头像与媒体引用</div></td>
+  <td><span class="st st-todo">未开始</span></td>
+  <td><span class="pr pr-P1">P1</span></td>
+  <td><code class="chip">Features/Profile</code></td>
+  <td><span class="flag">未排期</span></td>
+  <td><span class="muted">—</span></td>
+  <td class="nowrap">b37929c<div class="muted">2026-06-22</div></td>
+</tr>
+<tr data-row data-state="in_progress" data-priority="P2" data-layer="fullstack">
+  <td><a href="#F-005"><code>F-005</code></a><div class="t">个人资料与设置</div></td>
+  <td><span class="st st-in_progress">进行中</span></td>
+  <td><span class="pr pr-P2">P2</span></td>
+  <td><code class="chip">Features/Profile</code></td>
+  <td>1 项</td>
+  <td><span class="muted">—</span></td>
+  <td class="nowrap">8c07e80<div class="muted">2026-06-29</div></td>
+</tr>
+<tr data-row data-state="in_progress" data-priority="P2" data-layer="fullstack">
+  <td><a href="#F-021"><code>F-021</code></a><div class="t">测试与部署</div></td>
+  <td><span class="st st-in_progress">进行中</span></td>
+  <td><span class="pr pr-P2">P2</span></td>
+  <td><code class="chip">App</code></td>
+  <td>1 项</td>
+  <td><span class="muted">—</span></td>
+  <td class="nowrap">5994d70<div class="muted">2026-06-29</div></td>
+</tr>
+<tr data-row data-state="in_progress" data-priority="P2" data-layer="frontend">
+  <td><a href="#F-008"><code>F-008</code></a><div class="t">城市与离线底图</div></td>
+  <td><span class="st st-in_progress">进行中</span></td>
+  <td><span class="pr pr-P2">P2</span></td>
+  <td><code class="chip">Core/City</code><code class="chip">Core/OfflineMap</code></td>
+  <td>1 项</td>
+  <td><span class="muted">—</span></td>
+  <td class="nowrap">33398f8<div class="muted">2026-06-11</div></td>
+</tr>
+<tr data-row data-state="in_progress" data-priority="P2" data-layer="fullstack">
+  <td><a href="#F-009"><code>F-009</code></a><div class="t">弱网摘要缓存</div></td>
+  <td><span class="st st-in_progress">进行中</span></td>
+  <td><span class="pr pr-P2">P2</span></td>
+  <td><code class="chip">Core/Storage</code></td>
+  <td>1 项</td>
+  <td><span class="muted">—</span></td>
+  <td class="nowrap">4d32875<div class="muted">2026-06-30</div></td>
+</tr>
+  </tbody></table></div>
+</section>
+
+<section id="unfinished">
+  <h2>未完成功能点（按优先级）</h2>
+  <p class="lead">P0 最高。标记"未排任务"的项说明还没有可执行任务，需要先排期。</p>
+<div class="grp">
+  <h3><span class="pr pr-P0">P0</span> <span class="muted">P0 最高 · 4 项</span></h3>
+  <div class="cards">
+    <article class="card" data-row data-state="testing" data-priority="P0" data-layer="fullstack">
+      <div class="card-top"><a href="#F-001"><code>F-001</code></a> <span class="st st-testing">待验收</span> <span class="ly ly-fullstack">跨端</span></div>
+      <h4>账号注册与登录</h4>
+      <p class="muted">iOS 通过统一 APIClient 经 Gateway 注册与登录，Token 落 Keychain</p>
+      <div class="card-meta"><span class="muted">任务 2 项</span><span class="blk">缺验收单</span></div>
+    </article>
+    <article class="card" data-row data-state="testing" data-priority="P0" data-layer="fullstack">
+      <div class="card-top"><a href="#F-002"><code>F-002</code></a> <span class="st st-testing">待验收</span> <span class="ly ly-fullstack">跨端</span></div>
+      <h4>当前用户与启动恢复</h4>
+      <p class="muted">登录与冷启动后通过 GET /api/users/me 建立真实会话，userId 为唯一身份</p>
+      <div class="card-meta"><span class="muted">任务 2 项</span><span class="blk">缺验收单</span></div>
+    </article>
+    <article class="card" data-row data-state="in_progress" data-priority="P0" data-layer="fullstack">
+      <div class="card-top"><a href="#F-003"><code>F-003</code></a> <span class="st st-in_progress">进行中</span> <span class="ly ly-fullstack">跨端</span></div>
+      <h4>刷新与退出登录</h4>
+      <p class="muted">退出后旧 Access 与 Refresh Token 均失效，重启保持未登录</p>
+      <div class="card-meta"><span class="muted">任务 4 项</span><span class="blk">缺验收单</span></div>
+    </article>
+    <article class="card" data-row data-state="in_progress" data-priority="P0" data-layer="fullstack">
+      <div class="card-top"><a href="#F-004"><code>F-004</code></a> <span class="st st-in_progress">进行中</span> <span class="ly ly-fullstack">跨端</span></div>
+      <h4>userId-only 身份迁移</h4>
+      <p class="muted">运行时身份只依赖 userId，数据库仍保留旧 auth_accounts 结构</p>
+      <div class="card-meta"><span class="muted">任务 2 项</span><span class="blk">缺验收单</span></div>
+    </article>
+  </div>
+</div>
+<div class="grp">
+  <h3><span class="pr pr-P1">P1</span> <span class="muted">P1 高 · 10 项</span></h3>
+  <div class="cards">
+    <article class="card" data-row data-state="in_progress" data-priority="P1" data-layer="frontend">
+      <div class="card-top"><a href="#F-006"><code>F-006</code></a> <span class="st st-in_progress">进行中</span> <span class="ly ly-frontend">前端</span></div>
+      <h4>iOS 应用壳与导航</h4>
+      <p class="muted">SwiftUI + MVVM 骨架、AppRouter、设计主题与登录后路由</p>
+      <div class="card-meta"><span class="muted">任务 1 项</span><span class="blk">缺验收单</span><span class="blk">缺测试运行证据</span></div>
+    </article>
+    <article class="card" data-row data-state="in_progress" data-priority="P1" data-layer="fullstack">
+      <div class="card-top"><a href="#F-007"><code>F-007</code></a> <span class="st st-in_progress">进行中</span> <span class="ly ly-fullstack">跨端</span></div>
+      <h4>地图首页与范围切换</h4>
+      <p class="muted">地图首页可切换我的／好友／情侣／公开范围，当前为样例点位</p>
+      <div class="card-meta"><span class="muted">任务 1 项</span><span class="blk">缺验收单</span><span class="blk">缺测试运行证据</span></div>
+    </article>
+    <article class="card" data-row data-state="todo" data-priority="P1" data-layer="fullstack">
+      <div class="card-top"><a href="#F-010"><code>F-010</code></a> <span class="st st-todo">未开始</span> <span class="ly ly-fullstack">跨端</span></div>
+      <h4>门店搜索、创建、详情与地图查询</h4>
+      <p class="muted">真实门店 crud 与 bbox 查询，替代样例点位</p>
+      <div class="card-meta"><span class="muted">任务 2 项</span><span class="blk">缺验收单</span><span class="blk">缺测试运行证据</span></div>
+    </article>
+    <article class="card" data-row data-state="todo" data-priority="P1" data-layer="fullstack">
+      <div class="card-top"><a href="#F-011"><code>F-011</code></a> <span class="st st-todo">未开始</span> <span class="ly ly-fullstack">跨端</span></div>
+      <h4>推荐菜单与标签</h4>
+      <p class="muted">菜名纯文字必填，其余字段可选，保存后可读回</p>
+      <div class="card-meta"><span class="muted">任务 1 项</span><span class="blk">缺验收单</span><span class="blk">缺测试运行证据</span></div>
+    </article>
+    <article class="card" data-row data-state="todo" data-priority="P1" data-layer="fullstack">
+      <div class="card-top"><a href="#F-012"><code>F-012</code></a> <span class="st st-todo">未开始</span> <span class="ly ly-fullstack">跨端</span></div>
+      <h4>推荐评论与评论图片</h4>
+      <p class="muted">评论继承推荐可见权限，单条最多 3 张图片</p>
+      <div class="card-meta"><span class="flag">未排任务</span><span class="blk">缺验收单</span><span class="blk">缺测试运行证据</span></div>
+    </article>
+    <article class="card" data-row data-state="todo" data-priority="P1" data-layer="fullstack">
+      <div class="card-top"><a href="#F-013"><code>F-013</code></a> <span class="st st-todo">未开始</span> <span class="ly ly-fullstack">跨端</span></div>
+      <h4>六类可见范围</h4>
+      <p class="muted">PRIVATE / SPECIFIC_USERS / FRIENDS / COUPLE / GROUP / PUBLIC 的服务端校验</p>
+      <div class="card-meta"><span class="muted">任务 1 项</span><span class="blk">缺验收单</span><span class="blk">缺测试运行证据</span></div>
+    </article>
+    <article class="card" data-row data-state="todo" data-priority="P1" data-layer="fullstack">
+      <div class="card-top"><a href="#F-014"><code>F-014</code></a> <span class="st st-todo">未开始</span> <span class="ly ly-fullstack">跨端</span></div>
+      <h4>好友关系</h4>
+      <p class="muted">申请、接受、拒绝、删除与内部关系校验接口</p>
+      <div class="card-meta"><span class="flag">未排任务</span><span class="blk">缺验收单</span><span class="blk">缺测试运行证据</span></div>
+    </article>
+    <article class="card" data-row data-state="todo" data-priority="P1" data-layer="fullstack">
+      <div class="card-top"><a href="#F-015"><code>F-015</code></a> <span class="st st-todo">未开始</span> <span class="ly ly-fullstack">跨端</span></div>
+      <h4>情侣关系</h4>
+      <p class="muted">从好友发起绑定，同一时间只允许一个有效关系</p>
+      <div class="card-meta"><span class="flag">未排任务</span><span class="blk">缺验收单</span><span class="blk">缺测试运行证据</span></div>
+    </article>
+    <article class="card" data-row data-state="todo" data-priority="P1" data-layer="fullstack">
+      <div class="card-top"><a href="#F-016"><code>F-016</code></a> <span class="st st-todo">未开始</span> <span class="ly ly-fullstack">跨端</span></div>
+      <h4>公开推荐与统计</h4>
+      <p class="muted">仅 PUBLIC 且 NORMAL 进入公开索引，撤回可补偿</p>
+      <div class="card-meta"><span class="flag">未排任务</span><span class="blk">缺验收单</span><span class="blk">缺测试运行证据</span></div>
+    </article>
+    <article class="card" data-row data-state="todo" data-priority="P1" data-layer="fullstack">
+      <div class="card-top"><a href="#F-017"><code>F-017</code></a> <span class="st st-todo">未开始</span> <span class="ly ly-fullstack">跨端</span></div>
+      <h4>上传、头像与媒体引用</h4>
+      <p class="muted">图片校验、归属、签名访问与引用清理</p>
+      <div class="card-meta"><span class="flag">未排任务</span><span class="blk">缺验收单</span><span class="blk">缺测试运行证据</span></div>
+    </article>
+  </div>
+</div>
+<div class="grp">
+  <h3><span class="pr pr-P2">P2</span> <span class="muted">P2 中 · 6 项</span></h3>
+  <div class="cards">
+    <article class="card" data-row data-state="in_progress" data-priority="P2" data-layer="fullstack">
+      <div class="card-top"><a href="#F-005"><code>F-005</code></a> <span class="st st-in_progress">进行中</span> <span class="ly ly-fullstack">跨端</span></div>
+      <h4>个人资料与设置</h4>
+      <p class="muted">当前用户资料查询可用；编辑、隐私设置页面未实现</p>
+      <div class="card-meta"><span class="muted">任务 1 项</span><span class="blk">缺验收单</span><span class="blk">缺测试运行证据</span></div>
+    </article>
+    <article class="card" data-row data-state="in_progress" data-priority="P2" data-layer="fullstack">
+      <div class="card-top"><a href="#F-021"><code>F-021</code></a> <span class="st st-in_progress">进行中</span> <span class="ly ly-fullstack">跨端</span></div>
+      <h4>测试与部署</h4>
+      <p class="muted">Harness 基础校验可用；缺 CI、iOS 测试 Target 与生产镜像</p>
+      <div class="card-meta"><span class="muted">任务 1 项</span><span class="blk">缺验收单</span><span class="blk">缺测试运行证据</span></div>
+    </article>
+    <article class="card" data-row data-state="testing" data-priority="P2" data-layer="backend">
+      <div class="card-top"><a href="#F-019"><code>F-019</code></a> <span class="st st-testing">待验收</span> <span class="ly ly-backend">后端</span></div>
+      <h4>日志采集、查询与归档</h4>
+      <p class="muted">requestId/traceId、SQL 脱敏、Kafka→ES 热日志、访问摘要与归档骨架</p>
+      <div class="card-meta"><span class="muted">任务 1 项</span><span class="blk">缺验收单</span></div>
+    </article>
+    <article class="card" data-row data-state="in_progress" data-priority="P2" data-layer="backend">
+      <div class="card-top"><a href="#F-020"><code>F-020</code></a> <span class="st st-in_progress">进行中</span> <span class="ly ly-backend">后端</span></div>
+      <h4>管理后台</h4>
+      <p class="muted">管理员创建用例、日志查询代理与 LOG_ACCESS_READ 权限骨架</p>
+      <div class="card-meta"><span class="muted">任务 1 项</span><span class="blk">缺验收单</span></div>
+    </article>
+    <article class="card" data-row data-state="in_progress" data-priority="P2" data-layer="frontend">
+      <div class="card-top"><a href="#F-008"><code>F-008</code></a> <span class="st st-in_progress">进行中</span> <span class="ly ly-frontend">前端</span></div>
+      <h4>城市与离线底图</h4>
+      <p class="muted">城市偏好与离线底图状态壳，下载状态当前直接标记为已下载</p>
+      <div class="card-meta"><span class="muted">任务 1 项</span><span class="blk">缺验收单</span><span class="blk">缺测试运行证据</span></div>
+    </article>
+    <article class="card" data-row data-state="in_progress" data-priority="P2" data-layer="fullstack">
+      <div class="card-top"><a href="#F-009"><code>F-009</code></a> <span class="st st-in_progress">进行中</span> <span class="ly ly-fullstack">跨端</span></div>
+      <h4>弱网摘要缓存</h4>
+      <p class="muted">按用户与城市隔离的摘要缓存，带 TTL 过滤</p>
+      <div class="card-meta"><span class="muted">任务 1 项</span><span class="blk">缺验收单</span><span class="blk">缺测试运行证据</span></div>
+    </article>
+  </div>
+</div>
+</section>
+
+<section id="tasks">
+  <h2>任务</h2>
+  <p class="lead">已完成任务记录实施时间点与提交；未完成任务按优先级排序。</p>
+<div class="two-col">
+  <div>
+    <h3>未完成任务 <span class="muted">14 项 · 按优先级</span></h3>
+    <div class="table-wrap"><table><thead><tr><th>任务</th><th>内容</th><th>功能点</th><th>优先级</th><th>状态</th></tr></thead><tbody>
+<tr data-row data-state="todo" data-priority="P0">
+  <td><code>T-002</code></td>
+  <td>统一 B1 用例编号、构建号与证据归档</td>
+  <td><a href="#F-001"><code>F-001</code></a></td>
+  <td><span class="pr pr-P0">P0</span></td>
+  <td>未开始</td>
+</tr>
+<tr data-row data-state="todo" data-priority="P0">
+  <td><code>T-007</code></td>
+  <td>模拟器复测退出登录与旧 Token 失效（BUG-011）</td>
+  <td><a href="#F-003"><code>F-003</code></a></td>
+  <td><span class="pr pr-P0">P0</span></td>
+  <td>未开始</td>
+</tr>
+<tr data-row data-state="todo" data-priority="P0">
+  <td><code>T-010</code></td>
+  <td>新增 auth_identity_bindings / auth_sessions 迁移与数据核验</td>
+  <td><a href="#F-004"><code>F-004</code></a></td>
+  <td><span class="pr pr-P0">P0</span></td>
+  <td>未开始</td>
+</tr>
+<tr data-row data-state="todo" data-priority="P1">
+  <td><code>T-008</code></td>
+  <td>APIClient 自动刷新与并发刷新合并</td>
+  <td><a href="#F-003"><code>F-003</code></a></td>
+  <td><span class="pr pr-P1">P1</span></td>
+  <td>未开始</td>
+</tr>
+<tr data-row data-state="todo" data-priority="P1">
+  <td><code>T-011</code></td>
+  <td>接入高德 SDK 并用真实经纬度替换样例点位</td>
+  <td><a href="#F-007"><code>F-007</code></a></td>
+  <td><span class="pr pr-P1">P1</span></td>
+  <td>未开始</td>
+</tr>
+<tr data-row data-state="todo" data-priority="P1">
+  <td><code>T-012</code></td>
+  <td>退出与切号时清理业务缓存</td>
+  <td><a href="#F-009"><code>F-009</code></a></td>
+  <td><span class="pr pr-P1">P1</span></td>
+  <td>未开始</td>
+</tr>
+<tr data-row data-state="todo" data-priority="P1">
+  <td><code>T-013</code></td>
+  <td>门店 bbox / 搜索 / 创建 API 契约</td>
+  <td><a href="#F-010"><code>F-010</code></a></td>
+  <td><span class="pr pr-P1">P1</span></td>
+  <td>未开始</td>
+</tr>
+<tr data-row data-state="todo" data-priority="P1">
+  <td><code>T-014</code></td>
+  <td>stores 等业务表迁移与 PostGIS 查询</td>
+  <td><a href="#F-010"><code>F-010</code></a></td>
+  <td><span class="pr pr-P1">P1</span></td>
+  <td>未开始</td>
+</tr>
+<tr data-row data-state="todo" data-priority="P1">
+  <td><code>T-015</code></td>
+  <td>推荐最小闭环：文本创建与读回</td>
+  <td><a href="#F-011"><code>F-011</code></a></td>
+  <td><span class="pr pr-P1">P1</span></td>
+  <td>未开始</td>
+</tr>
+<tr data-row data-state="todo" data-priority="P1">
+  <td><code>T-016</code></td>
+  <td>可见范围权限矩阵与撤销传播设计</td>
+  <td><a href="#F-013"><code>F-013</code></a></td>
+  <td><span class="pr pr-P1">P1</span></td>
+  <td>未开始</td>
+</tr>
+<tr data-row data-state="todo" data-priority="P1">
+  <td><code>T-022</code></td>
+  <td>完整业务导航与 Tab 骨架</td>
+  <td><a href="#F-006"><code>F-006</code></a></td>
+  <td><span class="pr pr-P1">P1</span></td>
+  <td>未开始</td>
+</tr>
+<tr data-row data-state="todo" data-priority="P2">
+  <td><code>T-020</code></td>
+  <td>harness 增加 validate-status 并把 status check 接入 run-all</td>
+  <td><a href="#F-021"><code>F-021</code></a></td>
+  <td><span class="pr pr-P2">P2</span></td>
+  <td>未开始</td>
+</tr>
+<tr data-row data-state="todo" data-priority="P2">
+  <td><code>T-021</code></td>
+  <td>资料编辑与隐私设置页</td>
+  <td><a href="#F-005"><code>F-005</code></a></td>
+  <td><span class="pr pr-P2">P2</span></td>
+  <td>未开始</td>
+</tr>
+<tr data-row data-state="todo" data-priority="P2">
+  <td><code>T-023</code></td>
+  <td>接入离线底图真实下载状态</td>
+  <td><a href="#F-008"><code>F-008</code></a></td>
+  <td><span class="pr pr-P2">P2</span></td>
+  <td>未开始</td>
+</tr>
+    </tbody></table></div>
+  </div>
+  <div>
+    <h3>已完成任务 <span class="muted">9 项 · 含实施时间点</span></h3>
+    <div class="table-wrap"><table><thead><tr><th>任务</th><th>内容</th><th>功能点</th><th>完成时间</th><th>提交</th></tr></thead><tbody>
+<tr data-row data-state="done" data-priority="P0">
+  <td><code>T-009</code></td>
+  <td>运行时身份改为 userId-only（Token、网关头、响应）</td>
+  <td><a href="#F-004"><code>F-004</code></a></td>
+  <td class="nowrap">2026-06-29 12:29</td>
+  <td><code>8c07e80</code></td>
+</tr>
+<tr data-row data-state="done" data-priority="P0">
+  <td><code>T-006</code></td>
+  <td>后端 logout 将 Access Token 写入 Redis 拒绝名单</td>
+  <td><a href="#F-003"><code>F-003</code></a></td>
+  <td class="nowrap">2026-06-29 14:59</td>
+  <td><code>5994d70</code></td>
+</tr>
+<tr data-row data-state="done" data-priority="P0">
+  <td><code>T-003</code></td>
+  <td>修复 iOS 对 userId-only 响应的解码</td>
+  <td><a href="#F-002"><code>F-002</code></a></td>
+  <td class="nowrap">2026-06-30 10:19</td>
+  <td><code>4d32875</code></td>
+</tr>
+<tr data-row data-state="done" data-priority="P0">
+  <td><code>T-005</code></td>
+  <td>iOS logout 同时携带 Access 与 Refresh Token</td>
+  <td><a href="#F-003"><code>F-003</code></a></td>
+  <td class="nowrap">2026-06-30 11:45</td>
+  <td><code>cb1145e</code></td>
+</tr>
+<tr data-row data-state="done" data-priority="P1">
+  <td><code>T-001</code></td>
+  <td>注册页提交前校验密码长度</td>
+  <td><a href="#F-001"><code>F-001</code></a></td>
+  <td class="nowrap">2026-06-25 15:53</td>
+  <td><code>e7939ae</code></td>
+</tr>
+<tr data-row data-state="done" data-priority="P1">
+  <td><code>T-004</code></td>
+  <td>当前用户调试入口与刷新能力</td>
+  <td><a href="#F-002"><code>F-002</code></a></td>
+  <td class="nowrap">2026-06-30 10:45</td>
+  <td><code>f9ce3a5</code></td>
+</tr>
+<tr data-row data-state="done" data-priority="P2">
+  <td><code>T-017</code></td>
+  <td>foodmap-common 统一响应、异常与持久化基线</td>
+  <td><a href="#F-018"><code>F-018</code></a></td>
+  <td class="nowrap">2026-06-22 17:22</td>
+  <td><code>b37929c</code></td>
+</tr>
+<tr data-row data-state="done" data-priority="P2">
+  <td><code>T-018</code></td>
+  <td>日志平台 B1.5 代码、查询入口与归档骨架</td>
+  <td><a href="#F-019"><code>F-019</code></a></td>
+  <td class="nowrap">2026-06-22 17:22</td>
+  <td><code>b37929c</code></td>
+</tr>
+<tr data-row data-state="done" data-priority="P2">
+  <td><code>T-019</code></td>
+  <td>管理员创建用例与 LOG_ACCESS_READ 权限骨架</td>
+  <td><a href="#F-020"><code>F-020</code></a></td>
+  <td class="nowrap">2026-06-22 17:22</td>
+  <td><code>b37929c</code></td>
+</tr>
+    </tbody></table></div>
+  </div>
+</div>
+</section>
+
+<section id="integration">
+  <h2>联调链路 case</h2>
+  <p class="lead">需要打通链路的能力必须单独评审；未评审通过会阻断功能点转为已完成。</p>
+<div class="table-wrap"><table><thead><tr><th>Case</th><th>链路</th><th>功能点</th><th>链路要求</th><th>评审</th><th>场景数</th></tr></thead><tbody>
+<tr data-row data-state="approved" data-priority="" data-layer="">
+  <td><code>IT-001</code></td>
+  <td>注册成功</td>
+  <td><a href="#F-001"><code>F-001</code></a></td>
+  <td><span class="blk">需要打通</span></td>
+  <td>approved</td>
+  <td>2</td>
+</tr>
+<tr data-row data-state="approved" data-priority="" data-layer="">
+  <td><code>IT-002</code></td>
+  <td>登录成功</td>
+  <td><a href="#F-001"><code>F-001</code></a></td>
+  <td><span class="blk">需要打通</span></td>
+  <td>approved</td>
+  <td>1</td>
+</tr>
+<tr data-row data-state="pending" data-priority="" data-layer="">
+  <td><code>IT-003</code></td>
+  <td>登录失败</td>
+  <td><a href="#F-001"><code>F-001</code></a></td>
+  <td><span class="blk">需要打通</span></td>
+  <td>pending</td>
+  <td>1</td>
+</tr>
+<tr data-row data-state="approved" data-priority="" data-layer="">
+  <td><code>IT-004</code></td>
+  <td>当前用户</td>
+  <td><a href="#F-002"><code>F-002</code></a></td>
+  <td><span class="blk">需要打通</span></td>
+  <td>approved</td>
+  <td>2</td>
+</tr>
+<tr data-row data-state="pending" data-priority="" data-layer="">
+  <td><code>IT-009</code></td>
+  <td>退出登录后双 Token 失效</td>
+  <td><a href="#F-003"><code>F-003</code></a></td>
+  <td><span class="blk">需要打通</span></td>
+  <td>pending</td>
+  <td>3</td>
+</tr>
+  </tbody></table></div>
+</section>
+
+<section id="gates">
+  <h2>门禁与对账</h2>
+  <p class="lead">错误项会阻断提交；提示项只标注风险，不改变状态。</p>
+<div class="two-col">
+  <article class="panel panel-ok">
+    <h3>门禁通过</h3>
+    <ul class="plain"><li class="muted">没有阻断项：状态、引用与证据一致性检查全部通过。</li></ul>
+  </article>
+  <article class="panel">
+    <h3>提示项 9</h3>
+    <ul class="plain"><li><span class="blk warn">提示</span> <code>[5]</code> F-001：状态为 testing，但 paths 最近 30 天无提交（最后 cb1145e @ 2026-06-30）</li>
+<li><span class="blk warn">提示</span> <code>[5]</code> F-002：状态为 testing，但 paths 最近 30 天无提交（最后 cb1145e @ 2026-06-30）</li>
+<li><span class="blk warn">提示</span> <code>[6]</code> F-012：未完成且没有安排任务（界面标记为未排期）</li>
+<li><span class="blk warn">提示</span> <code>[6]</code> F-014：未完成且没有安排任务（界面标记为未排期）</li>
+<li><span class="blk warn">提示</span> <code>[6]</code> F-015：未完成且没有安排任务（界面标记为未排期）</li>
+<li><span class="blk warn">提示</span> <code>[6]</code> F-016：未完成且没有安排任务（界面标记为未排期）</li>
+<li><span class="blk warn">提示</span> <code>[6]</code> F-017：未完成且没有安排任务（界面标记为未排期）</li>
+<li><span class="blk warn">提示</span> <code>[5]</code> F-018：状态为 accepted，但 paths 最近 30 天无提交（最后 5994d70 @ 2026-06-29）</li>
+<li><span class="blk warn">提示</span> <code>[5]</code> F-019：状态为 testing，但 paths 最近 30 天无提交（最后 5994d70 @ 2026-06-29）</li></ul>
+  </article>
+</div>
+</section>
+
+<section id="detail">
+  <h2>功能点明细</h2>
+  <p class="lead">每项包含模块、路径、任务、验收单、测试证据与未完成原因。</p>
+<details class="item" id="F-001" data-row data-state="testing" data-priority="P0" data-layer="fullstack">
+  <summary><code>F-001</code> 账号注册与登录 <span class="st st-testing">待验收</span> <span class="pr pr-P0">P0</span> <span class="ly ly-fullstack">跨端</span></summary>
+  <div class="item-body">
+    <p>iOS 通过统一 APIClient 经 Gateway 注册与登录，Token 落 Keychain</p>
+    <dl>
+      <dt>后端模块</dt><dd><code class="chip">foodmap-auth-service</code></dd>
+      <dt>前端模块</dt><dd><code class="chip">Features/Auth</code><code class="chip">Core/Auth</code></dd>
+      <dt>最近提交</dt><dd><code>cb1145e</code> 2026-06-30 · fix ios logout revoke tokens</dd>
+      <dt>验收单</dt><dd><span class="muted">无验收单</span></dd>
+      <dt>联调 case</dt><dd><code>IT-001</code> · 需要打通：是 · 评审：approved</dd>
+      <dt>测试证据</dt><dd><code></code> </dd>
+      <dt>未完成原因</dt><dd><span class="blk">缺验收单</span></dd>
+    </dl>
+    <h4>任务</h4><ul><li><code>T-001</code> 注册页提交前校验密码长度 · done · 2026-06-25 15:53</li>
+<li><code>T-002</code> 统一 B1 用例编号、构建号与证据归档 · todo</li></ul>
+    <h4>路径</h4><ul><li><code>after/foodmap-auth-service/src/**</code></li>
+<li><code>front/FoodMapApp/FoodMapApp/Features/Auth/**</code></li></ul>
+  </div>
+</details>
+<details class="item" id="F-002" data-row data-state="testing" data-priority="P0" data-layer="fullstack">
+  <summary><code>F-002</code> 当前用户与启动恢复 <span class="st st-testing">待验收</span> <span class="pr pr-P0">P0</span> <span class="ly ly-fullstack">跨端</span></summary>
+  <div class="item-body">
+    <p>登录与冷启动后通过 GET /api/users/me 建立真实会话，userId 为唯一身份</p>
+    <dl>
+      <dt>后端模块</dt><dd><code class="chip">foodmap-user-service</code><code class="chip">foodmap-gateway-service</code></dd>
+      <dt>前端模块</dt><dd><code class="chip">Core/Auth</code><code class="chip">Core/Networking</code></dd>
+      <dt>最近提交</dt><dd><code>cb1145e</code> 2026-06-30 · fix ios logout revoke tokens</dd>
+      <dt>验收单</dt><dd><span class="muted">无验收单</span></dd>
+      <dt>联调 case</dt><dd><code>IT-004</code> · 需要打通：是 · 评审：approved</dd>
+      <dt>测试证据</dt><dd><code></code> </dd>
+      <dt>未完成原因</dt><dd><span class="blk">缺验收单</span></dd>
+    </dl>
+    <h4>任务</h4><ul><li><code>T-003</code> 修复 iOS 对 userId-only 响应的解码 · done · 2026-06-30 10:19</li>
+<li><code>T-004</code> 当前用户调试入口与刷新能力 · done · 2026-06-30 10:45</li></ul>
+    <h4>路径</h4><ul><li><code>after/foodmap-user-service/src/**</code></li>
+<li><code>after/foodmap-gateway-service/src/**</code></li>
+<li><code>front/FoodMapApp/FoodMapApp/Core/Auth/**</code></li></ul>
+  </div>
+</details>
+<details class="item" id="F-003" data-row data-state="in_progress" data-priority="P0" data-layer="fullstack">
+  <summary><code>F-003</code> 刷新与退出登录 <span class="st st-in_progress">进行中</span> <span class="pr pr-P0">P0</span> <span class="ly ly-fullstack">跨端</span></summary>
+  <div class="item-body">
+    <p>退出后旧 Access 与 Refresh Token 均失效，重启保持未登录</p>
+    <dl>
+      <dt>后端模块</dt><dd><code class="chip">foodmap-auth-service</code><code class="chip">foodmap-gateway-service</code></dd>
+      <dt>前端模块</dt><dd><code class="chip">Core/Networking</code><code class="chip">Core/Auth</code></dd>
+      <dt>最近提交</dt><dd><code>cb1145e</code> 2026-06-30 · fix ios logout revoke tokens</dd>
+      <dt>验收单</dt><dd><span class="muted">无验收单</span></dd>
+      <dt>联调 case</dt><dd><code>IT-009</code> · 需要打通：是 · 评审：pending</dd>
+      <dt>测试证据</dt><dd><code></code> </dd>
+      <dt>未完成原因</dt><dd><span class="blk">缺验收单</span></dd>
+    </dl>
+    <h4>任务</h4><ul><li><code>T-005</code> iOS logout 同时携带 Access 与 Refresh Token · done · 2026-06-30 11:45</li>
+<li><code>T-006</code> 后端 logout 将 Access Token 写入 Redis 拒绝名单 · done · 2026-06-29 14:59</li>
+<li><code>T-007</code> 模拟器复测退出登录与旧 Token 失效（BUG-011） · todo</li>
+<li><code>T-008</code> APIClient 自动刷新与并发刷新合并 · todo</li></ul>
+    <h4>路径</h4><ul><li><code>after/foodmap-auth-service/src/**</code></li>
+<li><code>front/FoodMapApp/FoodMapApp/Core/Auth/**</code></li></ul>
+  </div>
+</details>
+<details class="item" id="F-004" data-row data-state="in_progress" data-priority="P0" data-layer="fullstack">
+  <summary><code>F-004</code> userId-only 身份迁移 <span class="st st-in_progress">进行中</span> <span class="pr pr-P0">P0</span> <span class="ly ly-fullstack">跨端</span></summary>
+  <div class="item-body">
+    <p>运行时身份只依赖 userId，数据库仍保留旧 auth_accounts 结构</p>
+    <dl>
+      <dt>后端模块</dt><dd><code class="chip">foodmap-auth-service</code><code class="chip">foodmap-user-service</code><code class="chip">foodmap-gateway-service</code><code class="chip">foodmap-common</code></dd>
+      <dt>前端模块</dt><dd><code class="chip">Core/Auth</code></dd>
+      <dt>最近提交</dt><dd><code>cb1145e</code> 2026-06-30 · fix ios logout revoke tokens</dd>
+      <dt>验收单</dt><dd><span class="muted">无验收单</span></dd>
+      <dt>联调 case</dt><dd><span class="muted">—</span></dd>
+      <dt>测试证据</dt><dd><code></code> </dd>
+      <dt>未完成原因</dt><dd><span class="blk">缺验收单</span></dd>
+    </dl>
+    <h4>任务</h4><ul><li><code>T-009</code> 运行时身份改为 userId-only（Token、网关头、响应） · done · 2026-06-29 12:29</li>
+<li><code>T-010</code> 新增 auth_identity_bindings / auth_sessions 迁移与数据核验 · todo</li></ul>
+    <h4>路径</h4><ul><li><code>after/foodmap-auth-service/src/**</code></li>
+<li><code>front/FoodMapApp/FoodMapApp/Core/Auth/**</code></li></ul>
+  </div>
+</details>
+<details class="item" id="F-006" data-row data-state="in_progress" data-priority="P1" data-layer="frontend">
+  <summary><code>F-006</code> iOS 应用壳与导航 <span class="st st-in_progress">进行中</span> <span class="pr pr-P1">P1</span> <span class="ly ly-frontend">前端</span></summary>
+  <div class="item-body">
+    <p>SwiftUI + MVVM 骨架、AppRouter、设计主题与登录后路由</p>
+    <dl>
+      <dt>后端模块</dt><dd><span class="muted">—</span></dd>
+      <dt>前端模块</dt><dd><code class="chip">App</code><code class="chip">Core/DesignSystem</code></dd>
+      <dt>最近提交</dt><dd><code>cb1145e</code> 2026-06-30 · fix ios logout revoke tokens</dd>
+      <dt>验收单</dt><dd><span class="muted">无验收单</span></dd>
+      <dt>联调 case</dt><dd><span class="muted">—</span></dd>
+      <dt>测试证据</dt><dd><span class="muted">无覆盖该功能点的运行记录</span></dd>
+      <dt>未完成原因</dt><dd><span class="blk">缺验收单</span><span class="blk">缺测试运行证据</span></dd>
+    </dl>
+    <h4>任务</h4><ul><li><code>T-022</code> 完整业务导航与 Tab 骨架 · todo</li></ul>
+    <h4>路径</h4><ul><li><code>front/FoodMapApp/FoodMapApp/App/**</code></li>
+<li><code>front/FoodMapApp/FoodMapApp/Core/DesignSystem/**</code></li></ul>
+  </div>
+</details>
+<details class="item" id="F-007" data-row data-state="in_progress" data-priority="P1" data-layer="fullstack">
+  <summary><code>F-007</code> 地图首页与范围切换 <span class="st st-in_progress">进行中</span> <span class="pr pr-P1">P1</span> <span class="ly ly-fullstack">跨端</span></summary>
+  <div class="item-body">
+    <p>地图首页可切换我的／好友／情侣／公开范围，当前为样例点位</p>
+    <dl>
+      <dt>后端模块</dt><dd><code class="chip">foodmap-store-service</code></dd>
+      <dt>前端模块</dt><dd><code class="chip">Features/Map</code></dd>
+      <dt>最近提交</dt><dd><code>cb1145e</code> 2026-06-30 · fix ios logout revoke tokens</dd>
+      <dt>验收单</dt><dd><span class="muted">无验收单</span></dd>
+      <dt>联调 case</dt><dd><span class="muted">—</span></dd>
+      <dt>测试证据</dt><dd><span class="muted">无覆盖该功能点的运行记录</span></dd>
+      <dt>未完成原因</dt><dd><span class="blk">缺验收单</span><span class="blk">缺测试运行证据</span></dd>
+    </dl>
+    <h4>任务</h4><ul><li><code>T-011</code> 接入高德 SDK 并用真实经纬度替换样例点位 · todo</li></ul>
+    <h4>路径</h4><ul><li><code>after/foodmap-store-service/src/**</code></li>
+<li><code>front/FoodMapApp/FoodMapApp/Features/Map/**</code></li></ul>
+  </div>
+</details>
+<details class="item" id="F-010" data-row data-state="todo" data-priority="P1" data-layer="fullstack">
+  <summary><code>F-010</code> 门店搜索、创建、详情与地图查询 <span class="st st-todo">未开始</span> <span class="pr pr-P1">P1</span> <span class="ly ly-fullstack">跨端</span></summary>
+  <div class="item-body">
+    <p>真实门店 crud 与 bbox 查询，替代样例点位</p>
+    <dl>
+      <dt>后端模块</dt><dd><code class="chip">foodmap-store-service</code></dd>
+      <dt>前端模块</dt><dd><code class="chip">Features/Store</code></dd>
+      <dt>最近提交</dt><dd><code>b37929c</code> 2026-06-22 · feat: complete B1 auth backend integration</dd>
+      <dt>验收单</dt><dd><span class="muted">无验收单</span></dd>
+      <dt>联调 case</dt><dd><span class="muted">—</span></dd>
+      <dt>测试证据</dt><dd><span class="muted">无覆盖该功能点的运行记录</span></dd>
+      <dt>未完成原因</dt><dd><span class="blk">缺验收单</span><span class="blk">缺测试运行证据</span></dd>
+    </dl>
+    <h4>任务</h4><ul><li><code>T-013</code> 门店 bbox / 搜索 / 创建 API 契约 · todo</li>
+<li><code>T-014</code> stores 等业务表迁移与 PostGIS 查询 · todo</li></ul>
+    <h4>路径</h4><ul><li><code>after/foodmap-store-service/src/**</code></li>
+<li><code>front/FoodMapApp/FoodMapApp/Features/Store/**</code></li></ul>
+  </div>
+</details>
+<details class="item" id="F-011" data-row data-state="todo" data-priority="P1" data-layer="fullstack">
+  <summary><code>F-011</code> 推荐菜单与标签 <span class="st st-todo">未开始</span> <span class="pr pr-P1">P1</span> <span class="ly ly-fullstack">跨端</span></summary>
+  <div class="item-body">
+    <p>菜名纯文字必填，其余字段可选，保存后可读回</p>
+    <dl>
+      <dt>后端模块</dt><dd><code class="chip">foodmap-recommendation-service</code></dd>
+      <dt>前端模块</dt><dd><code class="chip">Features/Recommendation</code></dd>
+      <dt>最近提交</dt><dd><code>b37929c</code> 2026-06-22 · feat: complete B1 auth backend integration</dd>
+      <dt>验收单</dt><dd><span class="muted">无验收单</span></dd>
+      <dt>联调 case</dt><dd><span class="muted">—</span></dd>
+      <dt>测试证据</dt><dd><span class="muted">无覆盖该功能点的运行记录</span></dd>
+      <dt>未完成原因</dt><dd><span class="blk">缺验收单</span><span class="blk">缺测试运行证据</span></dd>
+    </dl>
+    <h4>任务</h4><ul><li><code>T-015</code> 推荐最小闭环：文本创建与读回 · todo</li></ul>
+    <h4>路径</h4><ul><li><code>after/foodmap-recommendation-service/src/**</code></li>
+<li><code>front/FoodMapApp/FoodMapApp/Features/Recommendation/**</code></li></ul>
+  </div>
+</details>
+<details class="item" id="F-012" data-row data-state="todo" data-priority="P1" data-layer="fullstack">
+  <summary><code>F-012</code> 推荐评论与评论图片 <span class="st st-todo">未开始</span> <span class="pr pr-P1">P1</span> <span class="ly ly-fullstack">跨端</span></summary>
+  <div class="item-body">
+    <p>评论继承推荐可见权限，单条最多 3 张图片</p>
+    <dl>
+      <dt>后端模块</dt><dd><code class="chip">foodmap-recommendation-service</code><code class="chip">foodmap-media-service</code></dd>
+      <dt>前端模块</dt><dd><code class="chip">Features/Recommendation</code></dd>
+      <dt>最近提交</dt><dd><code>b37929c</code> 2026-06-22 · feat: complete B1 auth backend integration</dd>
+      <dt>验收单</dt><dd><span class="muted">无验收单</span></dd>
+      <dt>联调 case</dt><dd><span class="muted">—</span></dd>
+      <dt>测试证据</dt><dd><span class="muted">无覆盖该功能点的运行记录</span></dd>
+      <dt>未完成原因</dt><dd><span class="blk">缺验收单</span><span class="blk">缺测试运行证据</span></dd>
+    </dl>
+    <h4>任务</h4><ul><li class="muted">没有安排任务</li></ul>
+    <h4>路径</h4><ul><li><code>after/foodmap-recommendation-service/src/**</code></li></ul>
+  </div>
+</details>
+<details class="item" id="F-013" data-row data-state="todo" data-priority="P1" data-layer="fullstack">
+  <summary><code>F-013</code> 六类可见范围 <span class="st st-todo">未开始</span> <span class="pr pr-P1">P1</span> <span class="ly ly-fullstack">跨端</span></summary>
+  <div class="item-body">
+    <p>PRIVATE / SPECIFIC_USERS / FRIENDS / COUPLE / GROUP / PUBLIC 的服务端校验</p>
+    <dl>
+      <dt>后端模块</dt><dd><code class="chip">foodmap-recommendation-service</code><code class="chip">foodmap-relation-service</code></dd>
+      <dt>前端模块</dt><dd><code class="chip">Features/Recommendation</code></dd>
+      <dt>最近提交</dt><dd><code>b37929c</code> 2026-06-22 · feat: complete B1 auth backend integration</dd>
+      <dt>验收单</dt><dd><span class="muted">无验收单</span></dd>
+      <dt>联调 case</dt><dd><span class="muted">—</span></dd>
+      <dt>测试证据</dt><dd><span class="muted">无覆盖该功能点的运行记录</span></dd>
+      <dt>未完成原因</dt><dd><span class="blk">缺验收单</span><span class="blk">缺测试运行证据</span></dd>
+    </dl>
+    <h4>任务</h4><ul><li><code>T-016</code> 可见范围权限矩阵与撤销传播设计 · todo</li></ul>
+    <h4>路径</h4><ul><li><code>after/foodmap-recommendation-service/src/**</code></li></ul>
+  </div>
+</details>
+<details class="item" id="F-014" data-row data-state="todo" data-priority="P1" data-layer="fullstack">
+  <summary><code>F-014</code> 好友关系 <span class="st st-todo">未开始</span> <span class="pr pr-P1">P1</span> <span class="ly ly-fullstack">跨端</span></summary>
+  <div class="item-body">
+    <p>申请、接受、拒绝、删除与内部关系校验接口</p>
+    <dl>
+      <dt>后端模块</dt><dd><code class="chip">foodmap-relation-service</code></dd>
+      <dt>前端模块</dt><dd><code class="chip">Features/Friends</code></dd>
+      <dt>最近提交</dt><dd><code>b37929c</code> 2026-06-22 · feat: complete B1 auth backend integration</dd>
+      <dt>验收单</dt><dd><span class="muted">无验收单</span></dd>
+      <dt>联调 case</dt><dd><span class="muted">—</span></dd>
+      <dt>测试证据</dt><dd><span class="muted">无覆盖该功能点的运行记录</span></dd>
+      <dt>未完成原因</dt><dd><span class="blk">缺验收单</span><span class="blk">缺测试运行证据</span></dd>
+    </dl>
+    <h4>任务</h4><ul><li class="muted">没有安排任务</li></ul>
+    <h4>路径</h4><ul><li><code>after/foodmap-relation-service/src/**</code></li>
+<li><code>front/FoodMapApp/FoodMapApp/Features/Friends/**</code></li></ul>
+  </div>
+</details>
+<details class="item" id="F-015" data-row data-state="todo" data-priority="P1" data-layer="fullstack">
+  <summary><code>F-015</code> 情侣关系 <span class="st st-todo">未开始</span> <span class="pr pr-P1">P1</span> <span class="ly ly-fullstack">跨端</span></summary>
+  <div class="item-body">
+    <p>从好友发起绑定，同一时间只允许一个有效关系</p>
+    <dl>
+      <dt>后端模块</dt><dd><code class="chip">foodmap-relation-service</code></dd>
+      <dt>前端模块</dt><dd><code class="chip">Features/Couple</code></dd>
+      <dt>最近提交</dt><dd><code>b37929c</code> 2026-06-22 · feat: complete B1 auth backend integration</dd>
+      <dt>验收单</dt><dd><span class="muted">无验收单</span></dd>
+      <dt>联调 case</dt><dd><span class="muted">—</span></dd>
+      <dt>测试证据</dt><dd><span class="muted">无覆盖该功能点的运行记录</span></dd>
+      <dt>未完成原因</dt><dd><span class="blk">缺验收单</span><span class="blk">缺测试运行证据</span></dd>
+    </dl>
+    <h4>任务</h4><ul><li class="muted">没有安排任务</li></ul>
+    <h4>路径</h4><ul><li><code>after/foodmap-relation-service/src/**</code></li>
+<li><code>front/FoodMapApp/FoodMapApp/Features/Couple/**</code></li></ul>
+  </div>
+</details>
+<details class="item" id="F-016" data-row data-state="todo" data-priority="P1" data-layer="fullstack">
+  <summary><code>F-016</code> 公开推荐与统计 <span class="st st-todo">未开始</span> <span class="pr pr-P1">P1</span> <span class="ly ly-fullstack">跨端</span></summary>
+  <div class="item-body">
+    <p>仅 PUBLIC 且 NORMAL 进入公开索引，撤回可补偿</p>
+    <dl>
+      <dt>后端模块</dt><dd><code class="chip">foodmap-community-service</code><code class="chip">foodmap-recommendation-service</code></dd>
+      <dt>前端模块</dt><dd><code class="chip">Features/Community</code></dd>
+      <dt>最近提交</dt><dd><code>b37929c</code> 2026-06-22 · feat: complete B1 auth backend integration</dd>
+      <dt>验收单</dt><dd><span class="muted">无验收单</span></dd>
+      <dt>联调 case</dt><dd><span class="muted">—</span></dd>
+      <dt>测试证据</dt><dd><span class="muted">无覆盖该功能点的运行记录</span></dd>
+      <dt>未完成原因</dt><dd><span class="blk">缺验收单</span><span class="blk">缺测试运行证据</span></dd>
+    </dl>
+    <h4>任务</h4><ul><li class="muted">没有安排任务</li></ul>
+    <h4>路径</h4><ul><li><code>after/foodmap-community-service/src/**</code></li>
+<li><code>front/FoodMapApp/FoodMapApp/Features/Community/**</code></li></ul>
+  </div>
+</details>
+<details class="item" id="F-017" data-row data-state="todo" data-priority="P1" data-layer="fullstack">
+  <summary><code>F-017</code> 上传、头像与媒体引用 <span class="st st-todo">未开始</span> <span class="pr pr-P1">P1</span> <span class="ly ly-fullstack">跨端</span></summary>
+  <div class="item-body">
+    <p>图片校验、归属、签名访问与引用清理</p>
+    <dl>
+      <dt>后端模块</dt><dd><code class="chip">foodmap-media-service</code></dd>
+      <dt>前端模块</dt><dd><code class="chip">Features/Profile</code></dd>
+      <dt>最近提交</dt><dd><code>b37929c</code> 2026-06-22 · feat: complete B1 auth backend integration</dd>
+      <dt>验收单</dt><dd><span class="muted">无验收单</span></dd>
+      <dt>联调 case</dt><dd><span class="muted">—</span></dd>
+      <dt>测试证据</dt><dd><span class="muted">无覆盖该功能点的运行记录</span></dd>
+      <dt>未完成原因</dt><dd><span class="blk">缺验收单</span><span class="blk">缺测试运行证据</span></dd>
+    </dl>
+    <h4>任务</h4><ul><li class="muted">没有安排任务</li></ul>
+    <h4>路径</h4><ul><li><code>after/foodmap-media-service/src/**</code></li></ul>
+  </div>
+</details>
+<details class="item" id="F-018" data-row data-state="accepted" data-priority="P2" data-layer="backend">
+  <summary><code>F-018</code> 后端骨架与公共能力 <span class="st st-accepted">已完成</span> <span class="pr pr-P2">P2</span> <span class="ly ly-backend">后端</span></summary>
+  <div class="item-body">
+    <p>10 个服务模块 + common：统一响应、异常、MyBatis/Flyway 基线、锁与存储封装</p>
+    <dl>
+      <dt>后端模块</dt><dd><code class="chip">foodmap-common</code><code class="chip">foodmap-gateway-service</code></dd>
+      <dt>前端模块</dt><dd><span class="muted">—</span></dd>
+      <dt>最近提交</dt><dd><code>5994d70</code> 2026-06-29 · fix auth logout access token denylist</dd>
+      <dt>验收单</dt><dd><code>A-001</code> pass · L2 · agent 2026-11-05 15:00</dd>
+      <dt>联调 case</dt><dd><span class="muted">—</span></dd>
+      <dt>测试证据</dt><dd><code></code> </dd>
+      <dt>未完成原因</dt><dd><span class="muted">—</span></dd>
+    </dl>
+    <h4>任务</h4><ul><li><code>T-017</code> foodmap-common 统一响应、异常与持久化基线 · done · 2026-06-22 17:22</li></ul>
+    <h4>路径</h4><ul><li><code>after/pom.xml</code></li>
+<li><code>after/foodmap-common/src/**</code></li></ul>
+  </div>
+</details>
+<details class="item" id="F-005" data-row data-state="in_progress" data-priority="P2" data-layer="fullstack">
+  <summary><code>F-005</code> 个人资料与设置 <span class="st st-in_progress">进行中</span> <span class="pr pr-P2">P2</span> <span class="ly ly-fullstack">跨端</span></summary>
+  <div class="item-body">
+    <p>当前用户资料查询可用；编辑、隐私设置页面未实现</p>
+    <dl>
+      <dt>后端模块</dt><dd><code class="chip">foodmap-user-service</code><code class="chip">foodmap-common</code></dd>
+      <dt>前端模块</dt><dd><code class="chip">Features/Profile</code></dd>
+      <dt>最近提交</dt><dd><code>8c07e80</code> 2026-06-29 · refactor auth user runtime userId identity</dd>
+      <dt>验收单</dt><dd><span class="muted">无验收单</span></dd>
+      <dt>联调 case</dt><dd><span class="muted">—</span></dd>
+      <dt>测试证据</dt><dd><span class="muted">无覆盖该功能点的运行记录</span></dd>
+      <dt>未完成原因</dt><dd><span class="blk">缺验收单</span><span class="blk">缺测试运行证据</span></dd>
+    </dl>
+    <h4>任务</h4><ul><li><code>T-021</code> 资料编辑与隐私设置页 · todo</li></ul>
+    <h4>路径</h4><ul><li><code>after/foodmap-user-service/src/**</code></li></ul>
+  </div>
+</details>
+<details class="item" id="F-021" data-row data-state="in_progress" data-priority="P2" data-layer="fullstack">
+  <summary><code>F-021</code> 测试与部署 <span class="st st-in_progress">进行中</span> <span class="pr pr-P2">P2</span> <span class="ly ly-fullstack">跨端</span></summary>
+  <div class="item-body">
+    <p>Harness 基础校验可用；缺 CI、iOS 测试 Target 与生产镜像</p>
+    <dl>
+      <dt>后端模块</dt><dd><code class="chip">foodmap-common</code></dd>
+      <dt>前端模块</dt><dd><code class="chip">App</code></dd>
+      <dt>最近提交</dt><dd><code>5994d70</code> 2026-06-29 · fix auth logout access token denylist</dd>
+      <dt>验收单</dt><dd><span class="muted">无验收单</span></dd>
+      <dt>联调 case</dt><dd><span class="muted">—</span></dd>
+      <dt>测试证据</dt><dd><span class="muted">无覆盖该功能点的运行记录</span></dd>
+      <dt>未完成原因</dt><dd><span class="blk">缺验收单</span><span class="blk">缺测试运行证据</span></dd>
+    </dl>
+    <h4>任务</h4><ul><li><code>T-020</code> harness 增加 validate-status 并把 status check 接入 run-all · todo</li></ul>
+    <h4>路径</h4><ul><li><code>harness/**</code></li>
+<li><code>deploy/**</code></li></ul>
+  </div>
+</details>
+<details class="item" id="F-019" data-row data-state="testing" data-priority="P2" data-layer="backend">
+  <summary><code>F-019</code> 日志采集、查询与归档 <span class="st st-testing">待验收</span> <span class="pr pr-P2">P2</span> <span class="ly ly-backend">后端</span></summary>
+  <div class="item-body">
+    <p>requestId/traceId、SQL 脱敏、Kafka→ES 热日志、访问摘要与归档骨架</p>
+    <dl>
+      <dt>后端模块</dt><dd><code class="chip">foodmap-log-service</code><code class="chip">foodmap-admin-service</code><code class="chip">foodmap-common</code></dd>
+      <dt>前端模块</dt><dd><span class="muted">—</span></dd>
+      <dt>最近提交</dt><dd><code>5994d70</code> 2026-06-29 · fix auth logout access token denylist</dd>
+      <dt>验收单</dt><dd><span class="muted">无验收单</span></dd>
+      <dt>联调 case</dt><dd><span class="muted">—</span></dd>
+      <dt>测试证据</dt><dd><code></code> </dd>
+      <dt>未完成原因</dt><dd><span class="blk">缺验收单</span></dd>
+    </dl>
+    <h4>任务</h4><ul><li><code>T-018</code> 日志平台 B1.5 代码、查询入口与归档骨架 · done · 2026-06-22 17:22</li></ul>
+    <h4>路径</h4><ul><li><code>after/foodmap-log-service/src/**</code></li>
+<li><code>deploy/**</code></li></ul>
+  </div>
+</details>
+<details class="item" id="F-020" data-row data-state="in_progress" data-priority="P2" data-layer="backend">
+  <summary><code>F-020</code> 管理后台 <span class="st st-in_progress">进行中</span> <span class="pr pr-P2">P2</span> <span class="ly ly-backend">后端</span></summary>
+  <div class="item-body">
+    <p>管理员创建用例、日志查询代理与 LOG_ACCESS_READ 权限骨架</p>
+    <dl>
+      <dt>后端模块</dt><dd><code class="chip">foodmap-admin-service</code></dd>
+      <dt>前端模块</dt><dd><span class="muted">—</span></dd>
+      <dt>最近提交</dt><dd><code>b37929c</code> 2026-06-22 · feat: complete B1 auth backend integration</dd>
+      <dt>验收单</dt><dd><span class="muted">无验收单</span></dd>
+      <dt>联调 case</dt><dd><span class="muted">—</span></dd>
+      <dt>测试证据</dt><dd><code></code> </dd>
+      <dt>未完成原因</dt><dd><span class="blk">缺验收单</span></dd>
+    </dl>
+    <h4>任务</h4><ul><li><code>T-019</code> 管理员创建用例与 LOG_ACCESS_READ 权限骨架 · done · 2026-06-22 17:22</li></ul>
+    <h4>路径</h4><ul><li><code>after/foodmap-admin-service/src/**</code></li></ul>
+  </div>
+</details>
+<details class="item" id="F-008" data-row data-state="in_progress" data-priority="P2" data-layer="frontend">
+  <summary><code>F-008</code> 城市与离线底图 <span class="st st-in_progress">进行中</span> <span class="pr pr-P2">P2</span> <span class="ly ly-frontend">前端</span></summary>
+  <div class="item-body">
+    <p>城市偏好与离线底图状态壳，下载状态当前直接标记为已下载</p>
+    <dl>
+      <dt>后端模块</dt><dd><span class="muted">—</span></dd>
+      <dt>前端模块</dt><dd><code class="chip">Core/City</code><code class="chip">Core/OfflineMap</code></dd>
+      <dt>最近提交</dt><dd><code>33398f8</code> 2026-06-11 · Add offline map cache foundation</dd>
+      <dt>验收单</dt><dd><span class="muted">无验收单</span></dd>
+      <dt>联调 case</dt><dd><span class="muted">—</span></dd>
+      <dt>测试证据</dt><dd><span class="muted">无覆盖该功能点的运行记录</span></dd>
+      <dt>未完成原因</dt><dd><span class="blk">缺验收单</span><span class="blk">缺测试运行证据</span></dd>
+    </dl>
+    <h4>任务</h4><ul><li><code>T-023</code> 接入离线底图真实下载状态 · todo</li></ul>
+    <h4>路径</h4><ul><li><code>front/FoodMapApp/FoodMapApp/Core/City/**</code></li>
+<li><code>front/FoodMapApp/FoodMapApp/Core/OfflineMap/**</code></li></ul>
+  </div>
+</details>
+<details class="item" id="F-009" data-row data-state="in_progress" data-priority="P2" data-layer="fullstack">
+  <summary><code>F-009</code> 弱网摘要缓存 <span class="st st-in_progress">进行中</span> <span class="pr pr-P2">P2</span> <span class="ly ly-fullstack">跨端</span></summary>
+  <div class="item-body">
+    <p>按用户与城市隔离的摘要缓存，带 TTL 过滤</p>
+    <dl>
+      <dt>后端模块</dt><dd><code class="chip">foodmap-store-service</code></dd>
+      <dt>前端模块</dt><dd><code class="chip">Core/Storage</code></dd>
+      <dt>最近提交</dt><dd><code>4d32875</code> 2026-06-30 · fix ios auth userId response decoding</dd>
+      <dt>验收单</dt><dd><span class="muted">无验收单</span></dd>
+      <dt>联调 case</dt><dd><span class="muted">—</span></dd>
+      <dt>测试证据</dt><dd><span class="muted">无覆盖该功能点的运行记录</span></dd>
+      <dt>未完成原因</dt><dd><span class="blk">缺验收单</span><span class="blk">缺测试运行证据</span></dd>
+    </dl>
+    <h4>任务</h4><ul><li><code>T-012</code> 退出与切号时清理业务缓存 · todo</li></ul>
+    <h4>路径</h4><ul><li><code>front/FoodMapApp/FoodMapApp/Core/Storage/**</code></li></ul>
+  </div>
+</details>
+</section>
+
+<footer>
+  <span>FoodMap 进度台账 · 由 <code>status build</code> 生成，请勿手改</span>
+  <span>HEAD 625f911 · 2026-11-05</span>
+  <span>时区 Asia/Shanghai</span>
+  <a href="#backend">回到顶部 ↑</a>
+</footer>
+</div>
+<script>
+(() => {
+  const rows = [...document.querySelectorAll('[data-row]')];
+  const q = document.getElementById('q');
+  const state = document.getElementById('state');
+  const priority = document.getElementById('priority');
+  const layer = document.getElementById('layer');
+  const count = document.getElementById('count');
+  function apply() {
+    const query = q.value.trim().toLowerCase();
+    let visible = 0;
+    rows.forEach((row) => {
+      const okQuery = !query || row.textContent.toLowerCase().includes(query);
+      const okState = !state.value || row.dataset.state === state.value;
+      const okPriority = !priority.value || row.dataset.priority === priority.value;
+      const okLayer = !layer.value || row.dataset.layer === layer.value;
+      row.hidden = !(okQuery && okState && okPriority && okLayer);
+      if (!row.hidden) visible += 1;
+    });
+    count.textContent = visible + ' / ' + rows.length + ' 行可见';
+  }
+  [q, state, priority, layer].forEach((el) => el.addEventListener('input', apply));
+  document.getElementById('expand').addEventListener('click', () => document.querySelectorAll('details').forEach((d) => { d.open = true; }));
+  document.getElementById('collapse').addEventListener('click', () => document.querySelectorAll('details').forEach((d) => { d.open = false; }));
+  apply();
+})();
+</script>
+</body>
+</html>

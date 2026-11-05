@@ -1,0 +1,15 @@
+schemaVersion: 1
+id: F-012
+title: 推荐评论与评论图片
+layer: fullstack
+phase: B3
+priority: P1
+status: todo
+summary: "评论继承推荐可见权限，单条最多 3 张图片"
+backendModules:
+  - foodmap-recommendation-service
+  - foodmap-media-service
+frontendModules:
+  - Features/Recommendation
+paths:
+  - after/foodmap-recommendation-service/src/**

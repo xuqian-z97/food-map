@@ -245,6 +245,20 @@ FoodMap 默认按可联调业务切片推进。每完成一个前端或后端功
 
 强依赖链路，如登录/Token、门店地图查询、推荐创建、可见范围、评论权限、PUBLIC 统计和图片上传，达到联调安全点后应优先联调，再进入下一个依赖它的功能。
 
+### 6.2 项目进度台账与看板约束
+
+`status/` 是项目进度的唯一台账目录，保存功能点、任务、验收单、测试运行记录和生成的看板页面。
+
+规则：
+
+- `status/data/` 是功能点状态、任务状态和验收结论的唯一书写位置。不得在 `CODEX-gen.md` 里程碑表、报告文档或聊天记录里另立一套进度状态。
+- BUG 台账仍以 `docs/integration/<iteration>-<feature>/issue-log.md` 为准；只有验收结论和测试证据写入 `status/data/`。
+- 功能点只有通过验收单（`verdict` 为 `pass` 或 `conditional`）并具备测试运行证据后，才能标为 `accepted`。"代码已写完"只能标 `implemented`，不能标已完成。
+- 每次迭代收尾，主代理必须执行 `status check`，并在提交中包含 `status/data/` 变更与重新生成的 `status/dist/index.html`。
+- `status/**` 的文件写入边界：进度数据与看板由主代理或专门子代理维护；业务实现子代理只能读取，不能顺手修改状态。
+- `status/` 内不写业务代码，不引用 `after/` 与 `front/` 的实现；`status/tool/` 必须保持可整体搬移，FoodMap 专属路径只能出现在 `status/config/`。
+- `status/` 是单用户本地工具：不引入账号、权限、通知、附件上传和数据库。
+
 ## 7. 前端 Agent
 
 ### 7.1 前端职责

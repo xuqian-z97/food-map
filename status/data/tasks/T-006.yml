@@ -1,0 +1,9 @@
+schemaVersion: 1
+id: T-006
+feature: F-003
+title: 后端 logout 将 Access Token 写入 Redis 拒绝名单
+status: done
+priority: P0
+owner: agent
+doneAt: 2026-06-29T14:59:59+08:00
+commit: 5994d70

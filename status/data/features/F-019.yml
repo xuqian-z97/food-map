@@ -1,0 +1,18 @@
+schemaVersion: 1
+id: F-019
+title: "日志采集、查询与归档"
+layer: backend
+phase: B1.5
+priority: P2
+status: testing
+summary: "requestId/traceId、SQL 脱敏、Kafka→ES 热日志、访问摘要与归档骨架"
+backendModules:
+  - foodmap-log-service
+  - foodmap-admin-service
+  - foodmap-common
+paths:
+  - after/foodmap-log-service/src/**
+  - deploy/**
+tasks:
+  - T-018
+notes: 多组件真实环境验收未完成

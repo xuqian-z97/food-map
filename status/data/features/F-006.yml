@@ -1,0 +1,17 @@
+schemaVersion: 1
+id: F-006
+title: iOS 应用壳与导航
+layer: frontend
+phase: B1
+priority: P1
+status: in_progress
+summary: "SwiftUI + MVVM 骨架、AppRouter、设计主题与登录后路由"
+frontendModules:
+  - App
+  - Core/DesignSystem
+paths:
+  - front/FoodMapApp/FoodMapApp/App/**
+  - front/FoodMapApp/FoodMapApp/Core/DesignSystem/**
+tasks:
+  - T-022
+notes: "完整业务导航未完成；最低 iOS 版本待统一"

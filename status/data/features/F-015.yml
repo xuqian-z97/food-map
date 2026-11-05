@@ -1,0 +1,15 @@
+schemaVersion: 1
+id: F-015
+title: 情侣关系
+layer: fullstack
+phase: B4
+priority: P1
+status: todo
+summary: "从好友发起绑定，同一时间只允许一个有效关系"
+backendModules:
+  - foodmap-relation-service
+frontendModules:
+  - Features/Couple
+paths:
+  - after/foodmap-relation-service/src/**
+  - front/FoodMapApp/FoodMapApp/Features/Couple/**

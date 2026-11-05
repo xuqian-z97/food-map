@@ -1,0 +1,18 @@
+schemaVersion: 1
+id: F-010
+title: "门店搜索、创建、详情与地图查询"
+layer: fullstack
+phase: B2
+priority: P1
+status: todo
+summary: "真实门店 crud 与 bbox 查询，替代样例点位"
+backendModules:
+  - foodmap-store-service
+frontendModules:
+  - Features/Store
+paths:
+  - after/foodmap-store-service/src/**
+  - front/FoodMapApp/FoodMapApp/Features/Store/**
+tasks:
+  - T-013
+  - T-014

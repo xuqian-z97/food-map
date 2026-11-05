@@ -1,0 +1,9 @@
+schemaVersion: 1
+id: T-009
+feature: F-004
+title: "运行时身份改为 userId-only（Token、网关头、响应）"
+status: done
+priority: P0
+owner: agent
+doneAt: 2026-06-29T12:29:07+08:00
+commit: 8c07e80

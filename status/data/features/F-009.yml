@@ -1,0 +1,17 @@
+schemaVersion: 1
+id: F-009
+title: 弱网摘要缓存
+layer: fullstack
+phase: B2
+priority: P2
+status: in_progress
+summary: "按用户与城市隔离的摘要缓存，带 TTL 过滤"
+backendModules:
+  - foodmap-store-service
+frontendModules:
+  - Core/Storage
+paths:
+  - front/FoodMapApp/FoodMapApp/Core/Storage/**
+tasks:
+  - T-012
+notes: 退出登录链路未调用 clearUserCache

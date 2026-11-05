@@ -1,0 +1,16 @@
+schemaVersion: 1
+id: F-008
+title: 城市与离线底图
+layer: frontend
+phase: B2
+priority: P2
+status: in_progress
+summary: "城市偏好与离线底图状态壳，下载状态当前直接标记为已下载"
+frontendModules:
+  - Core/City
+  - Core/OfflineMap
+paths:
+  - front/FoodMapApp/FoodMapApp/Core/City/**
+  - front/FoodMapApp/FoodMapApp/Core/OfflineMap/**
+tasks:
+  - T-023

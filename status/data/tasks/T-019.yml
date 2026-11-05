@@ -1,0 +1,9 @@
+schemaVersion: 1
+id: T-019
+feature: F-020
+title: 管理员创建用例与 LOG_ACCESS_READ 权限骨架
+status: done
+priority: P2
+owner: agent
+doneAt: 2026-06-22T17:22:24+08:00
+commit: b37929c

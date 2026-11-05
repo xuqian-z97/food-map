@@ -1,0 +1,24 @@
+schemaVersion: 1
+id: F-004
+title: userId-only 身份迁移
+layer: fullstack
+phase: B1
+priority: P0
+status: in_progress
+summary: "运行时身份只依赖 userId，数据库仍保留旧 auth_accounts 结构"
+backendModules:
+  - foodmap-auth-service
+  - foodmap-user-service
+  - foodmap-gateway-service
+  - foodmap-common
+frontendModules:
+  - Core/Auth
+paths:
+  - after/foodmap-auth-service/src/**
+  - front/FoodMapApp/FoodMapApp/Core/Auth/**
+tasks:
+  - T-009
+  - T-010
+dependsOn:
+  - F-002
+notes: "目标 schema 为 auth_identity_bindings / auth_sessions，迁移未开始"

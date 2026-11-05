@@ -1,0 +1,18 @@
+schemaVersion: 1
+id: F-018
+title: 后端骨架与公共能力
+layer: backend
+phase: B0
+priority: P2
+status: accepted
+summary: "10 个服务模块 + common：统一响应、异常、MyBatis/Flyway 基线、锁与存储封装"
+backendModules:
+  - foodmap-common
+  - foodmap-gateway-service
+paths:
+  - after/pom.xml
+  - after/foodmap-common/src/**
+tasks:
+  - T-017
+acceptance: A-001
+notes: "单测与 harness 已跑通；业务服务内部实现不在本项范围"

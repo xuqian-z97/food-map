@@ -1,0 +1,7 @@
+schemaVersion: 1
+id: T-014
+feature: F-010
+title: stores 等业务表迁移与 PostGIS 查询
+status: todo
+priority: P1
+owner: agent

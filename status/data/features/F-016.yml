@@ -1,0 +1,16 @@
+schemaVersion: 1
+id: F-016
+title: 公开推荐与统计
+layer: fullstack
+phase: B5
+priority: P1
+status: todo
+summary: "仅 PUBLIC 且 NORMAL 进入公开索引，撤回可补偿"
+backendModules:
+  - foodmap-community-service
+  - foodmap-recommendation-service
+frontendModules:
+  - Features/Community
+paths:
+  - after/foodmap-community-service/src/**
+  - front/FoodMapApp/FoodMapApp/Features/Community/**

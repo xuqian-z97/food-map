@@ -1,0 +1,6 @@
+# 工具依赖与缓存（当前零依赖，保留以防后续引入）
+tool/node_modules/
+tool/.cache/
+
+# 生成过程中的临时文件；dist/index.html 本身要提交
+dist/.tmp/

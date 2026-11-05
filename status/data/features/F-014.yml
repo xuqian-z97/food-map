@@ -1,0 +1,15 @@
+schemaVersion: 1
+id: F-014
+title: 好友关系
+layer: fullstack
+phase: B4
+priority: P1
+status: todo
+summary: "申请、接受、拒绝、删除与内部关系校验接口"
+backendModules:
+  - foodmap-relation-service
+frontendModules:
+  - Features/Friends
+paths:
+  - after/foodmap-relation-service/src/**
+  - front/FoodMapApp/FoodMapApp/Features/Friends/**

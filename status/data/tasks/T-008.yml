@@ -1,0 +1,7 @@
+schemaVersion: 1
+id: T-008
+feature: F-003
+title: APIClient 自动刷新与并发刷新合并
+status: todo
+priority: P1
+owner: agent
