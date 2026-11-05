@@ -34,7 +34,12 @@ const USAGE = `FoodMap 进度台账
   task done <T-001> [--commit=<sha>] [--at=<ISO 时间>]
 
 测试证据
-  test import [--covers=F-001,F-002]   读取 surefire 报告并写入 runs/
+  test import [--covers=F-001,F-002] [--scope=name] [--modules=a,b]
+                                      读取 surefire 报告并写入 runs/
+  test record --scope=it009 --covers=F-003 --passed=4 --failed=0
+              [--evidence=路径] [--command=命令] [--kind=integration] [--note=说明]
+                                      手工登记一次联调/接口测试运行
+  task set <T-001> [--status=] [--priority=] [--owner=] [--note=]
 
 说明
   --json 输出机器可读结果；状态取值：${FEATURE_STATES.join(' / ')}`;
@@ -91,6 +96,36 @@ function report(checks) {
  */
 function errorKeys(checks) {
   return new Set(checks.errors.map((item) => `${item.rule}|${item.entity}|${item.message}`));
+}
+
+function cmdTestRecord(flags) {
+  const { project } = load();
+  const scope = flags.scope || 'manual';
+  const covers = splitList(flags.covers);
+  const total = Number(flags.total ?? 0);
+  const passed = Number(flags.passed ?? total);
+  const failed = Number(flags.failed ?? 0);
+  const skipped = Number(flags.skipped ?? 0);
+  const evidence = splitList(flags.evidence);
+  const id = runId(scope);
+  const record = {
+    schemaVersion: 1,
+    id,
+    at: nowIso(),
+    kind: flags.kind || 'integration',
+    command: flags.command || '',
+    env: flags.env || 'local',
+    result: { total, passed, failed, skipped },
+    covers,
+    evidence,
+    notes: flags.note || ''
+  };
+  const file = join(resolve(ROOT, project.config.paths.data), 'runs', `${id}.json`);
+  return writeWithGate(file, `${JSON.stringify(record, null, 2)}\n`) ? 0 : 1;
+}
+
+function splitList(value) {
+  return value ? String(value).split(',').map((item) => item.trim()).filter(Boolean) : [];
 }
 
 function writeWithGate(file, next) {
@@ -284,7 +319,7 @@ function cmdTaskSet(positional, flags) {
 
 function cmdTestImport(flags) {
   const { project, view } = load();
-  const covers = flags.covers ? String(flags.covers).split(',').map((item) => item.trim()).filter(Boolean) : [];
+  const covers = splitList(flags.covers);
   for (const featureId of covers) {
     if (!view.features.some((feature) => feature.id === featureId)) throw new Error(`未知功能点 ${featureId}`);
   }
@@ -337,6 +372,7 @@ function main() {
         throw new Error('未知 task 子命令');
       case 'test':
         if (positional[1] === 'import') return cmdTestImport(flags);
+        if (positional[1] === 'record') return cmdTestRecord(flags);
         throw new Error('未知 test 子命令');
       default:
         console.error(`未知命令 ${command}\n`);

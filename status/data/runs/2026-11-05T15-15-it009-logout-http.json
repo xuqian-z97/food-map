@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-05T15-15-it009-logout-http",
+  "at": "2026-11-05T15:15:21+08:00",
+  "kind": "integration",
+  "command": "bash docs/integration/B1-auth-ios-backend/retest-logout.sh",
+  "env": "local",
+  "result": {
+    "total": 8,
+    "passed": 8,
+    "failed": 0,
+    "skipped": 0
+  },
+  "covers": [
+    "F-003",
+    "F-002",
+    "F-001"
+  ],
+  "evidence": [
+    "docs/integration/B1-auth-ios-backend/evidence/2026-11-05-retest-logout.txt"
+  ],
+  "notes": "接口级复测：注册/登录/当前用户/登出/旧双Token失效/未认证/内部接口拦截，8 项全部符合预期；iOS 端触发仍待模拟器"
+}

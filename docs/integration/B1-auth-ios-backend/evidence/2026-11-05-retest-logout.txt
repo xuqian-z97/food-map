@@ -1,0 +1,23 @@
+# B1 登出链路接口级复测记录
+# 时间：2026-11-05T15:15:16+08:00
+# 环境：本地 gateway 8080 / auth 8081 / user 8082，PostgreSQL+Redis+Nacos（Docker Compose）
+# 提交：a18eeb5 docs: close B1 L2 review with corrected verdicts
+
+== 1) 注册（phone/email 留空，验证可选字段）==
+status=200 code=OK
+== 2) 登录 ==
+status=200 code=OK
+accessToken 长度=197 refreshToken 长度=236
+== 3) 携带 Access 访问当前用户（期望 200）==
+http=200 body=OK
+== 4) 登出：同时携带 Access 与 Refresh（期望 200）==
+http=200 body=OK
+== 5) 旧 Access 访问当前用户（期望 401）==
+http=401 body=UNAUTHORIZED
+== 6) 旧 Refresh 刷新（期望 401）==
+http=401 body=UNAUTHORIZED
+== 7) 无 Token 访问当前用户（期望 401）==
+http=401
+== 8) 外部访问内部接口（期望 403）==
+http=403
+测试账号：zxq_retest_151516

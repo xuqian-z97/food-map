@@ -21,4 +21,4 @@ tasks:
   - T-007
   - T-008
 integrationCase: IT-009
-notes: "后端拒名单与 iOS 登出调用已在代码层闭环（cb1145e + 5994d70），单元测试 12 项通过；运行时复测阻塞于环境：无 Xcode 模拟器、Docker 未启动"
+notes: "接口级已复测通过（旧 Access 与 Refresh 均 401，证据 runs/2026-11-05T15-15-it009-logout-http.json）；剩余 iOS 端登出触发与 Keychain 清理待模拟器复测"
