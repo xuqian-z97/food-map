@@ -65,12 +65,6 @@ public final class LogMasker {
     }
 
     /**
-     * 手机号保留前三位和后四位，便于排查用户反馈，同时避免完整手机号泄露。
-     *
-     * @param phone 待脱敏的手机号。
-     * @return 脱敏后的手机号文本。
-     */
-    /**
      * 按内容脱敏任意文本中的手机号与邮箱。
      *
      * <p>SQL 日志把参数值内联进语句后，字段名信息已经丢失，通用参数名（例如 `loginIdentifier`）
@@ -87,6 +81,12 @@ public final class LogMasker {
         return EMAIL_IN_TEXT.matcher(masked).replaceAll(match -> maskEmail(match.group()));
     }
 
+    /**
+     * 手机号保留前三位和后四位，便于排查用户反馈，同时避免完整手机号泄露。
+     *
+     * @param phone 待脱敏的手机号。
+     * @return 脱敏后的手机号文本。
+     */
     public static String maskPhone(String phone) {
         if (phone == null || phone.length() < 7) {
             return MASKED;

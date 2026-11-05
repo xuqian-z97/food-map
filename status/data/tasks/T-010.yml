@@ -2,6 +2,7 @@ schemaVersion: 1
 id: T-010
 feature: F-004
 title: "新增 auth_identity_bindings / auth_sessions 迁移与数据核验"
-status: todo
+status: done
 priority: P0
 owner: agent
+doneAt: 2026-11-05T16:25:00+08:00

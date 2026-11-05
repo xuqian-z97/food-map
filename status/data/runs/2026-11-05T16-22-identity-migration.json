@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-05T16-22-identity-migration",
+  "at": "2026-11-05T16:22:55+08:00",
+  "kind": "integration",
+  "command": "node tools/verify/cli.mjs run harness/scenarios/b1-identity-migration.yml",
+  "env": "local",
+  "result": {
+    "total": 6,
+    "passed": 6,
+    "failed": 0,
+    "skipped": 0
+  },
+  "covers": [
+    "F-004"
+  ],
+  "evidence": [
+    "docs/integration/B1-auth-ios-backend/evidence/2026-11-05-f004-identity-migration.txt",
+    "harness/scenarios/b1-identity-migration.yml"
+  ],
+  "notes": "绑定 48=48、孤儿绑定 0、会话状态一致、缺会话 Token 9 条均由账号缺失解释、Token 载荷无 accountId"
+}

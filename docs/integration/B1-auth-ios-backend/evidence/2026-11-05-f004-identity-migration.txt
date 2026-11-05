@@ -1,0 +1,24 @@
+# F-004 userId-only 身份迁移核验（2026-11-05）
+
+## 1. Flyway
+16:21:31:810  INFO 6137 --- [foodmap-auth-service] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "4 - create
+16:21:31:958  INFO 6137 --- [foodmap-auth-service] [           main] o.f.core.internal.command.DbMigrate      : Successfully applied 1 migration to schema "publ
+
+## 2. 迁移后数据一致性（psql）
+accounts(active)=23
+identity_bindings=48
+expected_bindings=48
+refresh_tokens=32
+auth_sessions=22
+orphan_tokens=9
+bindings_without_user=0
+session_status_mismatch=0
+
+## 3. 运行时 Token 载荷（T-009 复核）
+payload 字段: tokenType,userId,expiresTime
+accountId 是否存在: false
+userId: 200024
+
+## 4. 自动化核验
+node tools/verify/cli.mjs run harness/scenarios/b1-identity-migration.yml
+结果：通过 13/13
