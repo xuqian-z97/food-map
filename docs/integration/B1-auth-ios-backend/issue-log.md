@@ -96,6 +96,19 @@ L2 测试报告中有两处判定错误，已修正，B1 结论随之调整：
 
 复测中发现并修复 BUG-012：SQL DEBUG 日志把参数内联后按字段名脱敏，参数名为 `loginIdentifier` 时手机号与邮箱原样输出。修复为在 `LogMasker.maskSensitiveValues` 上按内容再脱敏一次，覆盖 `SqlLogFormatter` 的两种分支，并补 2 个单测。
 
+### 1.6 停用账号与过期 Token 复测（2026-11-05，R2）
+
+补齐 F-002 的两个异常场景，日志见 `evidence/2026-11-05-ios-disabled-and-expired.txt`：
+
+| 场景 | 造数方式 | 观测 | 判定 |
+| --- | --- | --- | --- |
+| 账号停用 | 直接改库 `auth_accounts.account_status=DISABLED`，测完恢复 `NORMAL` | `disabled.login status=403 code=FORBIDDEN clearAuth=true message=账号状态不允许登录 tokenPresent=false` | 通过：拒绝登录且不落本地认证状态 |
+| Access Token 过期 | 用本地 HMAC 密钥构造 `exp=2026-11-05T06:00:00Z` 的 Token 写入 Keychain | `expired.restore sessionNil=true tokenPresent=false message=Access Token已过期` | 通过：401 后清理 Keychain 并回登录页 |
+
+前提校验：过期 Token 先经 curl 走网关，返回 `401 UNAUTHORIZED`「Access Token已过期」，确认是真实过期语义而非签名错误。
+
+未覆盖：用户被删除、网关 504、真实断网重连；请求中途过期的自动刷新属 F-022。
+
 ## 2. 问题详情
 
 本次后端联调已记录并关闭 BUG-001 至 BUG-003。2026-06-22 前端联调安全点审查新增 BUG-004 至 BUG-006；2026-06-24 前端代码审查新增 BUG-007；2026-06-25 真实 iOS L2 注册联调新增 BUG-008；2026-06-29 后端 Token 退出登录联调新增 BUG-009 并已关闭；2026-06-30 真实 iOS L2 注册联调新增 BUG-010；2026-06-30 自测报告审查新增 BUG-011。当前 BUG-004、BUG-005 已经由用户手工确认主链路复测可用，BUG-008 的 8 位以上注册主链路已确认可用；BUG-009 已完成自动测试和真实接口复测；BUG-010 已完成前端模型修复和构建验证，待模拟器注册复测；BUG-011 已完成 iOS 退出登录请求接入，待模拟器重新执行退出登录和旧 Token 失效验证；BUG-006、BUG-007 和错误态仍需补充真实 iOS 复测，所有前端问题关闭前还需补网络摘要和后端 `requestId/traceId`。

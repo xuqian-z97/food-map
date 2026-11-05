@@ -111,6 +111,10 @@ enum LaunchAutomationProbe {
             await runErrorStateChecks(sessionStore: sessionStore, baseURL: baseURL, environment: environment)
         case "keep-token":
             await runTokenRetentionCheck(sessionStore: sessionStore, baseURL: baseURL, environment: environment)
+        case "login-disabled":
+            await runDisabledAccountCheck(sessionStore: sessionStore, baseURL: baseURL, environment: environment)
+        case "session-expired":
+            await runExpiredTokenCheck(sessionStore: sessionStore, baseURL: baseURL, environment: environment)
         default:
             append("unknown.action=\(action)")
         }
@@ -137,6 +141,39 @@ enum LaunchAutomationProbe {
         } catch {
             append("gateway-down \(describe(error))")
         }
+    }
+
+    /// 停用账号检查：账号被停用时登录应被拒绝，且不留下任何本地认证状态。
+    private static func runDisabledAccountCheck(sessionStore: AuthSessionStore, baseURL: String, environment: [String: String]) async {
+        do {
+            try await sessionStore.login(
+                identifier: environment["FOODMAP_ACCOUNT"] ?? "",
+                password: environment["FOODMAP_PASSWORD"] ?? "",
+                baseURL: baseURL
+            )
+            append("disabled.login.unexpectedSuccess tokenPresent=\(KeychainTokenStore().load() != nil)")
+        } catch {
+            append("disabled.login \(describe(error)) tokenPresent=\(KeychainTokenStore().load() != nil)")
+        }
+    }
+
+    /// 过期 Token 检查：把外部构造的过期 Token 写进 Keychain，启动恢复应被拒绝并清理本地认证。
+    private static func runExpiredTokenCheck(sessionStore: AuthSessionStore, baseURL: String, environment: [String: String]) async {
+        guard let accessToken = environment["FOODMAP_SEED_ACCESS_TOKEN"],
+              let refreshToken = environment["FOODMAP_SEED_REFRESH_TOKEN"] else {
+            append("expired.missingSeed")
+            return
+        }
+        let store = KeychainTokenStore()
+        do {
+            try store.save(AuthTokens(accessToken: accessToken, refreshToken: refreshToken))
+            append("expired.seeded tokenPresent=\(store.load() != nil)")
+        } catch {
+            append("expired.seedFailed error=\(error)")
+            return
+        }
+        await sessionStore.restoreSessionIfNeeded(baseURL: baseURL)
+        append("expired.restore sessionNil=\(sessionStore.session == nil) tokenPresent=\(store.load() != nil) message=\(sessionStore.restoreErrorMessage ?? "none")")
     }
 
     /// 会话保活检查：临时性网络失败不得清空 Keychain，恢复后应能重新建立会话。

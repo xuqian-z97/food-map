@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-05T16-01-it002-it004-session",
+  "at": "2026-11-05T16:01:46+08:00",
+  "kind": "e2e",
+  "command": "xcrun simctl launch（FOODMAP_AUTOMATION=login-disabled / session-expired）",
+  "env": "local",
+  "result": {
+    "total": 5,
+    "passed": 5,
+    "failed": 0,
+    "skipped": 0
+  },
+  "covers": [
+    "F-002"
+  ],
+  "evidence": [
+    "docs/integration/B1-auth-ios-backend/evidence/2026-11-05-ios-disabled-and-expired.txt"
+  ],
+  "notes": "停用账号 403 FORBIDDEN 且不落 Token；过期 Access Token 401 后清理 Keychain 并回登录页"
+}

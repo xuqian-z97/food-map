@@ -1,0 +1,10 @@
+# iOS 停用账号与过期 Token 探针日志（模拟器 Debug 构建）
+# 设备 iPhone 17 Pro / iOS 26.5；账号 zxq_ios_152532（userId 200024）
+# 停用场景：直接改库 auth_accounts.account_status=DISABLED 造数，测完已恢复 NORMAL
+# 过期场景：用本地 HMAC 密钥构造 exp=2026-11-05T06:00:00Z 的 Access Token，仅内存传递
+
+2026-11-05T07:54:12Z app.start automation=login-disabled foodmapKeys=["FOODMAP_ACCOUNT", "FOODMAP_AUTOMATION", "FOODMAP_BASE_URL", "FOODMAP_PASSWORD"]
+2026-11-05T07:54:12Z disabled.login status=403 code=FORBIDDEN clearAuth=true message=账号状态不允许登录 tokenPresent=false
+2026-11-05T07:56:38Z app.start automation=session-expired foodmapKeys=["FOODMAP_AUTOMATION", "FOODMAP_BASE_URL", "FOODMAP_SEED_ACCESS_TOKEN", "FOODMAP_SEED_REFRESH_TOKEN"]
+2026-11-05T07:56:38Z expired.seeded tokenPresent=true
+2026-11-05T07:56:38Z expired.restore sessionNil=true tokenPresent=false message=Access Token已过期

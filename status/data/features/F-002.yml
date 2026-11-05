@@ -4,7 +4,7 @@ title: 当前用户与启动恢复
 layer: fullstack
 phase: B1
 priority: P0
-status: testing
+status: accepted
 summary: "登录与冷启动后通过 GET /api/users/me 建立真实会话，userId 为唯一身份"
 backendModules:
   - foodmap-user-service
@@ -20,4 +20,5 @@ tasks:
   - T-003
   - T-004
 integrationCase: IT-004
-notes: "Token 过期、用户停用、断网恢复未回归"
+acceptance: A-004
+notes: "正常、临时失败、Token 过期、账号停用四条路径均复测通过（A-004）；停用为改库造数"
