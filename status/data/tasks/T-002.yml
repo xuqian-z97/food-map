@@ -2,7 +2,8 @@ schemaVersion: 1
 id: T-002
 feature: F-001
 title: "统一 B1 用例编号、构建号与证据归档"
-status: todo
+status: done
 priority: P0
 owner: agent
+doneAt: 2026-11-05T15:50:00+08:00
 notes: "口径已统一并修正 IT-011/IT-006/IT-007 判定；仍缺运行时证据（截图、网络摘要、LOG-002）"

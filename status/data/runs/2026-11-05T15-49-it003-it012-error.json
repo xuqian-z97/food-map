@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-05T15-49-it003-it012-error",
+  "at": "2026-11-05T15:49:12+08:00",
+  "kind": "e2e",
+  "command": "xcrun simctl launch（FOODMAP_AUTOMATION=error-states / keep-token）",
+  "env": "local",
+  "result": {
+    "total": 7,
+    "passed": 7,
+    "failed": 0,
+    "skipped": 0
+  },
+  "covers": [
+    "F-001",
+    "F-002",
+    "F-003"
+  ],
+  "evidence": [
+    "docs/integration/B1-auth-ios-backend/evidence/2026-11-05-ios-error-states.txt"
+  ],
+  "notes": "错误密码返回 401 UNAUTHORIZED 且展示后端文案；网关不可用落传输层且不清 Token；临时失败后 Token 保留，恢复后会话可用"
+}

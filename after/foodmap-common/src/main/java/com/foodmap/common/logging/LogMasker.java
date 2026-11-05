@@ -1,6 +1,7 @@
 package com.foodmap.common.logging;
 
 import java.util.Locale;
+import java.util.regex.Pattern;
 
 /**
  * 日志脱敏工具，统一处理手机号、邮箱、Token、对象存储 Key 和私密业务正文。
@@ -13,6 +14,12 @@ public final class LogMasker {
      * 通用掩码值，用于完全不可输出的敏感内容，例如密码、Token 和评论正文。
      */
     private static final String MASKED = "***";
+
+    /** 文本中出现的 11 位手机号，前后不能是数字。 */
+    private static final Pattern PHONE_IN_TEXT = Pattern.compile("(?<!\\d)(1[3-9]\\d{9})(?!\\d)");
+
+    /** 文本中出现的邮箱地址。 */
+    private static final Pattern EMAIL_IN_TEXT = Pattern.compile("[A-Za-z0-9._%+\\-]+@[A-Za-z0-9.\\-]+\\.[A-Za-z]{2,}");
 
     private LogMasker() {
     }
@@ -63,6 +70,23 @@ public final class LogMasker {
      * @param phone 待脱敏的手机号。
      * @return 脱敏后的手机号文本。
      */
+    /**
+     * 按内容脱敏任意文本中的手机号与邮箱。
+     *
+     * <p>SQL 日志把参数值内联进语句后，字段名信息已经丢失，通用参数名（例如 `loginIdentifier`）
+     * 可能同时承载账号名、手机号和邮箱，因此需要在最终 SQL 文本上再扫一遍。</p>
+     *
+     * @param text 待输出文本，可为空。
+     * @return 手机号与邮箱已脱敏的文本。
+     */
+    public static String maskSensitiveValues(String text) {
+        if (text == null || text.isEmpty()) {
+            return text;
+        }
+        String masked = PHONE_IN_TEXT.matcher(text).replaceAll(match -> maskPhone(match.group(1)));
+        return EMAIL_IN_TEXT.matcher(masked).replaceAll(match -> maskEmail(match.group()));
+    }
+
     public static String maskPhone(String phone) {
         if (phone == null || phone.length() < 7) {
             return MASKED;

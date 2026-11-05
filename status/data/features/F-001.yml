@@ -4,7 +4,7 @@ title: 账号注册与登录
 layer: fullstack
 phase: B1
 priority: P0
-status: testing
+status: accepted
 summary: "iOS 通过统一 APIClient 经 Gateway 注册与登录，Token 落 Keychain"
 backendModules:
   - foodmap-auth-service
@@ -18,4 +18,5 @@ tasks:
   - T-001
   - T-002
 integrationCase: IT-001
-notes: "主链路已手工确认，缺少统一用例编号与请求摘要"
+acceptance: A-003
+notes: "注册/登录/错误态在服务端与 iOS 端均复测通过（A-003）；重复账号与短密码沿用 R1 手工结论"

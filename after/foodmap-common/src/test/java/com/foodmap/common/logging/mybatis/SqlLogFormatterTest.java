@@ -36,4 +36,35 @@ class SqlLogFormatterTest {
         assertThat(SqlLogFormatter.detectSqlType(normalized)).isEqualTo("UPDATE");
         assertThat(SqlLogFormatter.truncate("abcdef", 4)).isEqualTo("abcd...");
     }
+
+    @Test
+    void shouldMaskPhoneAndEmailHiddenBehindGenericParameterName() {
+        String actualSql = SqlLogFormatter.formatActualSql(
+                "select * from auth_accounts where lower(account_name) = ? or phone = ? or lower(email) = ?",
+                List.of(
+                        new SqlParameterValue("loginIdentifier", "13812345678"),
+                        new SqlParameterValue("loginIdentifier", "13812345678"),
+                        new SqlParameterValue("loginIdentifier", "someone@example.com")
+                ),
+                2000
+        );
+
+        assertThat(actualSql)
+                .contains("phone = '138****5678'")
+                .doesNotContain("13812345678")
+                .doesNotContain("someone@example.com");
+    }
+
+    @Test
+    void shouldMaskSensitiveValuesWithoutParameters() {
+        String actualSql = SqlLogFormatter.formatActualSql(
+                "select * from login_logs where login_identifier = '13812345678' or email = 'someone@example.com'",
+                List.of(),
+                2000
+        );
+
+        assertThat(actualSql)
+                .doesNotContain("13812345678")
+                .doesNotContain("someone@example.com");
+    }
 }

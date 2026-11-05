@@ -25,7 +25,7 @@ public final class SqlLogFormatter {
     public static String formatActualSql(String sql, List<SqlParameterValue> parameters, int maxLength) {
         String normalizedSql = normalizeSql(sql);
         if (normalizedSql.isBlank() || parameters == null || parameters.isEmpty()) {
-            return truncate(normalizedSql, maxLength);
+            return truncate(LogMasker.maskSensitiveValues(normalizedSql), maxLength);
         }
 
         StringBuilder builder = new StringBuilder();
@@ -39,7 +39,7 @@ public final class SqlLogFormatter {
                 builder.append(current);
             }
         }
-        return truncate(builder.toString(), maxLength);
+        return truncate(LogMasker.maskSensitiveValues(builder.toString()), maxLength);
     }
 
     /**

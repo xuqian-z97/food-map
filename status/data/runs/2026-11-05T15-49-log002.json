@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-05T15-49-log002",
+  "at": "2026-11-05T15:49:13+08:00",
+  "kind": "e2e",
+  "command": "grep auth 服务日志（注册带手机号/邮箱后）",
+  "env": "local",
+  "result": {
+    "total": 5,
+    "passed": 5,
+    "failed": 0,
+    "skipped": 0
+  },
+  "covers": [
+    "F-019",
+    "F-021"
+  ],
+  "evidence": [
+    "docs/integration/B1-auth-ios-backend/evidence/2026-11-05-log-masking.txt"
+  ],
+  "notes": "完整手机号、完整邮箱、JWT、明文密码在服务日志中出现 0 次；脱敏为 139****5678 / m***@example.com"
+}

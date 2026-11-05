@@ -107,9 +107,69 @@ enum LaunchAutomationProbe {
             } catch {
                 append("login.failed error=\(error)")
             }
+        case "error-states":
+            await runErrorStateChecks(sessionStore: sessionStore, baseURL: baseURL, environment: environment)
+        case "keep-token":
+            await runTokenRetentionCheck(sessionStore: sessionStore, baseURL: baseURL, environment: environment)
         default:
             append("unknown.action=\(action)")
         }
+    }
+
+    /// 把网络错误压成一行断言文本：状态码、业务码、是否允许清理本地认证、可直接展示的提示。
+    private static func describe(_ error: Error) -> String {
+        guard let network = error as? NetworkError else { return "other(\(error))" }
+        return "status=\(network.statusCode ?? -1) code=\(network.businessCode ?? "none") clearAuth=\(network.shouldClearStoredAuthentication) message=\(network.errorDescription ?? "")"
+    }
+
+    /// 错误态检查：错误密码应拿到后端业务提示，网关不可用应落到传输层且不允许清理本地认证。
+    private static func runErrorStateChecks(sessionStore: AuthSessionStore, baseURL: String, environment: [String: String]) async {
+        do {
+            try await sessionStore.login(identifier: environment["FOODMAP_ACCOUNT"] ?? "", password: "WrongPassword123", baseURL: baseURL)
+            append("bad-password.unexpectedSuccess")
+        } catch {
+            append("bad-password \(describe(error))")
+        }
+
+        do {
+            try await sessionStore.login(identifier: environment["FOODMAP_ACCOUNT"] ?? "", password: "WrongPassword123", baseURL: "http://127.0.0.1:18080")
+            append("gateway-down.unexpectedSuccess")
+        } catch {
+            append("gateway-down \(describe(error))")
+        }
+    }
+
+    /// 会话保活检查：临时性网络失败不得清空 Keychain，恢复后应能重新建立会话。
+    private static func runTokenRetentionCheck(sessionStore: AuthSessionStore, baseURL: String, environment: [String: String]) async {
+        let deadBaseURL = "http://127.0.0.1:18080"
+        do {
+            try await sessionStore.login(
+                identifier: environment["FOODMAP_ACCOUNT"] ?? "",
+                password: environment["FOODMAP_PASSWORD"] ?? "",
+                baseURL: baseURL
+            )
+            append("retention.loginOk tokenPresent=\(KeychainTokenStore().load() != nil)")
+        } catch {
+            append("retention.loginFailed \(describe(error))")
+            return
+        }
+
+        do {
+            _ = try await sessionStore.refreshCurrentUserForDebug(baseURL: deadBaseURL)
+            append("retention.tempCall.unexpectedSuccess")
+        } catch {
+            append("retention.tempCall \(describe(error))")
+        }
+        append("retention.afterTempCall tokenPresent=\(KeychainTokenStore().load() != nil)")
+
+        await sessionStore.restoreSessionIfNeeded(baseURL: deadBaseURL)
+        append("retention.afterRestoreDead tokenPresent=\(KeychainTokenStore().load() != nil) sessionNil=\(sessionStore.session == nil) message=\(sessionStore.restoreErrorMessage ?? "none")")
+
+        await sessionStore.restoreSessionIfNeeded(baseURL: baseURL)
+        append("retention.afterRecovery tokenPresent=\(KeychainTokenStore().load() != nil) userId=\(sessionStore.session?.userId ?? -1)")
+
+        await sessionStore.signOut(baseURL: baseURL)
+        append("retention.cleanup tokenPresent=\(KeychainTokenStore().load() != nil) sessionNil=\(sessionStore.session == nil)")
     }
 
     /// 追加一行探针日志到 App 沙盒 Documents 目录，供复测取证。
