@@ -130,7 +130,7 @@ Stage 1：后端认证用户基础能力与 iOS 认证测试壳已完成
 
 当前 B1 后续目标：
 
-- iOS 认证联调先完成 Gateway 入口收口：前端默认或推荐 Base URL 指向 Gateway，本地为 `http://127.0.0.1:18080`。
+- iOS 认证联调先完成 Gateway 入口收口：前端默认或推荐 Base URL 指向 Gateway，本地为 `http://127.0.0.1:8080`。
 - iOS 网络层补齐 B1 必需能力：GET/POST、Bearer Token、`X-Request-Id`、`X-Trace-Id`、统一响应 `success/status/code/message/data` 解析和非 2xx 错误体解析。
 - iOS 登录和 Token 恢复后必须调用 Gateway `GET /api/users/me` 校验真实当前用户；禁止用 `accountId/userId = 0` 作为运行时已登录会话。
 - B1 完整前后端联调安全点以 `docs/integration/B1-auth-ios-backend/integration-plan.md` 为准；当前旧身份模型主链路已手工确认可用，但身份重构后必须重新执行 userId-only 认证联调。

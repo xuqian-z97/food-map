@@ -138,7 +138,7 @@ enum LaunchAutomationProbe {
         }
 
         do {
-            try await sessionStore.login(identifier: environment["FOODMAP_ACCOUNT"] ?? "", password: "WrongPassword123", baseURL: "http://127.0.0.1:18080")
+            try await sessionStore.login(identifier: environment["FOODMAP_ACCOUNT"] ?? "", password: "WrongPassword123", baseURL: "http://127.0.0.1:18099")
             append("gateway-down.unexpectedSuccess")
         } catch {
             append("gateway-down \(describe(error))")
@@ -222,7 +222,7 @@ enum LaunchAutomationProbe {
 
     /// 会话保活检查：临时性网络失败不得清空 Keychain，恢复后应能重新建立会话。
     private static func runTokenRetentionCheck(sessionStore: AuthSessionStore, baseURL: String, environment: [String: String]) async {
-        let deadBaseURL = "http://127.0.0.1:18080"
+        let deadBaseURL = "http://127.0.0.1:18099"
         do {
             try await sessionStore.login(
                 identifier: environment["FOODMAP_ACCOUNT"] ?? "",

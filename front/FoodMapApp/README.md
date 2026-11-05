@@ -14,20 +14,25 @@ front/FoodMapApp/FoodMapApp.xcodeproj
 
 ## 后端地址
 
-B1 完整前后端联调时，iOS 应通过 Gateway 访问后端：
+B1 完整前后端联调时，iOS 统一通过 Gateway 访问后端，端口与 `after/` 各服务的默认端口块一致：
 
 ```text
-http://127.0.0.1:18080
+Gateway http://127.0.0.1:8080
+Auth    http://127.0.0.1:8081（仅后端排障用，App 不直连）
+User    http://127.0.0.1:8082（仅后端排障用，App 不直连）
 ```
 
-登录页和注册页默认使用 Gateway 地址，且“服务地址”输入框仍可编辑。若本机曾保存过早期 Auth 直连默认值 `http://127.0.0.1:8081`，App 会自动回到 Gateway 默认值；如需排障，可手工改为其他本地或局域网 Gateway 地址。
+服务端口分配（`application.yml` 默认值，可用 `SERVER_PORT` 覆盖）：
 
-Auth/User 直连地址只用于后端排障，例如：
+| 服务 | 端口 | 服务 | 端口 |
+| --- | --- | --- | --- |
+| gateway | 8080 | recommendation | 8085 |
+| auth | 8081 | community | 8086 |
+| user | 8082 | media | 8087 |
+| relation | 8083 | admin | 8088 |
+| store | 8084 | log | 8089 |
 
-```text
-http://127.0.0.1:18081
-http://127.0.0.1:18082
-```
+登录页和注册页默认使用 Gateway 地址，且“服务地址”输入框仍可编辑。若本机保存过早期 Auth 直连值 `http://127.0.0.1:8081` 或旧文档口径 `http://127.0.0.1:18080`，App 会自动回到当前默认值；如需排障，可手工改为其他本地或局域网 Gateway 地址。
 
 iOS Simulator 访问 `127.0.0.1` 时会连到 Mac 本机。真机测试时需要改成 Mac 的局域网 IP。
 
@@ -39,7 +44,17 @@ iOS Simulator 访问 `127.0.0.1` 时会连到 Mac 本机。真机测试时需要
 docker compose --env-file .env.dev -f deploy/docker-compose.dev.yml up -d
 ```
 
-再启动认证、用户和网关服务。B1 本地联调推荐端口：
+推荐方式：按默认端口和 Nacos 服务发现启动，无需覆盖任何端口环境变量。
+
+```sh
+cd after
+./scripts/run-service.sh foodmap-user-service local
+./scripts/run-service.sh foodmap-auth-service local
+./scripts/run-service.sh foodmap-gateway-service local
+```
+
+可选方式：不接 Nacos，网关用静态路由把请求直接转发到固定地址。这种方式使用 `18080/18081/18082`，
+与默认端口块故意错开，适合排查服务发现问题。
 
 ```sh
 cd after
@@ -55,7 +70,7 @@ SPRING_CLOUD_GATEWAY_ROUTES_1_PREDICATES_0='Path=/api/users/**,/internal/users/*
 ./scripts/run-service.sh foodmap-gateway-service local
 ```
 
-如使用 Nacos 服务发现，可按后端联调文档启动对应 profile。
+用可选方式启动时，需要把 App 的服务地址改成 `http://127.0.0.1:18080`。
 
 ## 当前页面
 

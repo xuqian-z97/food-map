@@ -2,12 +2,14 @@ import Foundation
 
 /// FoodMap 后端 API 客户端，承担 Gateway 请求构建、认证头注入和统一响应解析。
 struct APIClient {
-    /// B1 iOS 本地联调默认入口，App 外部请求必须优先通过 Gateway。
-    static let defaultBaseURLString = "http://127.0.0.1:18080"
+    /// B1 iOS 本地联调默认入口，App 外部请求必须优先通过 Gateway；端口与 `after/` 各服务默认端口块一致。
+    static let defaultBaseURLString = "http://127.0.0.1:8080"
     /// 本地保存服务地址的 Key，登录页和启动恢复共用同一配置。
     static let baseURLDefaultsKey = "foodmap.apiBaseURL"
     /// 早期认证服务直连地址；读取到该历史默认值时自动回到 Gateway。
     static let legacyDirectAuthBaseURLString = "http://127.0.0.1:8081"
+    /// 早期文档口径的 Gateway 端口；读取到该历史值时同样自动回到当前默认值。
+    static let legacyGatewayBaseURLString = "http://127.0.0.1:18080"
 
     /// 返回当前推荐服务地址；历史直连默认值自动迁移为 Gateway。
     static func preferredBaseURLString(defaults: UserDefaults = .standard) -> String {
@@ -16,7 +18,9 @@ struct APIClient {
         }
 
         let trimmed = saved.trimmingCharacters(in: .whitespacesAndNewlines)
-        if trimmed.isEmpty || trimmed == legacyDirectAuthBaseURLString {
+        if trimmed.isEmpty
+            || trimmed == legacyDirectAuthBaseURLString
+            || trimmed == legacyGatewayBaseURLString {
             return defaultBaseURLString
         }
         return trimmed

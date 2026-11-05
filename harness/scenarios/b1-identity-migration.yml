@@ -1,5 +1,5 @@
 name: B1 身份模型迁移核验
-description: "核对 V4 迁移后的 auth_identity_bindings / auth_sessions 与旧表一致性：绑定数与账号字段数一致、无孤儿绑定、会话状态与 Refresh Token 一致、未回填 Token 必须能由账号缺失解释"
+description: "核对 V4 迁移快照：绑定数与账号字段数一致、无孤儿绑定、会话状态与 Refresh Token 一致、未回填 Token 能由账号缺失解释；新表尚未接收新写入，漂移单独观测"
 config:
   psql:
     host: 127.0.0.1
@@ -9,12 +9,13 @@ config:
     passwordEnv: FOODMAP_DB_PASSWORD
 vars:
   dbContainer: foodmap-postgres
+  cutover: "2026-11-05 08:21:31+00"
 steps:
-  - command: "docker exec ${dbContainer} psql -U foodmap -d foodmap_auth_db -tAc \"select count(*) from auth_identity_bindings where is_delete=0\""
+  - command: "docker exec ${dbContainer} psql -U foodmap -d foodmap_auth_db -tAc \"select count(*) from auth_identity_bindings where is_delete=0 and created_time < '${cutover}'\""
     capture:
       bindings: value
 
-  - command: "docker exec ${dbContainer} psql -U foodmap -d foodmap_auth_db -tAc \"select (select count(*) from auth_accounts a where a.is_delete=0 and a.account_name is not null) + (select count(*) from auth_accounts a where a.is_delete=0 and a.phone is not null and trim(a.phone)<>'') + (select count(*) from auth_accounts a where a.is_delete=0 and a.email is not null and trim(a.email)<>'')\""
+  - command: "docker exec ${dbContainer} psql -U foodmap -d foodmap_auth_db -tAc \"select (select count(*) from auth_accounts a where a.is_delete=0 and a.created_time < '${cutover}' and a.account_name is not null) + (select count(*) from auth_accounts a where a.is_delete=0 and a.created_time < '${cutover}' and a.phone is not null and trim(a.phone)<>'') + (select count(*) from auth_accounts a where a.is_delete=0 and a.created_time < '${cutover}' and a.email is not null and trim(a.email)<>'')\""
     capture:
       expected: value
 
@@ -38,7 +39,7 @@ steps:
     expect:
       exitCode: 0
 
-  - command: "docker exec ${dbContainer} psql -U foodmap -d foodmap_auth_db -tAc \"select count(*) from auth_sessions s join refresh_tokens rt on rt.token_hash=s.refresh_token_hash where s.is_delete=0 and ((rt.revoked_time is not null and s.session_status<>'REVOKED') or (rt.revoked_time is null and s.session_status='REVOKED'))\""
+  - command: "docker exec ${dbContainer} psql -U foodmap -d foodmap_auth_db -tAc \"select count(*) from auth_sessions s join refresh_tokens rt on rt.token_hash=s.refresh_token_hash where s.is_delete=0 and s.created_time < '${cutover}' and ((rt.revoked_time is not null and s.session_status<>'REVOKED') or (rt.revoked_time is null and s.session_status='REVOKED'))\""
     capture:
       statusMismatch: value
 
@@ -46,7 +47,7 @@ steps:
     expect:
       exitCode: 0
 
-  - command: "docker exec ${dbContainer} psql -U foodmap -d foodmap_auth_db -tAc \"select (select count(*) from refresh_tokens rt where rt.is_delete=0 and not exists (select 1 from auth_sessions s where s.refresh_token_hash=rt.token_hash)) - (select count(*) from refresh_tokens rt where rt.is_delete=0 and not exists (select 1 from auth_accounts a where a.account_id=rt.account_id))\""
+  - command: "docker exec ${dbContainer} psql -U foodmap -d foodmap_auth_db -tAc \"select (select count(*) from refresh_tokens rt where rt.is_delete=0 and rt.created_time < '${cutover}' and not exists (select 1 from auth_sessions s where s.refresh_token_hash=rt.token_hash)) - (select count(*) from refresh_tokens rt where rt.is_delete=0 and rt.created_time < '${cutover}' and not exists (select 1 from auth_accounts a where a.account_id=rt.account_id))\""
     capture:
       unexplained: value
 
@@ -61,3 +62,7 @@ steps:
   - command: "[ ${emptyFields} -eq 0 ]"
     expect:
       exitCode: 0
+
+  - command: "docker exec ${dbContainer} psql -U foodmap -d foodmap_auth_db -tAc \"select 'accounts=' || count(*) from auth_accounts where is_delete=0 union all select 'bindings=' || count(*) from auth_identity_bindings where is_delete=0 union all select 'refresh_tokens=' || count(*) from refresh_tokens where is_delete=0 union all select 'sessions=' || count(*) from auth_sessions where is_delete=0\""
+    capture:
+      totals: value

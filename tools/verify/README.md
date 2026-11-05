@@ -144,7 +144,7 @@ steps:
 `--config` 文件也使用同一套受限 YAML 解析器，路径相对当前工作目录，例如：
 
 ```yaml
-baseUrl: http://127.0.0.1:18080
+baseUrl: http://127.0.0.1:8080
 redis:
   host: 127.0.0.1
   port: 16379

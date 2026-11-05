@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-05T16-28-port-unification",
+  "at": "2026-11-05T16:28:18+08:00",
+  "kind": "e2e",
+  "command": "node tools/verify/cli.mjs run harness/scenarios/{b1-logout,b1-ios-logout,b1-identity-migration}.yml",
+  "env": "local",
+  "result": {
+    "total": 32,
+    "passed": 32,
+    "failed": 0,
+    "skipped": 0
+  },
+  "covers": [
+    "F-001",
+    "F-002",
+    "F-003",
+    "F-004"
+  ],
+  "evidence": [
+    "harness/scenarios/b1-logout.yml",
+    "harness/scenarios/b1-ios-logout.yml",
+    "harness/scenarios/b1-identity-migration.yml"
+  ],
+  "notes": "端口统一 8080 后三场景复跑：12/12、6/6、14/14；App 不传 FOODMAP_BASE_URL 也能直接连上网关"
+}

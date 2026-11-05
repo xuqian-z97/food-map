@@ -55,7 +55,7 @@
 - 2026-06-25 用户手工确认 iOS 注册可用、登录成功后可正常进入地图页。
 - iOS 注册请求体是扁平 JSON，字段与后端注册契约基本一致。
 - 当前前端代码未发现 `print`、`debugPrint`、`NSLog` 直接输出 Token 或密码。
-- iOS 默认服务地址已改为本地 Gateway `http://127.0.0.1:18080`，并保留手工覆盖能力用于排障。
+- iOS 默认服务地址已改为本地 Gateway `http://127.0.0.1:8080`（2026-11-05 端口口径统一），并保留手工覆盖能力用于排障。
 - `APIClient` 已支持 GET/POST、Bearer Token、`X-Request-Id`、`X-Trace-Id`、统一响应 `success/status/code/message/data` 和非 2xx 错误体解析。
 - 登录成功和 Token 恢复都会通过 Gateway `GET /api/users/me` 拉取真实用户资料，运行时不再使用 `accountId/userId = 0` 占位会话。
 - 本地 Token 清理条件已收窄为 401/403 或明确账号/用户失效业务码，网络失败、5xx 和临时响应异常不应误清 Keychain。
@@ -87,7 +87,7 @@
 
 | 优先级 | 任务 | 文件范围 | 完成标准 |
 | --- | --- | --- | --- |
-| P0 | 固化 Gateway 联调启动方式 | `after/scripts`、`docs/integration/B1-auth-ios-backend/integration-plan.md`、必要时 `front/FoodMapApp/README.md` | 能一键或按文档启动 Gateway 18080、Auth 18081、User 18082，前端只需要配置 Gateway Base URL |
+| P0 | 固化 Gateway 联调启动方式 | `after/scripts`、`docs/integration/B1-auth-ios-backend/integration-plan.md`、必要时 `front/FoodMapApp/README.md` | 能一键或按文档启动 Gateway 8080、Auth 8081、User 8082，前端只需要配置 Gateway Base URL |
 | P0 | 复测 Gateway 当前用户链路 | `after/foodmap-gateway-service`、`after/foodmap-user-service` 测试或联调脚本 | Gateway 覆盖外部伪造身份头，`GET /api/users/me` 返回 Token 对应用户资料，错配 accountId 返回 403 |
 | P0 | 保持统一响应契约 | `docs/api/auth-user.md`、后端统一响应类和异常处理 | 正常和异常响应均包含 `success/status/code/message/data`，错误不暴露异常类名、SQL、Token 或内部地址 |
 | P1 | 保留后端回归用例 | `after/foodmap-auth-service`、`after/foodmap-user-service`、`after/foodmap-gateway-service` 测试 | internal 外部拦截、用户开通失败回滚、accountId 错配、敏感日志脱敏持续通过 |
@@ -112,7 +112,7 @@
 | 后端接口可被 curl/Postman/测试调通 | - | Gateway/Auth/User 已通过本地 curl 和 Maven 验证 | 通过 |
 | 测试数据已准备 | 需由 iOS 注册或复用后端账号 | 注册接口已创建 `codex_b1_gateway_171349` 等联调账号 | 有条件通过 |
 | `requestId` / `traceId` 可追踪 | 前端请求已生成 `X-Request-Id` 和 `X-Trace-Id`，本次手工确认未记录具体值 | Gateway/Auth/User 已验证链路追踪 | 有条件通过，待联调摘要 |
-| 必要环境已启动 | iOS 模拟器已执行主链路手工验证；App 可编译 | Gateway 18080、Auth 18081、User 18082、PostgreSQL 已能支撑注册登录主链路 | 有条件通过 |
+| 必要环境已启动 | iOS 模拟器已执行主链路手工验证；App 可编译 | Gateway 8080、Auth 8081、User 8082、PostgreSQL 已能支撑注册登录主链路 | 有条件通过 |
 | 本次范围已冻结 | 登录、注册、当前用户、错误态、敏感日志 | 登录、注册、当前用户、internal 拦截、回滚、accountId 校验 | 已确认 |
 
 联调开始前结论：
@@ -180,9 +180,9 @@
 前端必须通过 Gateway 调用外部 API：
 
 ```text
-POST http://127.0.0.1:18080/api/auth/register
-POST http://127.0.0.1:18080/api/auth/login
-GET  http://127.0.0.1:18080/api/users/me
+POST http://127.0.0.1:8080/api/auth/register
+POST http://127.0.0.1:8080/api/auth/login
+GET  http://127.0.0.1:8080/api/users/me
 ```
 
 `/api/users/me` 必须携带：
@@ -211,9 +211,9 @@ X-Trace-Id: <trace-id>
 | iOS App | `front/FoodMapApp` | 命令行 Debug 构建通过，模拟器主链路手工确认可用 |
 | iOS 版本 / 设备 | iPhone 17 Pro Simulator，iOS 26.5 | 用户截图确认 |
 | Xcode / App 构建号 | Xcode 命令行可构建 | 待记录具体版本 |
-| Gateway | `http://127.0.0.1:18080`，前端联调唯一入口 | 后端已验证后停止，联调时需重启 |
-| Auth Service | `http://127.0.0.1:18081`，本地可用 `AUTH_USER_SERVICE_BASE_URL=http://127.0.0.1:18082` | 后端已验证后停止，联调时需重启 |
-| User Service | `http://127.0.0.1:18082` | 后端已验证后停止，联调时需重启 |
+| Gateway | `http://127.0.0.1:8080`，前端联调唯一入口 | 后端已验证后停止，联调时需重启 |
+| Auth Service | `http://127.0.0.1:8081`，本地可用 `AUTH_USER_SERVICE_BASE_URL=http://127.0.0.1:18082` | 后端已验证后停止，联调时需重启 |
+| User Service | `http://127.0.0.1:8082` | 后端已验证后停止，联调时需重启 |
 | PostgreSQL | `foodmap_auth_db`、`foodmap_user_db` | 已确认 Flyway 和联调数据 |
 | Redis | 如认证会话需要 | 待确认 |
 | 日志服务 | B1.5 能力可用于排查 | 可选 |
