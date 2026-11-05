@@ -14,7 +14,7 @@
 | BUG-008 | iOS 注册页未在提交前校验密码长度 | 真实 iOS L2 联调 | Major | P1 | 已部分复测待证据 | 前端/契约 | IT-001/IT-003 | 本次注册校验修复提交 | 8 位以上注册主链路已手工确认；短密码前端拦截待复测 |
 | BUG-009 | 登出后未过期 Access Token 仍可访问受保护接口 | 真实后端 L2 联调 | Critical | P0 | 已关闭 | 后端/认证/网关 | IT-004/IT-005 | `5994d70` | 真实接口复测通过 |
 | BUG-010 | iOS 注册响应无法解析 userId-only `accountId=null` | 真实 iOS L2 联调 | Critical | P0 | 已修复待复测 | 前端/契约 | IT-001/IT-002/IT-004 | 本次前端模型修复提交 | Swift 解码复现和 iOS Debug 构建通过，待模拟器注册复测 |
-| BUG-011 | iOS 退出登录按钮未调用后端 logout | 真实 iOS L2 联调报告审查 | Critical | P0 | 已修复待复测 | 前端 | IT-005/IT-006/IT-007 | 本次 iOS logout 修复提交 | 待模拟器重新执行退出登录和旧 Token 失效验证 |
+| BUG-011 | iOS 退出登录按钮未调用后端 logout | 真实 iOS L2 联调报告审查 | Critical | P0 | 已关闭 | 前端 | IT-005/IT-006/IT-007 | `cb1145e` | 2026-11-05 模拟器复测通过，见 §1.3 |
 
 ### 1.1 本轮收口口径（2026-11-05）
 
@@ -31,7 +31,7 @@ L2 测试报告中有两处判定错误，已修正，B1 结论随之调整：
 
 阻塞原因（环境，不是代码）：当前机器没有 Xcode 模拟器（`xcode-select` 指向 CommandLineTools），且 Docker / OrbStack 未运行，无法启动 Gateway、Auth、User、PostgreSQL、Redis 后操作 iOS 登录登出。
 
-剩余阻塞项：BUG-011 复测；BUG-004 / 005 / 008 / 010 证据归档；BUG-006 / 007 错误态复测。
+剩余阻塞项：BUG-004 / 005 / 008 / 010 证据归档；BUG-006 / 007 错误态复测。BUG-011 已于 2026-11-05 复测关闭（见 §1.3）。
 
 ### 1.2 接口级复测（2026-11-05）
 
@@ -49,6 +49,23 @@ L2 测试报告中有两处判定错误，已修正，B1 结论随之调整：
 | 外部访问 `/internal/users/bootstrap` | 403 | 403 |
 
 结论：BUG-011 的服务端半程成立，登出后双 Token 均已失效，接口级判定通过。仍缺 iOS 端证据（模拟器点登出、Keychain 清理、重启保持未登录），因此 BUG-011 不关闭。
+
+### 1.3 iOS 端复测（2026-11-05，R2）
+
+在前一轮接口级复测之后补做 iOS 端：
+
+- 环境：iPhone 17 Pro 模拟器 / iOS 26.5，Debug 构建（ad-hoc 签名，保证 Keychain 可写），网关 `http://127.0.0.1:8080`。
+- 驱动方式：Debug 构建内的 `LaunchAutomationProbe` 由 `FOODMAP_AUTOMATION` 环境变量触发，走的是与登出按钮完全相同的 `AuthSessionStore.signOut` 路径；Release 包不编译该探针。
+- 结果（`evidence/2026-11-05-ios-automation.txt`）：
+
+| 观测点 | 结果 |
+| --- | --- |
+| 登录 | `login.ok userId=200024` |
+| 登出请求 | `logout.begin hasSession=true` → `logout.end sessionNil=true`，网关日志 `requestId=ios-4ef36465…` `POST /api/auth/logout` 200 |
+| 服务端 | `refresh_tokens` 对应记录 `REVOKED`（revoked_time 与登出同秒）；Access Token 拒绝名单键数 2 → 3 |
+| 本地状态 | 重启后探针记录 `logout.begin hasSession=false`，说明 Keychain 已清空，App 停在登录页（截图 `evidence/2026-11-05-ios-after-logout.png`） |
+
+结论：IT-005、IT-006、IT-007 在 iOS 端通过，BUG-011 关闭，F-003 验收为 `accepted`（验收单 A-002）。
 
 ## 2. 问题详情
 

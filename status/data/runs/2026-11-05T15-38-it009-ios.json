@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-05T15-38-it009-ios",
+  "at": "2026-11-05T15:38:47+08:00",
+  "kind": "e2e",
+  "command": "xcrun simctl launch <simulator> com.foodmap.FoodMapApp（FOODMAP_AUTOMATION=login-then-logout）",
+  "env": "local",
+  "result": {
+    "total": 6,
+    "passed": 6,
+    "failed": 0,
+    "skipped": 0
+  },
+  "covers": [
+    "F-003"
+  ],
+  "evidence": [
+    "docs/integration/B1-auth-ios-backend/evidence/2026-11-05-ios-automation.txt",
+    "docs/integration/B1-auth-ios-backend/evidence/2026-11-05-ios-after-logout.png"
+  ],
+  "notes": "iOS 端：登录成功→登出请求经网关 200→Refresh Token 置 REVOKED→拒绝名单 +1→重启后 hasSession=false"
+}

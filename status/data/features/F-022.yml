@@ -1,0 +1,21 @@
+schemaVersion: 1
+id: F-022
+title: Access Token 自动刷新
+layer: fullstack
+phase: B1
+priority: P1
+status: planned
+summary: "401 时自动用 Refresh Token 换新 Access Token，并合并并发刷新请求"
+backendModules:
+  - foodmap-auth-service
+frontendModules:
+  - Core/Networking
+  - Core/Auth
+paths:
+  - after/foodmap-auth-service/src/**
+  - front/FoodMapApp/FoodMapApp/Core/Networking/**
+tasks:
+  - T-008
+dependsOn:
+  - F-003
+notes: "从 F-003 拆出：当前只有手动刷新，401 后不会自动续期"

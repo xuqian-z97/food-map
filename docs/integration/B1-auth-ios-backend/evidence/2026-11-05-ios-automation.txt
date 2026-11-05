@@ -1,0 +1,11 @@
+# iOS 侧登出链路探针日志（模拟器 Debug 构建）
+# 设备 iPhone 17 Pro / iOS 26.5，网关 http://127.0.0.1:8080
+# 账号 zxq_ios_152532（userId 200024）
+
+2026-11-05T07:35:18Z app.start automation=login-then-logout foodmapKeys=["FOODMAP_ACCOUNT", "FOODMAP_AUTOMATION", "FOODMAP_BASE_URL", "FOODMAP_PASSWORD"]
+2026-11-05T07:35:18Z login.ok userId=200024
+2026-11-05T07:35:18Z logout.begin hasSession=true
+2026-11-05T07:35:18Z logout.end sessionNil=true message=none
+2026-11-05T07:36:31Z app.start automation=logout foodmapKeys=["FOODMAP_AUTOMATION"]
+2026-11-05T07:36:31Z logout.begin hasSession=false
+2026-11-05T07:36:31Z logout.end sessionNil=true message=none

@@ -39,3 +39,5 @@ xcuserdata/
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 replay_pid*
+# Xcode 本地构建产物（xcodebuild -target 使用项目内 build 目录）
+/front/FoodMapApp/build/

@@ -8,8 +8,9 @@ services:
   - auth
   - redis
 needChain: "true"
-review: pending
-reviewNote: "BUG-011 待模拟器复测，需要先通过评审再执行"
+review: approved
+reviewedAt: 2026-11-05T15:38:00+08:00
+reviewNote: "接口级与 iOS 端均复测通过：旧 Access 与旧 Refresh 均返回 401，iOS 登出后 Keychain 已清理"
 scenarios:
   - id: S1
     name: 携带双 Token 退出

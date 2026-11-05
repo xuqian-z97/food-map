@@ -2,7 +2,8 @@ schemaVersion: 1
 id: T-007
 feature: F-003
 title: "模拟器复测退出登录与旧 Token 失效（BUG-011）"
-status: todo
+status: done
 priority: P0
 owner: human
+doneAt: 2026-11-05T15:38:00+08:00
 notes: "接口级已完成（见 retest-logout.sh）；仅剩 iOS 模拟器点登出复测，阻塞于 Xcode 许可与 xcode-select 未切换"
