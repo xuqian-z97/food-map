@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-05T16-10-it001-it002-register",
+  "at": "2026-11-05T16:10:11+08:00",
+  "kind": "e2e",
+  "command": "xcrun simctl launch（FOODMAP_AUTOMATION=register-checks）+ 网关/用户服务日志归档",
+  "env": "local",
+  "result": {
+    "total": 4,
+    "passed": 4,
+    "failed": 0,
+    "skipped": 0
+  },
+  "covers": [
+    "F-001",
+    "F-002"
+  ],
+  "evidence": [
+    "docs/integration/B1-auth-ios-backend/evidence/2026-11-05-bug-closure.txt"
+  ],
+  "notes": "BUG-004/005/008/010 归档：网关留痕、/api/users/me 200、短密码 400 文案、userId-only 注册解码成功"
+}

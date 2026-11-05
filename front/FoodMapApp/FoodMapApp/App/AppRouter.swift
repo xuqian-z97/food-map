@@ -115,6 +115,8 @@ enum LaunchAutomationProbe {
             await runDisabledAccountCheck(sessionStore: sessionStore, baseURL: baseURL, environment: environment)
         case "session-expired":
             await runExpiredTokenCheck(sessionStore: sessionStore, baseURL: baseURL, environment: environment)
+        case "register-checks":
+            await runRegisterChecks(baseURL: baseURL, environment: environment)
         default:
             append("unknown.action=\(action)")
         }
@@ -140,6 +142,48 @@ enum LaunchAutomationProbe {
             append("gateway-down.unexpectedSuccess")
         } catch {
             append("gateway-down \(describe(error))")
+        }
+    }
+
+    /// 注册链路检查：短密码要拿到后端 400 业务文案，userId-only 响应要能解码出 userId。
+    private static func runRegisterChecks(baseURL: String, environment: [String: String]) async {
+        guard let client = try? APIClient(baseURLString: baseURL) else {
+            append("register.clientFailed baseURL=\(baseURL)")
+            return
+        }
+
+        let shortRequest = RegisterRequest(
+            accountName: "zxq_probe_short_\(Int(Date().timeIntervalSince1970))",
+            phone: nil,
+            email: nil,
+            password: "abc",
+            nickname: "probe",
+            registeredChannel: "IOS"
+        )
+        do {
+            let response = try await client.register(shortRequest)
+            append("register.shortPassword.unexpectedSuccess userId=\(response.userId)")
+        } catch {
+            append("register.shortPassword \(describe(error))")
+        }
+
+        guard let accountName = environment["FOODMAP_NEW_ACCOUNT"] else {
+            append("register.valid.missingAccount")
+            return
+        }
+        let validRequest = RegisterRequest(
+            accountName: accountName,
+            phone: nil,
+            email: nil,
+            password: "Foodmap@123",
+            nickname: "probe",
+            registeredChannel: "IOS"
+        )
+        do {
+            let response = try await client.register(validRequest)
+            append("register.valid userId=\(response.userId) accountStatus=\(response.accountStatus)")
+        } catch {
+            append("register.valid \(describe(error))")
         }
     }
 

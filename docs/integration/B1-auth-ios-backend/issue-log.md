@@ -7,13 +7,13 @@
 | BUG-001 | Gateway 暴露用户开通内部接口 | 后端联调审查 | Critical | P0 | 已关闭 | 后端/网关 | IT-006 | `b37929c` | 复测通过 |
 | BUG-002 | 用户服务开通失败时 auth 数据未回滚 | 后端联调审查 | Critical | P0 | 已关闭 | 后端/认证 | IT-008 | `b37929c` | 复测通过 |
 | BUG-003 | 当前用户查询未校验 accountId 归属 | 后端联调审查 | Major | P1 | 已关闭 | 后端/用户 | IT-007 | `b37929c` | 复测通过 |
-| BUG-004 | iOS 默认联调入口仍直连 Auth 未默认走 Gateway | 前端联调安全点审查 | Major | P1 | 已复测待证据 | 前端 | IT-001/IT-002/IT-004 | 本次前端数据链路提交 | 用户手工确认注册、登录可用，待补请求摘要 |
-| BUG-005 | iOS 缺少当前用户接口和 Bearer 认证请求能力 | 前端联调安全点审查 | Critical | P0 | 已复测待证据 | 前端 | IT-004 | 本次前端数据链路提交 | 用户手工确认登录后进入地图，待补 `/api/users/me` 请求摘要 |
+| BUG-004 | iOS 默认联调入口仍直连 Auth 未默认走 Gateway | 前端联调安全点审查 | Major | P1 | 已关闭 | 前端 | IT-001/IT-002/IT-004 | 本表下方 §1.7 | 2026-11-05：默认值为 Gateway 地址，历史 8081 直连值自动迁移；本轮 App 请求均出现在网关访问日志 |
+| BUG-005 | iOS 缺少当前用户接口和 Bearer 认证请求能力 | 前端联调安全点审查 | Critical | P0 | 已关闭 | 前端 | IT-004 | 本表下方 §1.7 | 2026-11-05：`GET /api/users/me` 200，会话 userId 来自接口返回 |
 | BUG-006 | iOS 网络层未解析非 2xx 统一错误响应和 `status` | 前端联调安全点审查 | Major | P1 | 已关闭 | 前端/契约 | IT-003/IT-005 | 本表下方 §1.4 | 2026-11-05 模拟器复测：401 展示后端文案 `账号或密码错误`，`code=UNAUTHORIZED` 保留 |
 | BUG-007 | iOS 当前用户临时失败时可能误清有效 Token | 前端代码审查 | Major | P0 | 已关闭 | 前端 | IT-002/IT-004 | 本表下方 §1.4 | 2026-11-05 模拟器复测：传输失败后 Token 保留，恢复后会话可用 |
-| BUG-008 | iOS 注册页未在提交前校验密码长度 | 真实 iOS L2 联调 | Major | P1 | 已部分复测待证据 | 前端/契约 | IT-001/IT-003 | 本次注册校验修复提交 | 8 位以上注册主链路已手工确认；短密码前端拦截待复测 |
+| BUG-008 | iOS 注册页未在提交前校验密码长度 | 真实 iOS L2 联调 | Major | P1 | 已关闭 | 前端/契约 | IT-001/IT-003 | 本表下方 §1.7 | 2026-11-05：短密码返回后端 400 文案；前端提交前拦截为代码审查结论 |
 | BUG-009 | 登出后未过期 Access Token 仍可访问受保护接口 | 真实后端 L2 联调 | Critical | P0 | 已关闭 | 后端/认证/网关 | IT-004/IT-005 | `5994d70` | 真实接口复测通过 |
-| BUG-010 | iOS 注册响应无法解析 userId-only `accountId=null` | 真实 iOS L2 联调 | Critical | P0 | 已修复待复测 | 前端/契约 | IT-001/IT-002/IT-004 | 本次前端模型修复提交 | Swift 解码复现和 iOS Debug 构建通过，待模拟器注册复测 |
+| BUG-010 | iOS 注册响应无法解析 userId-only `accountId=null` | 真实 iOS L2 联调 | Critical | P0 | 已关闭 | 前端/契约 | IT-001/IT-002/IT-004 | 本表下方 §1.7 | 2026-11-05：App 内注册返回 `userId=200027 accountStatus=NORMAL`，`accountId` 为空不再报错 |
 | BUG-011 | iOS 退出登录按钮未调用后端 logout | 真实 iOS L2 联调报告审查 | Critical | P0 | 已关闭 | 前端 | IT-005/IT-006/IT-007 | `cb1145e` | 2026-11-05 模拟器复测通过，见 §1.3 |
 | BUG-012 | SQL DEBUG 日志输出完整手机号与邮箱 | LOG-002 敏感信息检查 | Major | P1 | 已关闭 | 后端 | LOG-002 | `6fd157c` | SQL 日志参数名通用（`loginIdentifier`）导致内容未脱敏；已在 `LogMasker` 增加按内容脱敏，见 §1.5 |
 
@@ -108,6 +108,19 @@ L2 测试报告中有两处判定错误，已修正，B1 结论随之调整：
 前提校验：过期 Token 先经 curl 走网关，返回 `401 UNAUTHORIZED`「Access Token已过期」，确认是真实过期语义而非签名错误。
 
 未覆盖：用户被删除、网关 504、真实断网重连；请求中途过期的自动刷新属 F-022。
+
+### 1.7 历史前端问题证据归档（2026-11-05）
+
+前几轮遗留的「已复测待证据」在此统一补运行证据，见 `evidence/2026-11-05-bug-closure.txt`：
+
+| BUG | 归档证据 |
+| --- | --- |
+| BUG-004 | 源码默认值为 Gateway 地址（`APIClient.defaultBaseURLString`），历史 `127.0.0.1:8081` 直连值自动迁移；本轮 App 请求在网关日志留下 `requestId=ios-…` 的 `gateway.request.completed` |
+| BUG-005 | 用户服务日志 `path=/api/users/me status=200`（`requestId=ios-…`），探针会话 `login.ok userId=200024` 即该接口返回值 |
+| BUG-008 | 经 App 网络层发起短密码注册：`status=400 code=BAD_REQUEST message=password 个数必须在8和128之间`，说明后端 400 文案能被展示；提交前拦截为代码审查结论（`RegisterView` 密码 < 8 位不发请求） |
+| BUG-010 | 经 App 内 `APIClient.register` 真实注册：`userId=200027 accountStatus=NORMAL`，`accountId` 为空不再触发解码失败 |
+
+环境说明：本轮本地服务用默认端口 8080/8081/8082 启动，App 通过 `FOODMAP_BASE_URL` 覆盖为 8080；文档口径写的是 Gateway 18080 / Auth 18081 / User 18082。两者需要统一，尚未处理。
 
 ## 2. 问题详情
 

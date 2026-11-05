@@ -1,0 +1,19 @@
+# BUG-004 / 005 / 008 / 010 收口证据（2026-11-05）
+
+## BUG-004 iOS 默认入口走 Gateway（非 8081 直连 Auth）
+源码：APIClient.defaultBaseURLString = http://127.0.0.1:18080；历史直连值被自动迁移
+网关访问日志（本轮 App 请求）：
+gateway.request.completed requestId=ios-2e44ce7f-8fb8-41ae-98ed-47a17625dfe8 traceId=ios-a55951e8-dcfc-41bf-9233-7888b9d
+gateway.request.received requestId=ios-88aff640-2fa7-4761-8fb1-68f947b9ff4d traceId=ios-fd04a04b-ce45-4bce-93e8-d94c9cdd
+gateway.request.completed requestId=ios-88aff640-2fa7-4761-8fb1-68f947b9ff4d traceId=ios-fd04a04b-ce45-4bce-93e8-d94c9cd
+
+## BUG-005 登录后经 /api/users/me 建立真实会话
+requestId=ios-a002d7bc-a255-4326-b3e7-3599f1aa9512 method=GET path=/api/users/me status=200 durationMs=41 clientIp=127.0.0.1
+requestId=ios-a01e77bf-49eb-46e4-9b9f-059fee213847 method=GET path=/api/users/me status=200 durationMs=4 clientIp=127.0.0.1
+探针：login.ok userId=200024
+
+## BUG-008 短密码错误文案（经 App 网络层解码）
+register.shortPassword status=400 code=BAD_REQUEST clearAuth=false message=password 个数必须在8和128之间
+
+## BUG-010 userId-only 注册响应可解码
+register.valid userId=200027 accountStatus=NORMAL

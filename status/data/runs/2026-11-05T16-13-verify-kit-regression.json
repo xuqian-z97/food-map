@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-05T16-13-verify-kit-regression",
+  "at": "2026-11-05T16:13:25+08:00",
+  "kind": "e2e",
+  "command": "node tools/verify/cli.mjs run harness/scenarios/b1-logout.yml / b1-ios-logout.yml",
+  "env": "local",
+  "result": {
+    "total": 18,
+    "passed": 18,
+    "failed": 0,
+    "skipped": 0
+  },
+  "covers": [
+    "F-001",
+    "F-002",
+    "F-003"
+  ],
+  "evidence": [
+    "harness/scenarios/b1-logout.yml",
+    "harness/scenarios/b1-ios-logout.yml"
+  ],
+  "notes": "verify-kit 复跑：接口级 12/12（389ms）、iOS 端 6/6（12.9s），结论与手工复测一致"
+}
