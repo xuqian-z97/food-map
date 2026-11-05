@@ -11,21 +11,27 @@ import com.foodmap.auth.dto.LogoutRequest;
 import com.foodmap.auth.dto.RefreshTokenRequest;
 import com.foodmap.auth.dto.RegisterRequest;
 import com.foodmap.auth.dto.RegisterResponse;
+import com.foodmap.auth.infrastructure.persistence.entity.AuthIdentityBindingEntity;
+import com.foodmap.auth.infrastructure.persistence.entity.AuthSessionEntity;
 import com.foodmap.auth.infrastructure.persistence.entity.RefreshTokenEntity;
 import com.foodmap.auth.infrastructure.persistence.memory.InMemoryAuthAccountRepository;
 import com.foodmap.auth.infrastructure.persistence.memory.InMemoryAuthCredentialRepository;
+import com.foodmap.auth.infrastructure.persistence.memory.InMemoryAuthIdentityBindingRepository;
+import com.foodmap.auth.infrastructure.persistence.memory.InMemoryAuthSessionRepository;
 import com.foodmap.auth.infrastructure.persistence.memory.InMemoryLoginLogRepository;
 import com.foodmap.auth.infrastructure.persistence.memory.InMemoryRefreshTokenRepository;
 import com.foodmap.auth.service.impl.AuthServiceImpl;
 import com.foodmap.common.exception.FoodMapException;
 import com.foodmap.common.security.AccessTokenDenylistClient;
 import com.foodmap.common.security.HmacTokenCodec;
+import com.foodmap.common.security.NoopAccessTokenDenylistClient;
 import com.foodmap.common.security.TokenClaims;
 import org.junit.jupiter.api.Test;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.lang.reflect.Method;
 import java.time.OffsetDateTime;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -33,10 +39,21 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @SuppressWarnings("deprecation")
 class AuthServiceImplTest {
     private static final String TOKEN_SECRET = "0123456789abcdef0123456789abcdef";
+    private static final String ACCOUNT_NAME_HASH =
+            "d6aaeee432d19c9a1296354bd856943f68fcf7de5eff36737b2859c2ebe54ec8";
+    private static final String PHONE_HASH =
+            "a6942f9771d67f34034d2f1926988ed3fad3bf1b4e7cedb9a31f31398dea43bc";
+    private static final String EMAIL_HASH =
+            "778c1f9441e83cf5196663e510bf94882e36cd7e5804186c31d4c04b277e0815";
+    private static final String SHORT_PHONE_HASH =
+            "03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4";
+    private static final String NORMALIZED_EMAIL_HASH =
+            "321ba197033e81286fedb719d60d4ed5cecaed170733cb4a92013811afc0e3b6";
 
     @Test
     void registersUserAndLogsInWithAccountName() {
-        AuthService service = newAuthService(new InMemoryRefreshTokenRepository(), new HmacTokenIssuer(TOKEN_SECRET));
+        TestContext context = newContext();
+        AuthService service = context.service();
 
         RegisterResponse registerResponse = service.register(defaultRegisterRequest());
         LoginResponse loginResponse = service.login(new LoginRequest("foodie_01", "secret123"));
@@ -65,14 +82,170 @@ class AuthServiceImplTest {
     }
 
     @Test
+    void registerWritesThreeLocalIdentityBindingsWithV4HashAndMask() {
+        TestContext context = newContext();
+        AuthService service = context.service();
+
+        RegisterResponse registerResponse = service.register(defaultRegisterRequest());
+        List<AuthIdentityBindingEntity> bindings =
+                context.identityBindingRepository().findByUserId(registerResponse.userId());
+
+        assertThat(bindings).hasSize(3);
+
+        AuthIdentityBindingEntity accountName = bindingOfType(bindings, "ACCOUNT_NAME");
+        assertThat(accountName.getProvider()).isEqualTo("LOCAL");
+        assertThat(accountName.getIdentityHash()).isEqualTo(ACCOUNT_NAME_HASH);
+        assertThat(accountName.getDisplayMasked()).isEqualTo("foodie_01");
+        assertThat(accountName.getPrimaryIdentity()).isEqualTo((short) 1);
+        assertThat(accountName.getVerified()).isEqualTo((short) 1);
+        assertThat(accountName.getIdentityStatus()).isEqualTo("NORMAL");
+        assertThat(accountName.getBoundTime()).isNotNull();
+        assertThat(accountName.getUserId()).isEqualTo(registerResponse.userId());
+
+        AuthIdentityBindingEntity phone = bindingOfType(bindings, "PHONE");
+        assertThat(phone.getProvider()).isEqualTo("LOCAL");
+        assertThat(phone.getIdentityHash()).isEqualTo(PHONE_HASH);
+        assertThat(phone.getDisplayMasked()).isEqualTo("138****8000");
+        assertThat(phone.getPrimaryIdentity()).isZero();
+        assertThat(phone.getVerified()).isEqualTo((short) 1);
+        assertThat(phone.getIdentityStatus()).isEqualTo("NORMAL");
+
+        AuthIdentityBindingEntity email = bindingOfType(bindings, "EMAIL");
+        assertThat(email.getProvider()).isEqualTo("LOCAL");
+        assertThat(email.getIdentityHash()).isEqualTo(EMAIL_HASH);
+        assertThat(email.getDisplayMasked()).isEqualTo("f***@example.com");
+        assertThat(email.getPrimaryIdentity()).isZero();
+        assertThat(email.getVerified()).isEqualTo((short) 1);
+        assertThat(email.getIdentityStatus()).isEqualTo("NORMAL");
+    }
+
+    @Test
+    void registerNormalizesIdentifiersAndMasksShortPhoneByV4Rules() {
+        TestContext context = newContext();
+
+        RegisterResponse registerResponse = context.service().register(new RegisterRequest(
+                " Foodie_01 ",
+                " 1234 ",
+                " Foo@Example.COM ",
+                "secret123",
+                "小张",
+                "IOS"
+        ));
+        List<AuthIdentityBindingEntity> bindings =
+                context.identityBindingRepository().findByUserId(registerResponse.userId());
+
+        AuthIdentityBindingEntity accountName = bindingOfType(bindings, "ACCOUNT_NAME");
+        assertThat(accountName.getIdentityHash()).isEqualTo(ACCOUNT_NAME_HASH);
+        assertThat(accountName.getDisplayMasked()).isEqualTo("Foodie_01");
+
+        AuthIdentityBindingEntity phone = bindingOfType(bindings, "PHONE");
+        assertThat(phone.getIdentityHash()).isEqualTo(SHORT_PHONE_HASH);
+        assertThat(phone.getDisplayMasked()).isEqualTo("***");
+
+        AuthIdentityBindingEntity email = bindingOfType(bindings, "EMAIL");
+        assertThat(email.getIdentityHash()).isEqualTo(NORMALIZED_EMAIL_HASH);
+        assertThat(email.getDisplayMasked()).isEqualTo("f***@example.com");
+    }
+
+    @Test
+    void registerSkipsPhoneAndEmailBindingsWhenIdentifiersAreAbsent() {
+        TestContext context = newContext();
+
+        RegisterResponse registerResponse = context.service().register(new RegisterRequest(
+                "only_name",
+                null,
+                null,
+                "secret123",
+                "小张",
+                null
+        ));
+
+        List<AuthIdentityBindingEntity> bindings =
+                context.identityBindingRepository().findByUserId(registerResponse.userId());
+        assertThat(bindings).hasSize(1);
+        assertThat(bindings.get(0).getIdentityType()).isEqualTo("ACCOUNT_NAME");
+    }
+
+    @Test
+    void loginWritesActiveSessionForIssuedRefreshToken() {
+        TestContext context = newContext();
+        AuthService service = context.service();
+
+        RegisterResponse registerResponse = service.register(defaultRegisterRequest());
+        LoginResponse loginResponse = service.login(new LoginRequest("foodie_01", "secret123"));
+
+        String refreshTokenHash = context.tokenIssuer().tokenHash(loginResponse.refreshToken());
+        RefreshTokenEntity refreshTokenEntity = context.refreshTokenRepository()
+                .findByTokenHash(refreshTokenHash)
+                .orElseThrow();
+        List<AuthSessionEntity> sessions = context.sessionRepository().findByUserId(registerResponse.userId());
+
+        assertThat(sessions).hasSize(1);
+        AuthSessionEntity session = sessions.get(0);
+        assertThat(session.getSessionId()).isEqualTo("sess-" + refreshTokenEntity.getTokenId());
+        assertThat(session.getUserId()).isEqualTo(registerResponse.userId());
+        assertThat(session.getRefreshTokenHash()).isEqualTo(refreshTokenHash);
+        assertThat(session.getSessionStatus()).isEqualTo("ACTIVE");
+        assertThat(session.getDeviceType()).isEqualTo("IOS");
+        assertThat(session.getExpiresTime()).isEqualTo(loginResponse.refreshTokenExpiresTime());
+        assertThat(session.getRevokedTime()).isNull();
+    }
+
+    @Test
+    void logoutRevokesSessionByRefreshTokenHash() {
+        TestContext context = newContext();
+        AuthService service = context.service();
+
+        service.register(defaultRegisterRequest());
+        LoginResponse loginResponse = service.login(new LoginRequest("foodie_01", "secret123"));
+        String refreshTokenHash = context.tokenIssuer().tokenHash(loginResponse.refreshToken());
+        AuthSessionEntity session = context.sessionRepository()
+                .findByRefreshTokenHash(refreshTokenHash)
+                .orElseThrow();
+        String sessionId = session.getSessionId();
+        assertThat(session.getSessionStatus()).isEqualTo("ACTIVE");
+
+        service.logout(new LogoutRequest(loginResponse.refreshToken()));
+
+        assertThat(context.sessionRepository().findBySessionId(sessionId))
+                .hasValueSatisfying(revokedSession -> {
+                    assertThat(revokedSession.getSessionStatus()).isEqualTo("REVOKED");
+                    assertThat(revokedSession.getRevokedTime()).isNotNull();
+                });
+        assertThat(context.refreshTokenRepository().findByTokenHash(refreshTokenHash))
+                .hasValueSatisfying(token -> assertThat(token.getTokenStatus())
+                        .isEqualTo(TokenStatus.REVOKED.name()));
+    }
+
+    @Test
+    void refreshKeepsSessionActiveWithoutRotatingRefreshToken() {
+        TestContext context = newContext();
+        AuthService service = context.service();
+
+        RegisterResponse registerResponse = service.register(defaultRegisterRequest());
+        LoginResponse loginResponse = service.login(new LoginRequest("foodie_01", "secret123"));
+        String tokenHash = context.tokenIssuer().tokenHash(loginResponse.refreshToken());
+        AuthSessionEntity session = context.sessionRepository().findByRefreshTokenHash(tokenHash).orElseThrow();
+        String sessionId = session.getSessionId();
+
+        LoginResponse refreshed = service.refresh(new RefreshTokenRequest(loginResponse.refreshToken()));
+
+        assertThat(refreshed.refreshToken()).isEqualTo(loginResponse.refreshToken());
+        assertThat(context.sessionRepository().findBySessionId(sessionId))
+                .hasValueSatisfying(current -> {
+                    assertThat(current.getSessionStatus()).isEqualTo("ACTIVE");
+                    assertThat(current.getRevokedTime()).isNull();
+                    assertThat(current.getRefreshTokenHash()).isEqualTo(tokenHash);
+                });
+        assertThat(context.sessionRepository().findByUserId(registerResponse.userId())).hasSize(1);
+    }
+
+    @Test
     void logoutShouldDenylistUsableAccessTokenUntilOriginalAccessExpiry() {
         HmacTokenIssuer tokenIssuer = new HmacTokenIssuer(TOKEN_SECRET);
         RecordingAccessTokenDenylist recordingDenylist = new RecordingAccessTokenDenylist();
-        AuthService service = newAuthServiceWithDenylist(
-                new InMemoryRefreshTokenRepository(),
-                tokenIssuer,
-                recordingDenylist
-        );
+        TestContext context = newContext(recordingDenylist);
+        AuthService service = context.service();
         RegisterResponse registerResponse = service.register(defaultRegisterRequest());
         LoginResponse loginResponse = service.login(new LoginRequest("foodie_01", "secret123"));
         TokenClaims accessClaims = tokenIssuer.parseAccessToken(loginResponse.accessToken());
@@ -98,7 +271,8 @@ class AuthServiceImplTest {
 
     @Test
     void registerLoginRefreshAndCurrentResponsesUseUserIdOnlyIdentity() {
-        AuthService service = newAuthService(new InMemoryRefreshTokenRepository(), new HmacTokenIssuer(TOKEN_SECRET));
+        TestContext context = newContext();
+        AuthService service = context.service();
 
         RegisterResponse registerResponse = service.register(defaultRegisterRequest());
         LoginResponse loginResponse = service.login(new LoginRequest("foodie_01", "secret123"));
@@ -117,14 +291,14 @@ class AuthServiceImplTest {
 
     @Test
     void loginIssuedTokensCarryUserIdOnlyClaims() {
-        HmacTokenIssuer tokenIssuer = new HmacTokenIssuer(TOKEN_SECRET);
-        AuthService service = newAuthService(new InMemoryRefreshTokenRepository(), tokenIssuer);
+        TestContext context = newContext();
+        AuthService service = context.service();
 
         RegisterResponse registerResponse = service.register(defaultRegisterRequest());
         LoginResponse loginResponse = service.login(new LoginRequest("foodie_01", "secret123"));
 
-        TokenClaims accessClaims = tokenIssuer.parseAccessToken(loginResponse.accessToken());
-        TokenClaims refreshClaims = tokenIssuer.parseRefreshToken(loginResponse.refreshToken());
+        TokenClaims accessClaims = context.tokenIssuer().parseAccessToken(loginResponse.accessToken());
+        TokenClaims refreshClaims = context.tokenIssuer().parseRefreshToken(loginResponse.refreshToken());
         assertThat(accessClaims.accountId()).isNull();
         assertThat(accessClaims.userId()).isEqualTo(registerResponse.userId());
         assertThat(refreshClaims.accountId()).isNull();
@@ -133,9 +307,8 @@ class AuthServiceImplTest {
 
     @Test
     void refreshAcceptsUserIdOnlyRefreshTokenWhenStoredTokenIsUsable() {
-        HmacTokenIssuer tokenIssuer = new HmacTokenIssuer(TOKEN_SECRET);
-        InMemoryRefreshTokenRepository refreshTokenRepository = new InMemoryRefreshTokenRepository();
-        AuthService service = newAuthService(refreshTokenRepository, tokenIssuer);
+        TestContext context = newContext();
+        AuthService service = context.service();
         RegisterResponse registerResponse = service.register(defaultRegisterRequest());
         OffsetDateTime expiresTime = OffsetDateTime.now().plusDays(30);
         String userIdOnlyRefreshToken = new HmacTokenCodec(TOKEN_SECRET)
@@ -143,52 +316,51 @@ class AuthServiceImplTest {
         RefreshTokenEntity storedRefreshToken = new RefreshTokenEntity();
         storedRefreshToken.setTokenId(9001L);
         storedRefreshToken.setAccountId(100001L);
-        storedRefreshToken.setTokenHash(tokenIssuer.tokenHash(userIdOnlyRefreshToken));
+        storedRefreshToken.setTokenHash(context.tokenIssuer().tokenHash(userIdOnlyRefreshToken));
         storedRefreshToken.setExpiresTime(expiresTime);
         storedRefreshToken.setTokenStatus(TokenStatus.ACTIVE.name());
         storedRefreshToken.setCreatedTime(OffsetDateTime.now());
         storedRefreshToken.setUpdatedTime(OffsetDateTime.now());
         storedRefreshToken.setIsDelete((short) 0);
-        refreshTokenRepository.save(storedRefreshToken);
+        context.refreshTokenRepository().save(storedRefreshToken);
 
         LoginResponse refreshed = service.refresh(new RefreshTokenRequest(userIdOnlyRefreshToken));
 
         assertThat(refreshed.accountId()).isNull();
         assertThat(refreshed.userId()).isEqualTo(registerResponse.userId());
-        assertThat(tokenIssuer.parseAccessToken(refreshed.accessToken()).accountId()).isNull();
+        assertThat(context.tokenIssuer().parseAccessToken(refreshed.accessToken()).accountId()).isNull();
+        assertThat(refreshed.refreshToken()).isEqualTo(userIdOnlyRefreshToken);
+        assertThat(context.sessionRepository().findByUserId(registerResponse.userId())).isEmpty();
     }
 
-    private static AuthService newAuthService(
-            InMemoryRefreshTokenRepository refreshTokenRepository,
-            HmacTokenIssuer tokenIssuer
-    ) {
-        return new AuthServiceImpl(
+    private static TestContext newContext() {
+        return newContext(new NoopAccessTokenDenylistClient());
+    }
+
+    private static TestContext newContext(AccessTokenDenylistClient denylist) {
+        HmacTokenIssuer tokenIssuer = new HmacTokenIssuer(TOKEN_SECRET);
+        InMemoryRefreshTokenRepository refreshTokenRepository = new InMemoryRefreshTokenRepository();
+        InMemoryAuthIdentityBindingRepository identityBindingRepository = new InMemoryAuthIdentityBindingRepository();
+        InMemoryAuthSessionRepository sessionRepository = new InMemoryAuthSessionRepository();
+        AuthService service = new AuthServiceImpl(
                 new TestAuthBusinessIdGenerator(),
                 new InMemoryAuthAccountRepository(),
                 new InMemoryAuthCredentialRepository(),
                 refreshTokenRepository,
-                new InMemoryLoginLogRepository(),
-                new Pbkdf2PasswordHashService("test-pepper"),
-                tokenIssuer,
-                new NoopUserProfileProvisionClient()
-        );
-    }
-
-    private static AuthService newAuthServiceWithDenylist(
-            InMemoryRefreshTokenRepository refreshTokenRepository,
-            HmacTokenIssuer tokenIssuer,
-            AccessTokenDenylistClient denylist
-    ) {
-        return new AuthServiceImpl(
-                new TestAuthBusinessIdGenerator(),
-                new InMemoryAuthAccountRepository(),
-                new InMemoryAuthCredentialRepository(),
-                refreshTokenRepository,
+                identityBindingRepository,
+                sessionRepository,
                 new InMemoryLoginLogRepository(),
                 new Pbkdf2PasswordHashService("test-pepper"),
                 tokenIssuer,
                 new NoopUserProfileProvisionClient(),
                 denylist
+        );
+        return new TestContext(
+                service,
+                refreshTokenRepository,
+                identityBindingRepository,
+                sessionRepository,
+                tokenIssuer
         );
     }
 
@@ -201,6 +373,25 @@ class AuthServiceImplTest {
                 "小张",
                 "IOS"
         );
+    }
+
+    private static AuthIdentityBindingEntity bindingOfType(
+            List<AuthIdentityBindingEntity> bindings,
+            String identityType
+    ) {
+        return bindings.stream()
+                .filter(binding -> identityType.equals(binding.getIdentityType()))
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("missing identity binding: " + identityType));
+    }
+
+    private record TestContext(
+            AuthService service,
+            InMemoryRefreshTokenRepository refreshTokenRepository,
+            InMemoryAuthIdentityBindingRepository identityBindingRepository,
+            InMemoryAuthSessionRepository sessionRepository,
+            HmacTokenIssuer tokenIssuer
+    ) {
     }
 
     private static final class RecordingAccessTokenDenylist implements AccessTokenDenylistClient {

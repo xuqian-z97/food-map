@@ -29,6 +29,11 @@ public interface AuthBusinessIdMapper {
     Long nextRefreshTokenId();
 
     /**
+     * 读取下一个登录身份绑定业务主键。
+     */
+    Long nextIdentityId();
+
+    /**
      * 读取下一个登录日志业务主键。
      */
     Long nextLoginLogId();

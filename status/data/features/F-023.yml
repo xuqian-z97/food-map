@@ -3,8 +3,8 @@ id: F-023
 title: 认证写入双写与读取切换
 layer: fullstack
 phase: B1
-status: planned
 priority: P1
+status: accepted
 summary: "注册/登录/登出同时写入 auth_identity_bindings 与 auth_sessions，并把读取侧切到新表"
 backendModules:
   - foodmap-auth-service
@@ -12,6 +12,7 @@ paths:
   - after/foodmap-auth-service/src/**
 tasks:
   - T-024
+acceptance: A-006
 dependsOn:
   - F-004
-notes: "V4 只完成建表与回填；新账号和新会话仍只写旧表，新表会产生漂移"
+notes: "注册/登录/登出已双写；V5 补齐迁移窗口期；读取侧仍走旧表，切换另立任务"

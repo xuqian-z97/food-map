@@ -15,6 +15,7 @@ class TestAuthBusinessIdGenerator implements AuthBusinessIdGenerator {
     private final AtomicLong credentialIdSequence = new AtomicLong(300_000L);
     private final AtomicLong tokenIdSequence = new AtomicLong(400_000L);
     private final AtomicLong loginLogIdSequence = new AtomicLong(500_000L);
+    private final AtomicLong identityIdSequence = new AtomicLong(600_000L);
 
     /**
      * 生成测试账号业务主键。
@@ -46,6 +47,14 @@ class TestAuthBusinessIdGenerator implements AuthBusinessIdGenerator {
     @Override
     public Long nextRefreshTokenId() {
         return tokenIdSequence.incrementAndGet();
+    }
+
+    /**
+     * 生成测试登录身份绑定业务主键。
+     */
+    @Override
+    public Long nextIdentityId() {
+        return identityIdSequence.incrementAndGet();
     }
 
     /**

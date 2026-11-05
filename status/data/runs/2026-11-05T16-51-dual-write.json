@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-05T16-51-dual-write",
+  "at": "2026-11-05T16:51:27+08:00",
+  "kind": "integration",
+  "command": "node tools/verify/cli.mjs run harness/scenarios/{b1-identity-consistency,b1-identity-dual-write,b1-logout}.yml",
+  "env": "local",
+  "result": {
+    "total": 35,
+    "passed": 35,
+    "failed": 0,
+    "skipped": 0
+  },
+  "covers": [
+    "F-023",
+    "F-001",
+    "F-003"
+  ],
+  "evidence": [
+    "docs/integration/B1-auth-ios-backend/evidence/2026-11-05-f023-dual-write.txt",
+    "harness/scenarios/b1-identity-dual-write.yml",
+    "harness/scenarios/b1-identity-consistency.yml"
+  ],
+  "notes": "绑定 57=57、账号缺绑定 0、孤儿 0、缺会话 Token 9=孤儿 Token 9；refresh 不轮换契约保持"
+}

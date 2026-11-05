@@ -19,6 +19,10 @@
         select nextval('auth_refresh_token_id_seq')
     </select>
 
+    <select id="nextIdentityId" resultType="long">
+        select nextval('auth_identity_binding_id_seq')
+    </select>
+
     <select id="nextLoginLogId" resultType="long">
         select nextval('auth_login_log_id_seq')
     </select>

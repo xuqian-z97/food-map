@@ -29,6 +29,11 @@ public interface AuthBusinessIdGenerator {
     Long nextRefreshTokenId();
 
     /**
+     * 生成登录身份绑定业务主键，用于 auth_identity_bindings.identity_id。
+     */
+    Long nextIdentityId();
+
+    /**
      * 生成登录日志业务主键，用于 login_logs.login_log_id。
      */
     Long nextLoginLogId();

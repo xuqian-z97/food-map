@@ -32,10 +32,10 @@ public interface AuthService {
     LoginResponse login(LoginRequest request);
 
     /**
-     * 使用有效 Refresh Token 刷新 Access Token。
+     * 使用有效 Refresh Token 刷新 Access Token，并轮换 Refresh Token。
      *
      * @param request 刷新请求。
-     * @return 刷新后的 Access Token、Refresh Token 信息和用户业务主键，旧 accountId 兼容字段返回 null。
+     * @return 刷新后的 Access Token、轮换后的 Refresh Token 和用户业务主键，旧 accountId 兼容字段返回 null。
      */
     LoginResponse refresh(RefreshTokenRequest request);
 

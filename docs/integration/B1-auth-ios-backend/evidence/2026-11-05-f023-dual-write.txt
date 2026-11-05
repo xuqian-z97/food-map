@@ -1,0 +1,27 @@
+# F-023 认证写入双写核验（2026-11-05）
+
+## 1. 迁移与回填
+Migrating schema "public" to version "5 - backfill identity and session drift window"
+
+## 2. 全局一致性（双写生效 + V5 补窗口期后）
+accounts=28
+bindings=57
+expected_bindings=57
+accounts_without_bindings=0
+orphan_bindings=0
+refresh_tokens=39
+sessions=30
+tokens_without_session=9
+tokens_orphan_account=9
+
+## 3. 场景核验
+node tools/verify/cli.mjs run harness/scenarios/b1-identity-consistency.yml  → 通过 16/16（1828ms）
+node tools/verify/cli.mjs run harness/scenarios/b1-identity-dual-write.yml   → 通过 19/19（1693ms）
+node tools/verify/cli.mjs run harness/scenarios/b1-logout.yml              → 通过 12/12（429ms）
+
+## 4. 后端测试
+mvn -o -Dmaven.repo.local=/tmp/m2 test（全 reactor）
+common 70 + gateway 8 + auth 16 + user 6 + admin 7 + log 11 = 118，Failures 0 / Errors 0
+
+## 5. 接口契约
+refresh 仍不轮换 Refresh Token：响应中的 refreshToken 与请求一致，F-003 验收结论保持有效

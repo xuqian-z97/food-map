@@ -2,7 +2,8 @@ schemaVersion: 1
 id: T-024
 feature: F-023
 title: "注册、登录、登出双写新身份表与会话表"
-status: todo
+status: done
 priority: P1
 owner: agent
+doneAt: 2026-11-05T16:52:00+08:00
 notes: "注册写 3 类 LOCAL 绑定；登录写会话；登出更新 session_status；先双写再切读取"

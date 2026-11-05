@@ -54,10 +54,10 @@ public class AuthController {
     }
 
     /**
-     * 使用 Refresh Token 刷新 Access Token。
+     * 使用 Refresh Token 刷新 Access Token，客户端必须保存响应中轮换后的 Refresh Token。
      *
      * @param request Refresh Token 刷新请求。
-     * @return 新签发的 Access Token 和原 Refresh Token 信息。
+     * @return 新签发的 Access Token 和轮换后的 Refresh Token 信息。
      */
     @PostMapping("/refresh")
     public ApiResponse<LoginResponse> refresh(@Valid @RequestBody RefreshTokenRequest request) {

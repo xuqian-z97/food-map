@@ -56,6 +56,16 @@ public class AuthBusinessIdGeneratorImpl implements AuthBusinessIdGenerator {
     }
 
     /**
+     * 生成登录身份绑定业务主键。
+     *
+     * @return 新的登录身份绑定业务主键。
+     */
+    @Override
+    public Long nextIdentityId() {
+        return authBusinessIdMapper.nextIdentityId();
+    }
+
+    /**
      * 生成登录日志业务主键。
      *
      * @return 新的登录日志业务主键。

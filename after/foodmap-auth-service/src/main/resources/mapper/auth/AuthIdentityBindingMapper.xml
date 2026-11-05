@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.foodmap.auth.infrastructure.persistence.mapper.AuthIdentityBindingMapper">
+    <resultMap id="AuthIdentityBindingResultMap"
+               type="com.foodmap.auth.infrastructure.persistence.entity.AuthIdentityBindingEntity">
+        <id property="id" column="id"/>
+        <result property="createdTime" column="created_time"/>
+        <result property="updatedTime" column="updated_time"/>
+        <result property="isDelete" column="is_delete"/>
+        <result property="identityId" column="identity_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="provider" column="provider"/>
+        <result property="identityType" column="identity_type"/>
+        <result property="identityHash" column="identity_hash"/>
+        <result property="identityCipher" column="identity_cipher"/>
+        <result property="displayMasked" column="display_masked"/>
+        <result property="providerSubject" column="provider_subject"/>
+        <result property="unionSubject" column="union_subject"/>
+        <result property="verified" column="verified"/>
+        <result property="primaryIdentity" column="primary_identity"/>
+        <result property="identityStatus" column="identity_status"/>
+        <result property="boundTime" column="bound_time"/>
+    </resultMap>
+
+    <sql id="BaseColumns">
+        id, created_time, updated_time, is_delete, identity_id, user_id, provider, identity_type,
+        identity_hash, identity_cipher, display_masked, provider_subject, union_subject,
+        verified, primary_identity, identity_status, bound_time
+    </sql>
+
+    <sql id="ConditionWhere">
+        where is_delete = 0
+        <if test="condition != null">
+            <if test="condition.id != null">and id = #{condition.id}</if>
+            <if test="condition.identityId != null">and identity_id = #{condition.identityId}</if>
+            <if test="condition.userId != null">and user_id = #{condition.userId}</if>
+            <if test="condition.provider != null and condition.provider != ''">
+                and provider = #{condition.provider}
+            </if>
+            <if test="condition.identityType != null and condition.identityType != ''">
+                and identity_type = #{condition.identityType}
+            </if>
+            <if test="condition.identityHash != null and condition.identityHash != ''">
+                and identity_hash = #{condition.identityHash}
+            </if>
+            <if test="condition.identityStatus != null and condition.identityStatus != ''">
+                and identity_status = #{condition.identityStatus}
+            </if>
+            <if test="condition.verified != null">and verified = #{condition.verified}</if>
+            <if test="condition.primaryIdentity != null">and primary_identity = #{condition.primaryIdentity}</if>
+        </if>
+    </sql>
+
+    <select id="selectById" resultMap="AuthIdentityBindingResultMap">
+        select <include refid="BaseColumns"/>
+        from auth_identity_bindings
+        where id = #{id} and is_delete = 0
+        limit 1
+    </select>
+
+    <select id="selectByBizId" resultMap="AuthIdentityBindingResultMap">
+        select <include refid="BaseColumns"/>
+        from auth_identity_bindings
+        where identity_id = #{identityId} and is_delete = 0
+        limit 1
+    </select>
+
+    <select id="selectListByCondition" resultMap="AuthIdentityBindingResultMap">
+        select <include refid="BaseColumns"/>
+        from auth_identity_bindings
+        <include refid="ConditionWhere"/>
+        order by id desc
+    </select>
+
+    <select id="selectPageByCondition" resultMap="AuthIdentityBindingResultMap">
+        select <include refid="BaseColumns"/>
+        from auth_identity_bindings
+        <include refid="ConditionWhere"/>
+        order by id desc
+        limit #{limit} offset #{offset}
+    </select>
+
+    <insert id="insertOne"
+            parameterType="com.foodmap.auth.infrastructure.persistence.entity.AuthIdentityBindingEntity">
+        insert into auth_identity_bindings
+        (created_time, updated_time, is_delete, identity_id, user_id, provider, identity_type,
+         identity_hash, identity_cipher, display_masked, provider_subject, union_subject,
+         verified, primary_identity, identity_status, bound_time)
+        values
+        (#{createdTime}, #{updatedTime}, #{isDelete}, #{identityId}, #{userId}, #{provider}, #{identityType},
+         #{identityHash}, #{identityCipher}, #{displayMasked}, #{providerSubject}, #{unionSubject},
+         #{verified}, #{primaryIdentity}, #{identityStatus}, #{boundTime})
+    </insert>
+
+    <insert id="insertBatch">
+        insert into auth_identity_bindings
+        (created_time, updated_time, is_delete, identity_id, user_id, provider, identity_type,
+         identity_hash, identity_cipher, display_masked, provider_subject, union_subject,
+         verified, primary_identity, identity_status, bound_time)
+        values
+        <foreach collection="items" item="item" separator=",">
+            (#{item.createdTime}, #{item.updatedTime}, #{item.isDelete}, #{item.identityId}, #{item.userId},
+             #{item.provider}, #{item.identityType}, #{item.identityHash}, #{item.identityCipher},
+             #{item.displayMasked}, #{item.providerSubject}, #{item.unionSubject}, #{item.verified},
+             #{item.primaryIdentity}, #{item.identityStatus}, #{item.boundTime})
+        </foreach>
+    </insert>
+
+    <update id="updateById"
+            parameterType="com.foodmap.auth.infrastructure.persistence.entity.AuthIdentityBindingEntity">
+        update auth_identity_bindings
+        set user_id = #{userId},
+            provider = #{provider},
+            identity_type = #{identityType},
+            identity_hash = #{identityHash},
+            identity_cipher = #{identityCipher},
+            display_masked = #{displayMasked},
+            provider_subject = #{providerSubject},
+            union_subject = #{unionSubject},
+            verified = #{verified},
+            primary_identity = #{primaryIdentity},
+            identity_status = #{identityStatus},
+            bound_time = #{boundTime},
+            updated_time = #{updatedTime},
+            is_delete = #{isDelete}
+        where id = #{id}
+    </update>
+
+    <update id="updateByBizId"
+            parameterType="com.foodmap.auth.infrastructure.persistence.entity.AuthIdentityBindingEntity">
+        update auth_identity_bindings
+        set user_id = #{userId},
+            provider = #{provider},
+            identity_type = #{identityType},
+            identity_hash = #{identityHash},
+            identity_cipher = #{identityCipher},
+            display_masked = #{displayMasked},
+            provider_subject = #{providerSubject},
+            union_subject = #{unionSubject},
+            verified = #{verified},
+            primary_identity = #{primaryIdentity},
+            identity_status = #{identityStatus},
+            bound_time = #{boundTime},
+            updated_time = #{updatedTime},
+            is_delete = #{isDelete}
+        where identity_id = #{identityId}
+    </update>
+
+    <update id="updateBatchByBizId">
+        <foreach collection="items" item="item" separator=";">
+            update auth_identity_bindings
+            set user_id = #{item.userId},
+                provider = #{item.provider},
+                identity_type = #{item.identityType},
+                identity_hash = #{item.identityHash},
+                identity_cipher = #{item.identityCipher},
+                display_masked = #{item.displayMasked},
+                provider_subject = #{item.providerSubject},
+                union_subject = #{item.unionSubject},
+                verified = #{item.verified},
+                primary_identity = #{item.primaryIdentity},
+                identity_status = #{item.identityStatus},
+                bound_time = #{item.boundTime},
+                updated_time = #{item.updatedTime},
+                is_delete = #{item.isDelete}
+            where identity_id = #{item.identityId}
+        </foreach>
+    </update>
+
+    <update id="logicDeleteById">
+        update auth_identity_bindings
+        set is_delete = 1, updated_time = #{updatedTime}
+        where id = #{id}
+    </update>
+
+    <update id="logicDeleteByBizIds">
+        update auth_identity_bindings
+        set is_delete = 1, updated_time = #{updatedTime}
+        where identity_id in
+        <foreach collection="identityIds" item="identityId" open="(" close=")" separator=",">
+            #{identityId}
+        </foreach>
+    </update>
+
+    <update id="deleteById">
+        update auth_identity_bindings
+        set is_delete = 1, updated_time = #{updatedTime}
+        where id = #{id}
+    </update>
+
+    <update id="deleteBatchByIds">
+        update auth_identity_bindings
+        set is_delete = 1, updated_time = #{updatedTime}
+        where identity_id in
+        <foreach collection="identityIds" item="identityId" open="(" close=")" separator=",">
+            #{identityId}
+        </foreach>
+    </update>
+</mapper>

@@ -1,0 +1,108 @@
+name: 认证双写核验（身份绑定与会话）
+description: "注册、登录、登出后检查 auth_identity_bindings 与 auth_sessions 是否被真实写入：绑定 3 条、哈希与脱敏正确、会话状态随登出变化"
+config:
+  baseUrl: http://127.0.0.1:8080
+vars:
+  password: Foodmap@123
+  dbContainer: foodmap-postgres
+steps:
+  - command: "date +%s | cut -c3-10"
+    capture:
+      suffix: value
+    expect:
+      exitCode: 0
+
+  - command: "date +%s | cut -c7-10"
+    capture:
+      last4: value
+    expect:
+      exitCode: 0
+
+  - http: POST /api/auth/register
+    json:
+      accountName: zxq_dw_${suffix}
+      phone: "139${suffix}"
+      email: "dw${suffix}@example.com"
+      password: ${password}
+      nickname: dual-write
+      registeredChannel: IOS
+    expect:
+      status: 200
+      json: { code: OK }
+    capture:
+      userId: data.userId
+
+  - command: "docker exec ${dbContainer} psql -U foodmap -d foodmap_auth_db -tAc \"select count(*) from auth_identity_bindings where is_delete=0 and user_id=${userId}\""
+    capture:
+      bindings: value
+
+  - command: "[ ${bindings} -eq 3 ]"
+    expect:
+      exitCode: 0
+
+  - command: "docker exec ${dbContainer} psql -U foodmap -d foodmap_auth_db -tAc \"select count(*) from auth_identity_bindings where is_delete=0 and user_id=${userId} and identity_type='ACCOUNT_NAME' and provider='LOCAL' and identity_hash=encode(sha256(lower(trim('zxq_dw_${suffix}'))::bytea),'hex') and primary_identity=1 and verified=1\""
+    capture:
+      accountNameHash: value
+
+  - command: "[ ${accountNameHash} -eq 1 ]"
+    expect:
+      exitCode: 0
+
+  - command: "docker exec ${dbContainer} psql -U foodmap -d foodmap_auth_db -tAc \"select display_masked from auth_identity_bindings where is_delete=0 and user_id=${userId} and identity_type='PHONE'\""
+    capture:
+      phoneMask: value
+
+  - command: "[ '${phoneMask}' = '139****${last4}' ]"
+    expect:
+      exitCode: 0
+
+  - command: "docker exec ${dbContainer} psql -U foodmap -d foodmap_auth_db -tAc \"select display_masked from auth_identity_bindings where is_delete=0 and user_id=${userId} and identity_type='EMAIL'\""
+    capture:
+      emailMask: value
+
+  - command: "[ '${emailMask}' = 'd***@example.com' ]"
+    expect:
+      exitCode: 0
+
+  - http: POST /api/auth/login
+    json:
+      loginIdentifier: zxq_dw_${suffix}
+      password: ${password}
+    expect:
+      status: 200
+      json: { code: OK }
+    capture:
+      access: data.accessToken
+      refresh: data.refreshToken
+
+  - command: "docker exec ${dbContainer} psql -U foodmap -d foodmap_auth_db -tAc \"select count(*) from auth_sessions s join auth_accounts a on a.user_id=s.user_id where s.is_delete=0 and a.account_name='zxq_dw_${suffix}' and s.session_status='ACTIVE' and s.session_id like 'sess-%' and s.device_type='IOS'\""
+    capture:
+      activeSessions: value
+
+  - command: "[ ${activeSessions} -eq 1 ]"
+    expect:
+      exitCode: 0
+
+  - http: POST /api/auth/logout
+    headers:
+      Authorization: Bearer ${access}
+    json:
+      refreshToken: ${refresh}
+    expect:
+      status: 200
+
+  - command: "docker exec ${dbContainer} psql -U foodmap -d foodmap_auth_db -tAc \"select count(*) from auth_sessions s join auth_accounts a on a.user_id=s.user_id where s.is_delete=0 and a.account_name='zxq_dw_${suffix}' and s.session_status='REVOKED' and s.revoked_time is not null\""
+    capture:
+      revokedSessions: value
+
+  - command: "[ ${revokedSessions} -eq 1 ]"
+    expect:
+      exitCode: 0
+
+  - command: "docker exec ${dbContainer} psql -U foodmap -d foodmap_auth_db -tAc \"select count(*) from auth_sessions s join auth_accounts a on a.user_id=s.user_id where s.is_delete=0 and a.account_name='zxq_dw_${suffix}' and s.session_status='ACTIVE'\""
+    capture:
+      activeAfterLogout: value
+
+  - command: "[ ${activeAfterLogout} -eq 0 ]"
+    expect:
+      exitCode: 0
