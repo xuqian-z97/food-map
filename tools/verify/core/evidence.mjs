@@ -58,20 +58,69 @@ function renderText(result) {
  * 写入证据文件，并把路径挂到 result.evidence。
  * @param {Record<string, any>} result runScenario 的结果
  * @param {string} evidenceDir 证据目录
+ * @param {{redactor?: {redactValue: (value: unknown) => unknown}}} [options] 脱敏器
  * @returns {Promise<{text: string, json: string}>} 两个文件绝对路径
  */
-export async function writeEvidence(result, evidenceDir) {
+export async function writeEvidence(result, evidenceDir, options = {}) {
   const date = new Date(result.startedAt);
-  const base = `${localStamp(Number.isNaN(date.getTime()) ? new Date() : date)}-${safeName(result.name)}`;
+  const runTag = safeName(String(result.runId || 'run').slice(-8));
+  const base = `${localStamp(Number.isNaN(date.getTime()) ? new Date() : date)}-${runTag}-${safeName(result.name)}`;
   const paths = {
     text: join(evidenceDir, `${base}.txt`),
     json: join(evidenceDir, `${base}.json`),
   };
   await mkdir(evidenceDir, { recursive: true });
   result.evidence = paths;
-  await writeFile(paths.text, renderText(result), 'utf8');
-  await writeFile(paths.json, `${JSON.stringify(result, null, 2)}\n`, 'utf8');
+  const redactor = options.redactor;
+  const safe = redactor ? redactor.redactValue(result) : result;
+  safe.evidence = paths;
+  await writeFile(paths.text, renderText(safe), 'utf8');
+  await writeFile(paths.json, `${JSON.stringify(safe, null, 2)}\n`, 'utf8');
   return paths;
 }
 
 export { renderText };
+
+function renderSuite(suite) {
+  const lines = [];
+  lines.push(`验证套件: ${suite.name}`);
+  lines.push(`目录: ${suite.root}`);
+  lines.push(`开始: ${suite.startedAt}`);
+  lines.push(`结束: ${suite.finishedAt}`);
+  lines.push(`耗时: ${suite.durationMs}ms`);
+  lines.push(`结果: ${suite.ok ? 'PASS' : 'FAIL'} (${suite.summary.passed}/${suite.summary.scenarios} 个场景，${suite.summary.steps} 个步骤)`);
+  lines.push('');
+  lines.push('#   结果  耗时       场景');
+  for (const item of suite.scenarios) {
+    const source = item.source ? item.source.split('/').slice(-2).join('/') : '-';
+    lines.push(`${(item.ok ? 'ok' : 'FAIL').padEnd(6)}${`${item.durationMs}ms`.padEnd(11)}${item.name} (${source})`);
+    if (item.loadError) lines.push(`      加载失败: ${item.loadError}`);
+    for (const step of (item.steps || []).filter((entry) => !entry.ok)) {
+      lines.push(`      失败: [${step.phase || 'step'} ${step.index}] ${step.display}${step.error ? ` — ${step.error}` : ''}`);
+    }
+  }
+  return `${lines.join('\n')}\n`;
+}
+
+/**
+ * 写入套件级证据。
+ * @param {Record<string, any>} suite runSuite 的结果
+ * @param {string} evidenceDir 证据目录
+ * @param {{redactor?: {redactValue: (value: unknown) => unknown}}} [options] 脱敏器
+ * @returns {Promise<{text: string, json: string}>} 两个文件绝对路径
+ */
+export async function writeSuiteEvidence(suite, evidenceDir, options = {}) {
+  const date = new Date(suite.startedAt);
+  const base = `${localStamp(Number.isNaN(date.getTime()) ? new Date() : date)}-suite-${safeName(suite.name)}`;
+  const paths = {
+    text: join(evidenceDir, `${base}.txt`),
+    json: join(evidenceDir, `${base}.json`),
+  };
+  await mkdir(evidenceDir, { recursive: true });
+  const redactor = options.redactor;
+  const safe = redactor ? redactor.redactValue(suite) : suite;
+  safe.evidence = paths;
+  await writeFile(paths.text, renderSuite(safe), 'utf8');
+  await writeFile(paths.json, `${JSON.stringify(safe, null, 2)}\n`, 'utf8');
+  return paths;
+}

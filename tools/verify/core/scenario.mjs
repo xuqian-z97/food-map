@@ -8,12 +8,12 @@ import { dirname, resolve } from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { parseYaml } from './yaml.mjs';
 
-export const ACTIONS = ['http', 'sql', 'redis', 'command', 'sleep', 'logfile', 'app'];
+export const ACTIONS = ['http', 'sql', 'redis', 'command', 'sleep', 'logfile', 'app', 'xcode'];
 export const ASSERTIONS = ['status', 'equals', 'contains', 'matches', 'exitCode', 'stdoutContains', 'gte', 'lte', 'json'];
 
-const ROOT_KEYS = new Set(['name', 'description', 'config', 'vars', 'steps']);
-const STEP_FIELDS = new Set([...ACTIONS, 'json', 'headers', 'body', 'expect', 'capture', 'env']);
-const VARIABLE = /\$\{([A-Za-z_][A-Za-z0-9_.-]*)\}/g;
+const ROOT_KEYS = new Set(['name', 'description', 'config', 'vars', 'setup', 'steps', 'teardown']);
+const STEP_FIELDS = new Set([...ACTIONS, 'json', 'headers', 'body', 'expect', 'capture', 'env', 'retry']);
+const VARIABLE = /\$\{(?:(env):)?([A-Za-z_][A-Za-z0-9_.-]*)\}/g;
 const CAPTURE_NAME = /^[A-Za-z_][A-Za-z0-9_.-]*$/;
 
 export class ScenarioError extends Error {
@@ -181,12 +181,27 @@ function validateStep(step, index) {
     throw new ScenarioError(`${where} 不能同时设置 body 和 json`, 'json 会自动序列化并设置 content-type；纯文本/表单请用 body。');
   }
   if (step.env !== undefined) {
-    if (action !== 'app') throw new ScenarioError(`${where}.env 只能用于 app 步骤`);
+    if (action !== 'app' && action !== 'xcode') throw new ScenarioError(`${where}.env 只能用于 app 或 xcode 步骤`);
     assertPlainObject(step.env, `${where}.env`);
     for (const [name, value] of Object.entries(step.env)) {
       if (!['string', 'number', 'boolean'].includes(typeof value)) {
         throw new ScenarioError(`${where}.env.${name} 必须是标量，实际是 ${typeOf(value)}`);
       }
+    }
+  }
+  if (step.retry !== undefined) {
+    assertPlainObject(step.retry, `${where}.retry`);
+    const unknownRetry = Object.keys(step.retry).filter((key) => !['max', 'intervalMs'].includes(key));
+    if (unknownRetry.length > 0) {
+      throw new ScenarioError(`${where}.retry 包含未知字段：${unknownRetry.join(', ')}`, '可用字段：max、intervalMs。');
+    }
+    if (step.retry.max !== undefined) {
+      const max = asNumeric(step.retry.max, `${where}.retry.max`);
+      if (max < 1) throw new ScenarioError(`${where}.retry.max 至少为 1`);
+    }
+    if (step.retry.intervalMs !== undefined) {
+      const interval = asNumeric(step.retry.intervalMs, `${where}.retry.intervalMs`);
+      if (interval < 0) throw new ScenarioError(`${where}.retry.intervalMs 不能为负数`);
     }
   }
   if (step.expect !== undefined) {
@@ -226,21 +241,31 @@ function validateScenario(raw) {
   if (!Array.isArray(raw.steps) || raw.steps.length === 0) {
     throw new ScenarioError(`scenario.steps 必须是非空列表，实际是 ${typeOf(raw.steps)}`);
   }
+  for (const key of ['setup', 'teardown']) {
+    if (raw[key] === undefined) continue;
+    if (!Array.isArray(raw[key])) {
+      throw new ScenarioError(`scenario.${key} 必须是列表，实际是 ${typeOf(raw[key])}`);
+    }
+  }
   const actions = raw.steps.map((step, index) => validateStep(step, index));
-  return { actions };
+  const setupActions = (raw.setup || []).map((step, index) => validateStep(step, index));
+  const teardownActions = (raw.teardown || []).map((step, index) => validateStep(step, index));
+  return { actions, setupActions, teardownActions };
 }
 
-function collectCaptures(steps) {
+function collectCaptures(...groups) {
   const names = new Set();
-  for (const step of steps) {
-    for (const name of Object.keys(step.capture || {})) names.add(name);
+  for (const steps of groups) {
+    for (const step of steps || []) {
+      for (const name of Object.keys(step.capture || {})) names.add(name);
+    }
   }
   return names;
 }
 
 function collectPlaceholders(value, where, out) {
   if (typeof value === 'string') {
-    for (const match of value.matchAll(VARIABLE)) out.push({ name: match[1], where });
+    for (const match of value.matchAll(VARIABLE)) out.push({ name: match[2], env: match[1] === 'env', where });
     return;
   }
   if (Array.isArray(value)) {
@@ -252,10 +277,22 @@ function collectPlaceholders(value, where, out) {
   }
 }
 
-function validatePlaceholders(steps, known, captures) {
+function validatePlaceholders(steps, known, captures, groups = {}) {
   const found = [];
   steps.forEach((step, index) => collectPlaceholders(step, `steps[${index}]`, found));
-  for (const { name, where } of found) {
+  for (const [name, list] of Object.entries(groups)) {
+    (list || []).forEach((step, index) => collectPlaceholders(step, `${name}[${index}]`, found));
+  }
+  for (const { name, env, where } of found) {
+    if (env) {
+      if (process.env[name] === undefined) {
+        throw new ScenarioError(
+          `环境变量 ${name} 未设置（位置：${where}）`,
+          `导出 ${name}，改用 --var ${name}=...，或在 config 中提供同名标量；密码与 Token 不应写进 scenario。`,
+        );
+      }
+      continue;
+    }
     if (known.has(name) || captures.has(name)) continue;
     throw new ScenarioError(
       `变量 ${name} 未定义（位置：${where}）`,
@@ -273,7 +310,16 @@ function validatePlaceholders(steps, known, captures) {
  */
 export function interpolate(value, scope, where = 'value') {
   if (typeof value === 'string') {
-    return value.replace(VARIABLE, (match, name) => {
+    return value.replace(VARIABLE, (match, envPrefix, name) => {
+      if (envPrefix === 'env') {
+        if (process.env[name] === undefined) {
+          throw new ScenarioError(
+            `环境变量 ${name} 未设置（位置：${where}）`,
+            `导出该环境变量，或用 --var ${name}=... 代替；密码、Token 请用 \${env:NAME}。`,
+          );
+        }
+        return process.env[name];
+      }
       if (!Object.hasOwn(scope, name) || scope[name] === undefined) {
         throw new ScenarioError(
           `变量 ${name} 未定义（位置：${where}）`,
@@ -332,16 +378,20 @@ export async function loadScenario(file, options = {}) {
     ...(options.vars || {}),
   };
   const config = interpolate(mergedConfig, vars, 'config');
-  const captures = collectCaptures(raw.steps);
+  const setup = raw.setup || [];
+  const teardown = raw.teardown || [];
+  const captures = collectCaptures(raw.steps, setup, teardown);
   const known = new Set([...Object.keys(scalarConfig(config)), ...Object.keys(vars)]);
-  validatePlaceholders(raw.steps, known, captures);
+  validatePlaceholders(raw.steps, known, captures, { setup, teardown });
 
   return {
     name: raw.name.trim(),
     description: raw.description || '',
     config,
     vars,
+    setup,
     steps: raw.steps,
+    teardown,
     actions,
     captures,
     source,

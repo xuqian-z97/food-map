@@ -1,5 +1,29 @@
 # verify：零依赖通用验证工具
 
+## 0. 给 agent 的 30 秒版
+
+```bash
+node tools/verify/cli.mjs run harness/scenarios/ --json --evidence-dir /tmp/verify
+```
+
+退出码 `0` 全过、`1` 有失败、`2` 场景/配置错误。只读这一条不够时看 `AGENT.md`。
+
+2026-11 新增能力（schemaVersion 2）：
+
+| 能力 | 用法 |
+| --- | --- |
+| 前置/清理 | 顶层 `setup:` / `teardown:`；setup 失败即停，teardown 永远执行 |
+| 重试 | 任意步骤 `retry: { max: 3, intervalMs: 500 }` |
+| 套件 | `run <目录>` 聚合执行，输出单一 JSON + 退出码 |
+| JUnit | `--junit result.xml` |
+| 预演 | `--dry-run`（只校验）、`--list`、`--only <关键字>` |
+| 环境变量 | `${env:NAME}`，加载阶段校验是否存在 |
+| 证据脱敏 | 内置 Bearer / JWT / 手机号规则，`config.redact` 追加 |
+| XCUITest | `xcode: test -only-testing:Bundle/Case`，解析 `.xcresult` 得到 passed/failed |
+| 台账 | `harness/scripts/verify-record.sh <场景> --scope=... --covers=F-001` |
+
+
+
 `tools/verify/` 是一个可以整体复制的验证工具骨架。它把“HTTP 请求、SQL、Redis、
 shell 命令、日志文件、iOS/Android 设备动作、等待”统一成可读的 scenario，
 按顺序执行、生成证据，并用退出码给 CI/agent 一个明确结论。

@@ -2,3 +2,4 @@
 // 让验收命令 `node --test tools/verify/test/` 仍能运行完整测试集。
 import './runner.test.mjs';
 import './scenario.test.mjs';
+import './features.test.mjs';

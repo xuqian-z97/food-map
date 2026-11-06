@@ -269,7 +269,8 @@ FoodMap 默认按可联调业务切片推进。每完成一个前端或后端功
 - scenario 只断言可观测事实（状态码、业务码、Redis key 数量、数据库状态、探针日志），不写“界面看起来正常”这类主观判断。
 - 场景里不得出现 Token、密码、完整手机号；账号名按时间生成，避免脏数据。
 - `tools/verify/` 核心不得出现 FoodMap 专属路径、端口或容器名；这些只能出现在 `harness/scenarios/`。
-- iOS UI 自动化仍依赖项目自己的 DEBUG 探针，工具只负责启动、读沙盒日志和断言。
+- iOS UI 自动化分两层：项目有 XCUITest target 时用 `xcode` 适配器跑 `xcodebuild test`（推荐，能真实点击和断言页面）；没有 UI 测试工程时退回项目自己的 DEBUG 探针，由 `app` 适配器负责启动、读沙盒日志和断言。
+- 新增 `xcode` 步骤前先确认 `xcodebuild -list` 能看到 scheme；改 `project.pbxproj` 必须单独提交并立即验证构建。
 
 ## 7. 前端 Agent
 

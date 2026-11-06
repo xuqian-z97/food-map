@@ -159,11 +159,13 @@ async function runIos(step, context, parsed, timeoutMs) {
   if (action === 'terminate') {
     if (step.env) throw new Error('app.env 只能用于 launch，terminate 不接受 env');
     const result = await execute(xcrun, ['simctl', 'terminate', udid, bundleId], { timeoutMs });
-    assertSuccess(result, action);
+    // 目标没在跑时 simctl 会返回非零并提示 found nothing to terminate：这属于预期结果，不算失败。
+    const nothingRunning = /found nothing to terminate|No such process/i.test(`${result.stdout}\n${result.stderr}`);
+    if (!nothingRunning) assertSuccess(result, action);
     return {
       display: `app terminate ${udid} ${bundleId}`,
       actual: { exitCode: result.code, stdout: result.stdout, stderr: result.stderr, value: result.stdout.trim(), udid, bundleId, platform: 'ios' },
-      summary: 'terminated',
+      summary: nothingRunning ? 'not running' : 'terminated',
     };
   }
 
@@ -228,7 +230,7 @@ async function runAndroid(step, context, parsed, timeoutMs) {
     return {
       display: `app terminate ${udid} ${bundleId}`,
       actual: { exitCode: result.code, stdout: result.stdout, stderr: result.stderr, value: result.stdout.trim(), udid, bundleId, platform: 'android' },
-      summary: 'terminated',
+      summary: nothingRunning ? 'not running' : 'terminated',
     };
   }
 

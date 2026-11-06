@@ -1,0 +1,55 @@
+name: B1 iOS 登录 UI 全链路
+description: "启动模拟器 Debug 构建，XCUITest 真实点击登录，再回到数据库和日志确认链路打通"
+config:
+  baseUrl: http://127.0.0.1:8080
+  xcode:
+    cwd: ../../front/FoodMapApp
+    project: FoodMapApp.xcodeproj
+    scheme: FoodMapApp
+    udid: A77A2428-9576-4533-8B62-0C267A395B29
+    derivedDataPath: .build/dd
+    codeSignIdentity: "-"
+  redact:
+    - "Foodmap@[0-9]+"
+vars:
+  dbContainer: foodmap-postgres
+setup:
+  - http: GET ${baseUrl}/internal/auth/health
+    retry: { max: 30, intervalMs: 1000 }
+    expect: { status: 200 }
+
+  - command: "printf 'zxq_ui_%s' $(date +%H%M%S)"
+    capture: { account: stdout }
+
+  - http: POST ${baseUrl}/api/auth/register
+    json:
+      accountName: ${account}
+      password: ${env:FM_TEST_PW}
+      nickname: ui-probe
+      registeredChannel: IOS
+    expect: { status: 200 }
+
+steps:
+  - xcode: test -only-testing:FoodMapAppUITests/LoginFlowTests/testLoginThroughGateway
+    env:
+      TEST_RUNNER_UI_ACC: ${account}
+      TEST_RUNNER_UI_PW: ${env:FM_TEST_PW}
+      TEST_RUNNER_UI_GATEWAY: ${baseUrl}
+    expect: { equals: 0 }
+
+  - command: "docker exec ${dbContainer} psql -U foodmap -d foodmap_auth_db -tAc \"select count(*) from login_logs ll join auth_accounts a on a.account_id = ll.account_id where a.account_name = '${account}' and ll.login_result = 'SUCCESS'\""
+    capture: { loginCount: value }
+    expect: { exitCode: 0 }
+
+  - command: "[ ${loginCount} -ge 1 ]"
+    expect: { exitCode: 0 }
+
+  - command: "grep -c 'path=/api/auth/login status=200' /tmp/verify-auth.log"
+    expect: { exitCode: 0 }
+
+teardown:
+  - command: "docker exec ${dbContainer} psql -U foodmap -d foodmap_auth_db -c \"delete from auth_sessions where user_id in (select user_id from auth_accounts where account_name = '${account}')\" >/dev/null 2>&1 || true"
+  - command: "docker exec ${dbContainer} psql -U foodmap -d foodmap_auth_db -c \"delete from auth_identity_bindings where user_id in (select user_id from auth_accounts where account_name = '${account}')\" >/dev/null 2>&1 || true"
+  - command: "docker exec ${dbContainer} psql -U foodmap -d foodmap_auth_db -c \"delete from login_logs where account_id in (select account_id from auth_accounts where account_name = '${account}')\" >/dev/null 2>&1 || true"
+  - command: "docker exec ${dbContainer} psql -U foodmap -d foodmap_auth_db -c \"delete from refresh_tokens where account_id in (select account_id from auth_accounts where account_name = '${account}')\" >/dev/null 2>&1 || true"
+  - command: "docker exec ${dbContainer} psql -U foodmap -d foodmap_auth_db -c \"delete from auth_accounts where account_name = '${account}'\" >/dev/null 2>&1 || true"

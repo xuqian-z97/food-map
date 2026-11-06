@@ -1,13 +1,17 @@
 #!/usr/bin/env node
-// 通用验证工具 CLI：加载 scenario、执行、输出、写证据。
+// 通用验证工具 CLI：加载 scenario（或目录）、执行、输出、写证据。
 //
 // 零 npm 依赖；所有项目差异都来自 scenario / --config / --var。
 
+import { statSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadScenario } from './core/scenario.mjs';
 import { runScenario } from './core/runner.mjs';
-import { writeEvidence } from './core/evidence.mjs';
+import { collectScenarios, runSuite } from './core/suite.mjs';
+import { writeEvidence, writeSuiteEvidence } from './core/evidence.mjs';
+import { createRedactor } from './core/redact.mjs';
+import { toJUnit } from './core/junit.mjs';
 
 const DEFAULT_EVIDENCE_DIR = fileURLToPath(new URL('./evidence/', import.meta.url));
 const ARGV = process.argv.slice(2);
@@ -15,12 +19,16 @@ const JSON_REQUESTED = ARGV.includes('--json');
 const USAGE = `通用验证工具（Node.js >= 20，零 npm 依赖）
 
 用法:
-  node tools/verify/cli.mjs run <scenario.yml> [选项]
+  node tools/verify/cli.mjs run <scenario.yml | 目录> [选项]
 
 选项:
   --var <k=v>           覆盖 scenario.vars，可重复
   --config <cfg.yml>    覆盖 scenario.config（重复指定时最后一个生效）
   --evidence-dir <dir>  证据目录，默认 tools/verify/evidence
+  --only <关键字>       只跑路径里包含该关键字的场景（目录模式）
+  --junit <file>        额外写 JUnit XML
+  --list                只列出将被执行的场景，不执行
+  --dry-run             只做加载和静态校验，不执行任何步骤
   --json                把结构化结果输出到 stdout（进度和错误走 stderr）
   -h, --help            显示帮助
 
@@ -37,11 +45,28 @@ function usageError(message) {
   return error;
 }
 
+function nextValue(argv, index, option) {
+  const value = argv[index + 1];
+  if (value === undefined || value.startsWith('--')) throw usageError(`${option} 缺少取值`);
+  return value;
+}
+
 function parseArgs(argv) {
   if (argv.length === 0) return { help: true };
   if (argv[0] === '-h' || argv[0] === '--help' || argv[0] === 'help') return { help: true };
   if (argv[0] !== 'run') throw usageError(`未知命令 ${JSON.stringify(argv[0])}，只支持 run`);
-  const options = { command: 'run', scenarioPath: '', vars: {}, configPath: '', evidenceDir: '', json: false };
+  const options = {
+    command: 'run',
+    target: '',
+    vars: {},
+    configPath: '',
+    evidenceDir: '',
+    junitPath: '',
+    only: '',
+    list: false,
+    dryRun: false,
+    json: false,
+  };
   for (let i = 1; i < argv.length; i += 1) {
     const arg = argv[i];
     if (arg === '-h' || arg === '--help') return { help: true };
@@ -49,9 +74,16 @@ function parseArgs(argv) {
       options.json = true;
       continue;
     }
+    if (arg === '--list') {
+      options.list = true;
+      continue;
+    }
+    if (arg === '--dry-run') {
+      options.dryRun = true;
+      continue;
+    }
     if (arg === '--var') {
-      const value = argv[i + 1];
-      if (value === undefined) throw usageError('--var 缺少 k=v');
+      const value = nextValue(argv, i, '--var');
       const equals = value.indexOf('=');
       if (equals <= 0) throw usageError(`--var 需要 k=v，实际是 ${JSON.stringify(value)}`);
       const key = value.slice(0, equals).trim();
@@ -61,24 +93,30 @@ function parseArgs(argv) {
       continue;
     }
     if (arg === '--config') {
-      const value = argv[i + 1];
-      if (value === undefined || value.startsWith('--')) throw usageError('--config 缺少文件路径');
-      options.configPath = value;
+      options.configPath = nextValue(argv, i, '--config');
       i += 1;
       continue;
     }
     if (arg === '--evidence-dir') {
-      const value = argv[i + 1];
-      if (value === undefined || value.startsWith('--')) throw usageError('--evidence-dir 缺少目录路径');
-      options.evidenceDir = value;
+      options.evidenceDir = nextValue(argv, i, '--evidence-dir');
+      i += 1;
+      continue;
+    }
+    if (arg === '--only') {
+      options.only = nextValue(argv, i, '--only');
+      i += 1;
+      continue;
+    }
+    if (arg === '--junit') {
+      options.junitPath = nextValue(argv, i, '--junit');
       i += 1;
       continue;
     }
     if (arg.startsWith('-')) throw usageError(`未知选项 ${arg}`);
-    if (options.scenarioPath) throw usageError(`只能指定一个 scenario，实际又遇到 ${arg}`);
-    options.scenarioPath = arg;
+    if (options.target) throw usageError(`只能指定一个 scenario 或目录，实际又遇到 ${arg}`);
+    options.target = arg;
   }
-  if (!options.scenarioPath) throw usageError('缺少 scenario 文件路径');
+  if (!options.target) throw usageError('缺少 scenario 文件或目录路径');
   return options;
 }
 
@@ -91,6 +129,41 @@ function printError(error, jsonMode) {
   process.stderr.write(`错误: ${message}\n`);
   if (hint) process.stderr.write(`提示: ${hint}\n`);
   if (process.env.VERIFY_DEBUG === '1' && error && error.stack) process.stderr.write(`${error.stack}\n`);
+}
+
+function isDirectory(path) {
+  try {
+    return statSync(path).isDirectory();
+  } catch {
+    return false;
+  }
+}
+
+function printSummary(result, evidence) {
+  const summary = result.summary || {};
+  if (result.kind === 'suite') {
+    const line = result.ok
+      ? `通过 ${summary.passed}/${summary.scenarios} 个场景，耗时 ${result.durationMs}ms`
+      : `失败 ${summary.failed}/${summary.scenarios} 个场景，耗时 ${result.durationMs}ms`;
+    process.stdout.write(`${line}\n`);
+    for (const item of result.scenarios.filter((entry) => !entry.ok)) {
+      process.stdout.write(`  FAIL ${item.name}${item.loadError ? ` — ${item.loadError}` : ''}\n`);
+    }
+    if (evidence) {
+      process.stdout.write(`证据: ${evidence.text}\n`);
+      process.stdout.write(`      ${evidence.json}\n`);
+    }
+    return;
+  }
+  const line = result.ok
+    ? `通过 ${summary.passed}/${summary.total}，耗时 ${result.durationMs}ms`
+    : `失败 ${summary.failed}/${summary.total}，耗时 ${result.durationMs}ms`;
+  if (result.evidenceError) process.stdout.write(`证据失败: ${result.evidenceError}\n`);
+  process.stdout.write(`${line}\n`);
+  if (evidence) {
+    process.stdout.write(`证据: ${evidence.text}\n`);
+    process.stdout.write(`      ${evidence.json}\n`);
+  }
 }
 
 async function main() {
@@ -112,54 +185,94 @@ async function main() {
     if (options.json) process.stderr.write(`${line}\n`);
     else process.stdout.write(`${line}\n`);
   };
+  const evidenceDir = options.evidenceDir ? resolve(options.evidenceDir) : DEFAULT_EVIDENCE_DIR;
+  const directoryMode = isDirectory(options.target);
 
-  let scenario;
-  try {
-    scenario = await loadScenario(options.scenarioPath, {
-      configPath: options.configPath,
-      vars: options.vars,
-    });
-  } catch (error) {
-    printError(error, options.json);
-    process.exitCode = 2;
+  if (options.list) {
+    const files = directoryMode ? await collectScenarios(options.target) : [resolve(options.target)];
+    const selected = options.only ? files.filter((file) => file.includes(options.only)) : files;
+    for (const file of selected) process.stdout.write(`${file}\n`);
+    process.exitCode = selected.length > 0 ? 0 : 2;
+    return;
+  }
+
+  if (options.dryRun) {
+    let results = [];
+    try {
+      if (directoryMode) {
+        const files = await collectScenarios(options.target);
+        const selected = options.only ? files.filter((file) => file.includes(options.only)) : files;
+        for (const file of selected) {
+          const scenario = await loadScenario(file, { configPath: options.configPath, vars: options.vars });
+          results.push({ file, name: scenario.name, steps: scenario.steps.length, setup: scenario.setup.length, teardown: scenario.teardown.length });
+        }
+      } else {
+        const scenario = await loadScenario(options.target, { configPath: options.configPath, vars: options.vars });
+        results.push({ file: resolve(options.target), name: scenario.name, steps: scenario.steps.length, setup: scenario.setup.length, teardown: scenario.teardown.length });
+      }
+    } catch (error) {
+      printError(error, options.json);
+      process.exitCode = 2;
+      return;
+    }
+    if (options.json) process.stdout.write(`${JSON.stringify({ ok: true, dryRun: true, scenarios: results }, null, 2)}\n`);
+    else for (const item of results) process.stdout.write(`ok  ${item.name}（setup ${item.setup} / steps ${item.steps} / teardown ${item.teardown}）\n`);
+    process.exitCode = 0;
     return;
   }
 
   let result;
+  let evidence = null;
   try {
-    result = await runScenario(scenario, { log: progress });
+    if (directoryMode) {
+      result = await runSuite(options.target, {
+        only: options.only,
+        configPath: options.configPath,
+        vars: options.vars,
+        log: progress,
+      });
+      for (const scenarioResult of result.scenarios) {
+        try {
+          const scenario = await loadScenario(scenarioResult.source, { configPath: options.configPath, vars: options.vars });
+          const redactor = createRedactor(scenario.config.redact || []);
+          await writeEvidence(scenarioResult, evidenceDir, { redactor });
+        } catch (error) {
+          scenarioResult.evidenceError = error.message;
+        }
+      }
+      evidence = await writeSuiteEvidence(result, evidenceDir, { redactor: createRedactor([]) });
+    } else {
+      const scenario = await loadScenario(options.target, { configPath: options.configPath, vars: options.vars });
+      const redactor = createRedactor(scenario.config.redact || []);
+      result = await runScenario(scenario, { log: progress });
+      try {
+        evidence = await writeEvidence(result, evidenceDir, { redactor });
+      } catch (error) {
+        result.evidenceError = `证据写入失败（${evidenceDir}）：${error.message}`;
+        result.exitCode = 2;
+        process.stderr.write(`错误: ${result.evidenceError}\n`);
+        process.stderr.write('提示: 检查 --evidence-dir 的路径和写权限。\n');
+      }
+    }
   } catch (error) {
     printError(error, options.json);
     process.exitCode = 2;
     return;
   }
 
-  const evidenceDir = options.evidenceDir ? resolve(options.evidenceDir) : DEFAULT_EVIDENCE_DIR;
-  let evidence;
-  try {
-    evidence = await writeEvidence(result, evidenceDir);
-  } catch (error) {
-    const failure = new Error(`证据写入失败（${evidenceDir}）：${error.message}`);
-    failure.hint = '检查 --evidence-dir 的路径和写权限。';
-    result.evidenceError = failure.message;
-    result.exitCode = 2;
-    process.stderr.write(`错误: ${failure.message}\n`);
-    process.stderr.write(`提示: ${failure.hint}\n`);
-    if (process.env.VERIFY_DEBUG === '1' && error.stack) process.stderr.write(`${error.stack}\n`);
+  if (options.junitPath) {
+    try {
+      writeFileSync(resolve(options.junitPath), toJUnit(result), 'utf8');
+    } catch (error) {
+      process.stderr.write(`错误: JUnit 写入失败（${options.junitPath}）：${error.message}\n`);
+      result.exitCode = 2;
+    }
   }
 
   if (options.json) {
     process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
   } else {
-    const summary = result.ok
-      ? `通过 ${result.summary.passed}/${result.summary.total}，耗时 ${result.durationMs}ms`
-      : `失败 ${result.summary.failed}/${result.summary.total}，耗时 ${result.durationMs}ms`;
-    if (result.evidenceError) process.stdout.write(`证据失败: ${result.evidenceError}\n`);
-    process.stdout.write(`${summary}\n`);
-    if (evidence) {
-      process.stdout.write(`证据: ${evidence.text}\n`);
-      process.stdout.write(`      ${evidence.json}\n`);
-    }
+    printSummary(result, evidence);
   }
   process.exitCode = result.exitCode;
 }
