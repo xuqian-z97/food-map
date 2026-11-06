@@ -28,6 +28,7 @@ setup:
       nickname: ui-probe
       registeredChannel: IOS
     expect: { status: 200 }
+    capture: { userId: data.userId }
 
 steps:
   - xcode: test -only-testing:FoodMapAppUITests/LoginFlowTests/testLoginThroughGateway
@@ -44,12 +45,19 @@ steps:
   - command: "[ ${loginCount} -ge 1 ]"
     expect: { exitCode: 0 }
 
+  - command: "wc -l < /tmp/verify-auth.log"
+    capture: { logStart: value }
+
   - command: "grep -c 'path=/api/auth/login status=200' /tmp/verify-auth.log"
     expect: { exitCode: 0 }
 
 teardown:
-  - command: "docker exec ${dbContainer} psql -U foodmap -d foodmap_auth_db -c \"delete from auth_sessions where user_id in (select user_id from auth_accounts where account_name = '${account}')\" >/dev/null 2>&1 || true"
-  - command: "docker exec ${dbContainer} psql -U foodmap -d foodmap_auth_db -c \"delete from auth_identity_bindings where user_id in (select user_id from auth_accounts where account_name = '${account}')\" >/dev/null 2>&1 || true"
-  - command: "docker exec ${dbContainer} psql -U foodmap -d foodmap_auth_db -c \"delete from login_logs where account_id in (select account_id from auth_accounts where account_name = '${account}')\" >/dev/null 2>&1 || true"
-  - command: "docker exec ${dbContainer} psql -U foodmap -d foodmap_auth_db -c \"delete from refresh_tokens where account_id in (select account_id from auth_accounts where account_name = '${account}')\" >/dev/null 2>&1 || true"
-  - command: "docker exec ${dbContainer} psql -U foodmap -d foodmap_auth_db -c \"delete from auth_accounts where account_name = '${account}'\" >/dev/null 2>&1 || true"
+  - command: "docker exec ${dbContainer} sh -c 'uid=$(psql -U foodmap -d foodmap_auth_db -tAc \"select user_id from auth_accounts where account_name='\''${account}'\''\"); if [ -n \"$uid\" ]; then for t in user_settings user_profiles users; do psql -U foodmap -d foodmap_user_db -c \"delete from $t where user_id=$uid\" >/dev/null; done; fi'"
+  - command: "docker exec ${dbContainer} psql -U foodmap -d foodmap_auth_db -c \"delete from auth_sessions where user_id in (select user_id from auth_accounts where account_name = '${account}')\""
+  - command: "docker exec ${dbContainer} psql -U foodmap -d foodmap_auth_db -c \"delete from auth_identity_bindings where user_id in (select user_id from auth_accounts where account_name = '${account}')\""
+  - command: "docker exec ${dbContainer} psql -U foodmap -d foodmap_auth_db -c \"delete from login_logs where account_id in (select account_id from auth_accounts where account_name = '${account}')\""
+  - command: "docker exec ${dbContainer} psql -U foodmap -d foodmap_auth_db -c \"delete from refresh_tokens where account_id in (select account_id from auth_accounts where account_name = '${account}')\""
+  - command: "docker exec ${dbContainer} psql -U foodmap -d foodmap_auth_db -c \"delete from auth_credentials where account_id in (select account_id from auth_accounts where account_name = '${account}')\""
+  - command: "docker exec ${dbContainer} psql -U foodmap -d foodmap_auth_db -c \"delete from auth_accounts where account_name = '${account}'\""
+  - command: "docker exec ${dbContainer} psql -U foodmap -d foodmap_auth_db -tAc \"select count(*) from auth_accounts where account_name = '${account}'\""
+    expect: { equals: "0" }
