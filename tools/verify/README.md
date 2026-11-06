@@ -392,8 +392,8 @@ JSON 顶层包含 `name`、`runId`、`source`、`ok`、`exitCode`、`startedAt`�
 `--json` 时进度和错误写到 stderr，stdout 只有一份 JSON，便于 agent 用
 `JSON.parse`。证据路径写在 `result.evidence`。
 
-注意：为了给出可用的失败证据，JSON 可能包含响应体、stdout/stderr 和日志正文，
-其中可能有业务数据或临时 token。不要默认把证据提交到仓库；CI 应只作为短期 artifact
+注意：`--json` 的 stdout、场景证据、套件证据使用同一套脱敏（Bearer / JWT / 手机号 / 密码字段），
+Token 会显示为 `[REDACTED]`。但响应体、stdout/stderr 和日志正文仍可能含业务数据，不要默认把证据提交到仓库；CI 应只作为短期 artifact
 保留，敏感场景应先脱敏或改写到 `/tmp`。
 
 ## 7. 与 CI 配合

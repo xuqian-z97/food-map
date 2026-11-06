@@ -349,3 +349,23 @@ test('buildXcodeArgs 补默认值且不覆盖显式参数', async () => {
   assert.ok(!explicit.includes('Demo'));
   assert.ok(!explicit.includes('AAA-BBB'));
 });
+
+test('--json stdout 也会脱敏，不能把 Token 打到终端', async (t) => {
+  const { execFile } = await import('node:child_process');
+  const { promisify } = await import('node:util');
+  const run = promisify(execFile);
+  const dir = await tempDir(t);
+  const server = http.createServer((req, res) => {
+    res.writeHead(200, { 'content-type': 'application/json' });
+    res.end(JSON.stringify({ data: { accessToken: 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIn0.signature123456' } }));
+  });
+  const port = await listen(server);
+  t.after(() => close(server));
+  const scenarioFile = join(dir, 'token.yml');
+  await writeFile(scenarioFile, `name: token\nsteps:\n  - http: GET http://127.0.0.1:${port}/login\n    capture: { token: data.accessToken }\n`, 'utf8');
+
+  const { stdout } = await run(process.execPath, ['tools/verify/cli.mjs', 'run', scenarioFile, '--json', '--evidence-dir', join(dir, 'ev')]);
+
+  assert.doesNotMatch(stdout, /eyJhbGciOiJIUzI1NiJ9/);
+  assert.match(stdout, /REDACTED/);
+});

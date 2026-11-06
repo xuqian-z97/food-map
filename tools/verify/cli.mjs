@@ -139,6 +139,24 @@ function isDirectory(path) {
   }
 }
 
+function attachRedactor(target, redactor) {
+  Object.defineProperty(target, '__redactor', { value: redactor, enumerable: false });
+  return target;
+}
+
+/** stdout、场景证据、套件证据使用同一套脱敏，避免 --json 把 Token 打到终端或 CI 日志。 */
+function printable(result) {
+  const own = result.__redactor || createRedactor([]);
+  const clone = JSON.parse(JSON.stringify(result));
+  if (result.kind === 'suite') {
+    clone.scenarios = (result.scenarios || []).map((item) => {
+      const redactor = item.__redactor || own;
+      return redactor.redactValue(JSON.parse(JSON.stringify(item)));
+    });
+  }
+  return own.redactValue(clone);
+}
+
 function printSummary(result, evidence) {
   const summary = result.summary || {};
   if (result.kind === 'suite') {
@@ -235,16 +253,18 @@ async function main() {
         try {
           const scenario = await loadScenario(scenarioResult.source, { configPath: options.configPath, vars: options.vars });
           const redactor = createRedactor(scenario.config.redact || []);
+          attachRedactor(scenarioResult, redactor);
           await writeEvidence(scenarioResult, evidenceDir, { redactor });
         } catch (error) {
           scenarioResult.evidenceError = error.message;
         }
       }
+      attachRedactor(result, createRedactor([]));
       evidence = await writeSuiteEvidence(result, evidenceDir, { redactor: createRedactor([]) });
     } else {
       const scenario = await loadScenario(options.target, { configPath: options.configPath, vars: options.vars });
       const redactor = createRedactor(scenario.config.redact || []);
-      result = await runScenario(scenario, { log: progress });
+      result = attachRedactor(await runScenario(scenario, { log: progress }), redactor);
       try {
         evidence = await writeEvidence(result, evidenceDir, { redactor });
       } catch (error) {
@@ -270,7 +290,7 @@ async function main() {
   }
 
   if (options.json) {
-    process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
+    process.stdout.write(`${JSON.stringify(printable(result), null, 2)}\n`);
   } else {
     printSummary(result, evidence);
   }
