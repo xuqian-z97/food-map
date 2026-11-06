@@ -85,6 +85,8 @@ struct MapHomeView: View {
             .sheet(item: $viewModel.selectedSummaryMarker) { marker in
                 OfflineStoreSummaryView(marker: marker)
             }
+            .accessibilityElement(children: .contain)
+            .accessibilityIdentifier("map.home")
         }
     }
 

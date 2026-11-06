@@ -43,3 +43,5 @@ replay_pid*
 /front/FoodMapApp/build/
 # verify 工具的默认证据目录（证据只进 CI artifact，不进仓库）
 /tools/verify/evidence/
+# XCUITest 增量构建目录
+/front/FoodMapApp/.build/

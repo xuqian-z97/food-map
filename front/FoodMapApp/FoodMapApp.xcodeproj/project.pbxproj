@@ -32,7 +32,18 @@
 		111111111111111111111117 /* OfflineMapStateStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 111111111111111111111218 /* OfflineMapStateStore.swift */; };
 		111111111111111111111118 /* BusinessCacheModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 111111111111111111111219 /* BusinessCacheModels.swift */; };
 		111111111111111111111119 /* MapBusinessCacheStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11111111111111111111121A /* MapBusinessCacheStore.swift */; };
+		11111111111111111111B001 /* LoginFlowTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11111111111111111111B002 /* LoginFlowTests.swift */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		11111111111111111111B009 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 111111111111111111111800 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 111111111111111111111500;
+			remoteInfo = FoodMapApp;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		111111111111111111111200 /* FoodMapApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FoodMapApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -62,10 +73,19 @@
 		111111111111111111111218 /* OfflineMapStateStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineMapStateStore.swift; sourceTree = "<group>"; };
 		111111111111111111111219 /* BusinessCacheModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BusinessCacheModels.swift; sourceTree = "<group>"; };
 		11111111111111111111121A /* MapBusinessCacheStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapBusinessCacheStore.swift; sourceTree = "<group>"; };
+		11111111111111111111B002 /* LoginFlowTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginFlowTests.swift; sourceTree = "<group>"; };
+		11111111111111111111B003 /* FoodMapAppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FoodMapAppUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		111111111111111111111300 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		11111111111111111111B007 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -79,6 +99,7 @@
 			isa = PBXGroup;
 			children = (
 				111111111111111111111401 /* FoodMapApp */,
+				11111111111111111111B004 /* FoodMapAppUITests */,
 				111111111111111111111402 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -98,6 +119,7 @@
 			isa = PBXGroup;
 			children = (
 				111111111111111111111200 /* FoodMapApp.app */,
+				11111111111111111111B003 /* FoodMapAppUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -220,6 +242,14 @@
 			path = Resources;
 			sourceTree = "<group>";
 		};
+		11111111111111111111B004 /* FoodMapAppUITests */ = {
+			isa = PBXGroup;
+			children = (
+				11111111111111111111B002 /* LoginFlowTests.swift */,
+			);
+			path = FoodMapAppUITests;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -240,7 +270,33 @@
 			productReference = 111111111111111111111200 /* FoodMapApp.app */;
 			productType = "com.apple.product-type.application";
 		};
+		11111111111111111111B005 /* FoodMapAppUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 11111111111111111111B00D /* Build configuration list for PBXNativeTarget "FoodMapAppUITests" */;
+			buildPhases = (
+				11111111111111111111B006 /* Sources */,
+				11111111111111111111B007 /* Frameworks */,
+				11111111111111111111B008 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				11111111111111111111B00A /* PBXTargetDependency */,
+			);
+			name = FoodMapAppUITests;
+			productName = FoodMapAppUITests;
+			productReference = 11111111111111111111B003 /* FoodMapAppUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 /* End PBXNativeTarget section */
+
+/* Begin PBXTargetDependency section */
+		11111111111111111111B00A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 111111111111111111111500 /* FoodMapApp */;
+			targetProxy = 11111111111111111111B009 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin PBXProject section */
 		111111111111111111111800 /* Project object */ = {
@@ -252,6 +308,10 @@
 				TargetAttributes = {
 					111111111111111111111500 = {
 						CreatedOnToolsVersion = 15.0;
+					};
+					11111111111111111111B005 = {
+						CreatedOnToolsVersion = 15.0;
+						TestTargetID = 111111111111111111111500;
 					};
 				};
 			};
@@ -270,6 +330,7 @@
 			projectRoot = "";
 			targets = (
 				111111111111111111111500 /* FoodMapApp */,
+				11111111111111111111B005 /* FoodMapAppUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -280,6 +341,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				11111111111111111111110E /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		11111111111111111111B008 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -314,6 +382,14 @@
 				111111111111111111111110 /* MapHomeModels.swift in Sources */,
 				111111111111111111111111 /* MapHomeViewModel.swift in Sources */,
 				111111111111111111111112 /* MapHomeView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		11111111111111111111B006 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				11111111111111111111B001 /* LoginFlowTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -485,6 +561,41 @@
 			};
 			name = Release;
 		};
+		11111111111111111111B00B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.foodmap.FoodMapAppUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = FoodMapApp;
+			};
+			name = Debug;
+		};
+		11111111111111111111B00C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.foodmap.FoodMapAppUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = FoodMapApp;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -502,6 +613,15 @@
 			buildConfigurations = (
 				111111111111111111111A01 /* Debug */,
 				111111111111111111111A02 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		11111111111111111111B00D /* Build configuration list for PBXNativeTarget "FoodMapAppUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				11111111111111111111B00B /* Debug */,
+				11111111111111111111B00C /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

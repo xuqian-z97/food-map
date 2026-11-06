@@ -23,6 +23,11 @@ struct AppRouter: View {
             }
         }
         .task {
+            #if DEBUG
+            if ProcessInfo.processInfo.arguments.contains("-uiTestResetSession") {
+                sessionStore.resetStoredAuthenticationForUITest()
+            }
+            #endif
             await sessionStore.restoreSessionIfNeeded()
             #if DEBUG
             await LaunchAutomationProbe.runIfRequested(sessionStore: sessionStore)

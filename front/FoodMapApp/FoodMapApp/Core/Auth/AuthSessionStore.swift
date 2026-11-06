@@ -54,6 +54,18 @@ final class AuthSessionStore: ObservableObject {
         self.isRestoringSession = tokenStore.load() != nil
     }
 
+    #if DEBUG
+    /// 仅供 UI 测试使用：清空本地认证状态并回到未登录，保证每次用例从登录页开始。
+    ///
+    /// 只清理本机 Keychain 与内存中的会话，不访问后端；Release 包不编译该方法。
+    func resetStoredAuthenticationForUITest() {
+        tokenStore.clear()
+        session = nil
+        restoreErrorMessage = nil
+        isRestoringSession = false
+    }
+    #endif
+
     /// 使用账号名、手机号或邮箱登录，成功后保存 Token 并通过当前用户接口建立真实会话。
     func login(identifier: String, password: String, baseURL: String) async throws {
         let client = try APIClient(baseURLString: baseURL, session: urlSession)

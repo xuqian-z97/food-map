@@ -66,6 +66,7 @@ struct LoginView: View {
                     .keyboardType(.emailAddress)
                     .textContentType(.username)
                     .submitLabel(.next)
+                    .accessibilityIdentifier("login.identifier")
             }
             .foodMapInputField()
 
@@ -74,6 +75,7 @@ struct LoginView: View {
                 SecureField("密码", text: $viewModel.password)
                     .textContentType(.password)
                     .submitLabel(.go)
+                    .accessibilityIdentifier("login.password")
             }
             .foodMapInputField()
 
@@ -84,6 +86,7 @@ struct LoginView: View {
                     .autocorrectionDisabled()
                     .keyboardType(.URL)
                     .textContentType(.URL)
+                    .accessibilityIdentifier("login.baseURL")
             }
             .foodMapInputField()
         }
@@ -108,6 +111,7 @@ struct LoginView: View {
             }
             .buttonStyle(FoodMapPrimaryButtonStyle())
             .disabled(!viewModel.canSubmit || viewModel.isLoading)
+            .accessibilityIdentifier("login.submit")
 
             Button {
                 showsRegister = true
@@ -129,6 +133,7 @@ struct LoginView: View {
                 .background(FoodMapTheme.persimmon.opacity(0.10))
                 .clipShape(RoundedRectangle(cornerRadius: FoodMapTheme.cardCornerRadius, style: .continuous))
                 .frame(maxWidth: .infinity, alignment: .leading)
+                .accessibilityIdentifier("login.error")
         }
     }
 
