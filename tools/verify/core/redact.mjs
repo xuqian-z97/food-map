@@ -46,12 +46,17 @@ export function createRedactor(customRules = []) {
     }
     return out;
   };
-  const redactValue = (value) => {
-    if (typeof value === 'string') return redact(value);
-    if (Array.isArray(value)) return value.map(redactValue);
+  // 结构化对象里，敏感字段按“键名”整体替换：不透明 Token 和密码没有固定格式，只能靠键名识别。
+  const SECRET_KEYS = /(token|password|passwd|secret|credential|authorization|cookie|sessionid)/i;
+  const redactValue = (value, key = '') => {
+    if (typeof value === 'string') {
+      if (SECRET_KEYS.test(key) && value.trim() !== '') return '[REDACTED]';
+      return redact(value);
+    }
+    if (Array.isArray(value)) return value.map((item) => redactValue(item, key));
     if (value && typeof value === 'object') {
       const out = {};
-      for (const [key, item] of Object.entries(value)) out[key] = redactValue(item);
+      for (const [name, item] of Object.entries(value)) out[name] = redactValue(item, name);
       return out;
     }
     return value;

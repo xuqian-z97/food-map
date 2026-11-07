@@ -369,3 +369,12 @@ test('--json stdout 也会脱敏，不能把 Token 打到终端', async (t) => {
   assert.doesNotMatch(stdout, /eyJhbGciOiJIUzI1NiJ9/);
   assert.match(stdout, /REDACTED/);
 });
+
+test('结构化对象里的不透明 Token 和密码按键名脱敏', () => {
+  const redactor = createRedactor([]);
+  const out = redactor.redactValue({ data: { accessToken: 'opaque-abc', password: 'p@ss', note: 'ok' } });
+
+  assert.equal(out.data.accessToken, '[REDACTED]');
+  assert.equal(out.data.password, '[REDACTED]');
+  assert.equal(out.data.note, 'ok');
+});

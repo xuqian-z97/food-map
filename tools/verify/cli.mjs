@@ -199,9 +199,12 @@ async function main() {
     return;
   }
 
+  // 进度和失败详情也可能带出响应体，统一先脱敏再打印（包含 stderr 的断言失败分支）。
+  const defaultRedactor = createRedactor([]);
   const progress = (line) => {
-    if (options.json) process.stderr.write(`${line}\n`);
-    else process.stdout.write(`${line}\n`);
+    const safe = defaultRedactor.redact(String(line));
+    if (options.json) process.stderr.write(`${safe}\n`);
+    else process.stdout.write(`${safe}\n`);
   };
   const evidenceDir = options.evidenceDir ? resolve(options.evidenceDir) : DEFAULT_EVIDENCE_DIR;
   const directoryMode = isDirectory(options.target);
