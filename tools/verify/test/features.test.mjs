@@ -378,3 +378,11 @@ test('结构化对象里的不透明 Token 和密码按键名脱敏', () => {
   assert.equal(out.data.password, '[REDACTED]');
   assert.equal(out.data.note, 'ok');
 });
+
+test('密码值包含转义双引号时整段被遮盖', () => {
+  const body = JSON.stringify({ data: { password: 'ab"cdMARKER', accessToken: 'opq' } });
+  const out = createRedactor([]).redact(body);
+
+  assert.doesNotMatch(out, /MARKER/);
+  assert.doesNotMatch(out, /opq/);
+});

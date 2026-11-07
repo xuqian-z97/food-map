@@ -10,7 +10,7 @@ const DEFAULT_RULES = [
   // 中国大陆手机号
   { name: 'phone', pattern: /(?<!\d)1[3-9]\d{9}(?!\d)/g, replacement: '[REDACTED_PHONE]' },
   // JSON 里的 password / token 字段
-  { name: 'json-secret', pattern: /("(?:password|passwordHash|accessToken|refreshToken|token)"\s*:\s*")[^"]*(")/gi, replacement: '$1[REDACTED]$2' },
+  { name: 'json-secret', pattern: /("(?:password|passwordHash|accessToken|refreshToken|token)"\s*:\s*")(?:[^"\\]|\\.)*(")/gi, replacement: '$1[REDACTED]$2' },
 ];
 
 function toRule(entry, index) {
