@@ -6,9 +6,25 @@ config:
   baseUrl: http://127.0.0.1:8080
 vars:
   bundleId: com.foodmap.FoodMapApp
-  account: zxq_ios_152532
-  password: Foodmap@123
+  password: ${env:FM_TEST_PW}
   dbContainer: foodmap-postgres
+setup:
+  - http: GET ${baseUrl}/internal/auth/health
+    retry: { max: 30, intervalMs: 1000 }
+    expect: { status: 200 }
+  - command: "printf 'zxq_ios_%s' $(date +%H%M%S)"
+    capture: { account: stdout }
+  - http: POST ${baseUrl}/api/auth/register
+    json:
+      accountName: ${account}
+      password: ${password}
+      nickname: ios-probe
+      registeredChannel: IOS
+    expect: { status: 200 }
+    capture: { userId: data.userId }
+  - command: "wc -l < /tmp/verify-auth.log"
+    capture: { logStart: value }
+
 steps:
   - app: terminate ${udid} ${bundleId}
 
@@ -37,3 +53,18 @@ steps:
   - command: "[ ${revoked} -ge 1 ]"
     expect:
       exitCode: 0
+teardown:
+  - command: "docker exec ${dbContainer} psql -U foodmap -d foodmap_auth_db -c \"delete from auth_sessions where user_id in (select user_id from auth_accounts where account_name = '${account}')\""
+    expect: { exitCode: 0 }
+  - command: "docker exec ${dbContainer} psql -U foodmap -d foodmap_auth_db -c \"delete from auth_identity_bindings where user_id in (select user_id from auth_accounts where account_name = '${account}')\""
+    expect: { exitCode: 0 }
+  - command: "docker exec ${dbContainer} psql -U foodmap -d foodmap_auth_db -c \"delete from login_logs where account_id in (select account_id from auth_accounts where account_name = '${account}')\""
+    expect: { exitCode: 0 }
+  - command: "docker exec ${dbContainer} psql -U foodmap -d foodmap_auth_db -c \"delete from refresh_tokens where account_id in (select account_id from auth_accounts where account_name = '${account}')\""
+    expect: { exitCode: 0 }
+  - command: "docker exec ${dbContainer} psql -U foodmap -d foodmap_auth_db -c \"delete from auth_credentials where account_id in (select account_id from auth_accounts where account_name = '${account}')\""
+    expect: { exitCode: 0 }
+  - command: "docker exec ${dbContainer} psql -U foodmap -d foodmap_auth_db -c \"delete from auth_accounts where account_name = '${account}'\""
+    expect: { exitCode: 0 }
+  - command: "docker exec ${dbContainer} psql -U foodmap -d foodmap_auth_db -tAc \"select count(*) from auth_accounts where account_name = '${account}'\""
+    expect: { equals: "0" }
