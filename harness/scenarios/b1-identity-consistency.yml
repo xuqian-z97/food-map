@@ -10,15 +10,11 @@ config:
 vars:
   dbContainer: foodmap-postgres
 steps:
-  - command: "docker exec ${dbContainer} psql -U foodmap -d foodmap_auth_db -tAc \"select count(*) from auth_identity_bindings where is_delete=0\""
+  - command: "docker exec ${dbContainer} psql -U foodmap -d foodmap_auth_db -tAc \"select count(*) from auth_accounts a where a.is_delete=0 and (select count(*) from auth_identity_bindings b where b.user_id=a.user_id and b.is_delete=0) < ((case when a.account_name is not null then 1 else 0 end) + (case when a.phone is not null and trim(a.phone)<>'' then 1 else 0 end) + (case when a.email is not null and trim(a.email)<>'' then 1 else 0 end))\""
     capture:
-      bindings: value
+      accountsWithMissingBindings: value
 
-  - command: "docker exec ${dbContainer} psql -U foodmap -d foodmap_auth_db -tAc \"select (select count(*) from auth_accounts a where a.is_delete=0 and a.account_name is not null) + (select count(*) from auth_accounts a where a.is_delete=0 and a.phone is not null and trim(a.phone)<>'') + (select count(*) from auth_accounts a where a.is_delete=0 and a.email is not null and trim(a.email)<>'')\""
-    capture:
-      expected: value
-
-  - command: "[ ${bindings} -eq ${expected} ]"
+  - command: "[ ${accountsWithMissingBindings} -eq 0 ]"
     expect:
       exitCode: 0
 
