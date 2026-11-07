@@ -200,9 +200,9 @@ async function main() {
   }
 
   // 进度和失败详情也可能带出响应体，统一先脱敏再打印（包含 stderr 的断言失败分支）。
-  const defaultRedactor = createRedactor([]);
+  let activeRedactor = createRedactor([]);
   const progress = (line) => {
-    const safe = defaultRedactor.redact(String(line));
+    const safe = activeRedactor.redact(String(line));
     if (options.json) process.stderr.write(`${safe}\n`);
     else process.stdout.write(`${safe}\n`);
   };
@@ -246,11 +246,13 @@ async function main() {
   let evidence = null;
   try {
     if (directoryMode) {
+      const suiteRules = [];
       result = await runSuite(options.target, {
         only: options.only,
         configPath: options.configPath,
         vars: options.vars,
         log: progress,
+        collectRules: suiteRules,
       });
       for (const scenarioResult of result.scenarios) {
         try {
@@ -263,10 +265,11 @@ async function main() {
         }
       }
       attachRedactor(result, createRedactor([]));
-      evidence = await writeSuiteEvidence(result, evidenceDir, { redactor: createRedactor([]) });
+      evidence = await writeSuiteEvidence(result, evidenceDir, { redactor: createRedactor(suiteRules) });
     } else {
       const scenario = await loadScenario(options.target, { configPath: options.configPath, vars: options.vars });
       const redactor = createRedactor(scenario.config.redact || []);
+      activeRedactor = redactor;
       result = attachRedactor(await runScenario(scenario, { log: progress }), redactor);
       try {
         evidence = await writeEvidence(result, evidenceDir, { redactor });

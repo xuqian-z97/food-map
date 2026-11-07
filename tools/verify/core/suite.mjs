@@ -4,6 +4,7 @@ import { readdir, stat } from 'node:fs/promises';
 import { join, relative, resolve } from 'node:path';
 import { loadScenario } from './scenario.mjs';
 import { runScenario } from './runner.mjs';
+import { createRedactor } from './redact.mjs';
 
 const SKIP_DIRS = new Set(['node_modules', '.git', 'evidence', '.build']);
 
@@ -61,7 +62,10 @@ export async function runSuite(dir, options = {}) {
     let result;
     try {
       const scenario = await loadScenario(file, { configPath: options.configPath, vars: options.vars });
-      result = await runScenario(scenario, { log });
+      const rules = scenario.config.redact || [];
+      const redactor = createRedactor(rules);
+      if (Array.isArray(options.collectRules)) options.collectRules.push(...rules);
+      result = await runScenario(scenario, { log: (line) => log(redactor.redact(String(line))) });
     } catch (error) {
       result = {
         schemaVersion: 2,
