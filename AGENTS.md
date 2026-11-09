@@ -277,7 +277,9 @@ FoodMap 默认按可联调业务切片推进。每完成一个前端或后端功
 - 改动涉及 `after/`、`front/`、接口契约或 Flyway 时，提交前必须执行
   `node tools/verify/cli.mjs run harness/scenarios/`；退出码非 0 不得提交，也不得通过修改断言来"变绿"。
 - 通过后写入台账：`harness/scripts/verify-record.sh <场景> --scope=... --kind=... --covers=...`。
-- 仅改文档或注释时，可只跑 `--dry-run`。
+- 日常入口为 `./harness/scripts/verify.sh`，`run-all.sh` 也调用该入口：按方案 D 只读预检，自动运行依赖就绪的场景，明确记录 SKIP 原因，不自动启动服务或清理历史数据。场景通过 `requires` 显式补充 shell 命令隐藏的依赖；预检配置位于 `harness/verify-dependencies.json`。
+- 部分执行不是全量通过：报告必须分别列出 passed / failed / skipped。业务验收使用 `VERIFY_REQUIRE_FULL=1 ./harness/scripts/verify.sh`，任何跳过都返回非 0，不能以日常模式退出码 0 代替全量验收。
+- 仅改文档或注释时，可只跑 `./harness/scripts/verify.sh --dry-run`（不预检、不访问外部服务、不要求注入运行时密码）。
 - 服务或模拟器不可用时，必须在交付说明里写明"未执行 + 原因"，不得静默跳过。
 - `status check` 的"代码提交晚于最近一次测试运行"提示出现时，说明需要重新验证。
 

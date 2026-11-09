@@ -6,7 +6,7 @@
 node tools/verify/cli.mjs run harness/scenarios/ --json --evidence-dir /tmp/verify
 ```
 
-退出码 `0` 全过、`1` 有失败、`2` 场景/配置错误。只读这一条不够时看 `AGENT.md`。
+退出码 `0` 无运行失败（依赖感知模式可能跳过）、`1` 有失败或严格模式有跳过、`2` 场景/配置错误。验收还必须确认 `ok=true` 与 `summary.skipped=0`。只读这一条不够时看 `AGENT.md`。
 
 2026-11 新增能力（schemaVersion 2）：
 
@@ -130,7 +130,7 @@ steps:
 
 ### 3.1 字段与校验
 
-顶层只允许：`name`、`description`、`config`、`vars`、`steps`。
+顶层允许：`name`、`description`、`config`、`vars`、`requires`、`setup`、`steps`、`teardown`。
 `steps` 必须是非空列表；每一步必须且只能有一个动作：
 
 | 动作 | 值写法 |
@@ -468,7 +468,7 @@ Android 同理：`adb` 能启动和读私有目录，但不能替代项目自己
 ## 9. 已知限制
 
 - YAML 是受限子集：不支持块标量（`|`、`>`）、锚点/别名、多文档、复杂键。
-- 没有重试、并行、依赖图、超时后自动补偿；步骤严格顺序执行，失败后继续跑完剩余步骤。
+- 支持步骤 retry、setup/teardown；不支持并行执行和事务补偿。setup 失败跳过主步骤，teardown 仍执行。
 - SQL 只通过 psql 取标量，不内置连接池、事务或结果集表格断言。
 - Redis 只通过 redis-cli；`count` 基于 `SCAN`，大库上可能较慢。
 - `json` 只做点分路径子集匹配，不支持 JSONPath、通配符或数组过滤。
@@ -476,10 +476,9 @@ Android 同理：`adb` 能启动和读私有目录，但不能替代项目自己
 - `logfile` 的 glob 是简化实现，不支持完整 shell glob 语义。
 - `app readlog` 要求项目提供探针日志；Android 还要求 App 可调试（`run-as`）。
 - `app.env` 只在 iOS launch 可用；Android 无法给已安装应用注入环境变量。
-- 证据默认保留完整 actual，可能包含敏感数据；请按项目策略清理。
+- stdout、stderr 与文本/JSON 证据做脱敏，但不能保证任意业务私密正文都被识别；请配置自定义规则并按项目策略留存。
 - 默认证据目录位于工具自身，不会自动加入 `.gitignore`；提交前请检查。
-- 同一分钟、同一 scenario name 的证据文件会互相覆盖；需要保留多次运行时请用不同
-  `--evidence-dir` 或重命名 scenario。
+- 场景和套件证据使用 runId 区分复跑；不手动复用 runId。
 - 没有 TypeScript 类型检查或构建步骤；所有代码按纯 ESM 直接执行。
 
 ## 10. 复制到其他项目
@@ -497,3 +496,33 @@ cp -R tools/verify /path/to/other-project/tools/verify
 - 新建该项目的 scenario 和 config，不修改 `core/` 和 `adapters/`。
 
 工具内部不 import 任何外部路径，不读取 food-map 或 `status/`，也没有硬编码的项目常量。
+
+## 11. 依赖感知执行（可选，目录模式）
+
+```sh
+node tools/verify/cli.mjs run scenarios/ --dependencies checks.json --json
+node tools/verify/cli.mjs run scenarios/ --dependencies checks.json --require-full --json
+```
+
+场景可声明 `requires: [sql, auth-log]`，它与所有阶段的动作依赖取并集。动作推断为
+http→network、sql→sql、redis→redis、app/xcode→device。`command` 可以调用任意外部程序，
+**不能推断为无依赖**，作者必须声明隐藏依赖。不提供清单时保持旧版全部执行；
+`--skip-deps sql,device` 可人工标记不可用依赖（不能用于单文件）。
+
+清单是受信项目维护者编写的 JSON，放在场景目录之外；例如：
+
+```json
+{
+  "sql": {"checks": [{"type":"exec", "argv":["docker","exec","example-db","pg_isready"], "timeoutMs":3000, "label":"数据库尚未就绪或无访问权限"}]},
+  "network": {"checks": [{"type":"http", "url":"http://127.0.0.1:9002/health", "status":200}]},
+  "auth-log": {"checks": [{"type":"file", "path":"/tmp/example-auth.log"}]},
+  "test-password": {"checks": [{"type":"env", "name":"EXAMPLE_TEST_PASSWORD"}]}
+}
+```
+
+- `exec` 以 argv 调用，不经 shell；只允许项目约定的只读检查，不能写业务数据或执行清理。可设 `contains` 检查 stdout，但报告不会包含原始输出或环境变量值。
+- HTTP 默认 3 秒、命令默认 5 秒超时。所有 checks 都通过才是 READY。缺命令/访问权限/连接超时均不可视为就绪；未知依赖没有配置时跳过，不偷偷执行。
+- `file.path` 相对清单目录；`env` 只检查非空。预检不启动服务/模拟器、不安装 App、不清理历史数据。
+- 部分执行输出 `ok:false,status:partial`，`summary` 分别统计 passed/failed/skipped。普通模式可返回 0；`--require-full` 或 `VERIFY_REQUIRE_FULL=1` 下，任何跳过返回 1。真实失败不因预检通过或其他场景跳过而隐藏。
+- SKIP 原因写入 stdout JSON、场景证据、套件证据和 JUnit `<skipped>`。整体语法错误在任何业务步骤执行前报 2。`--dry-run` 不访问外部依赖，也不要求真实环境变量；真实执行前仍检查环境变量。
+- 不把跳过结果当作业务验收通过，不自动写业务台账。

@@ -1,4 +1,5 @@
 name: B1 iOS 登录 UI 全链路
+requires: [network, sql, redis, device, xcode, auth-log, test-password]
 description: "启动模拟器 Debug 构建，XCUITest 真实点击登录，再回到数据库和日志确认链路打通"
 config:
   baseUrl: http://127.0.0.1:8080

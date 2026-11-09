@@ -11,7 +11,7 @@ import { parseYaml } from './yaml.mjs';
 export const ACTIONS = ['http', 'sql', 'redis', 'command', 'sleep', 'logfile', 'app', 'xcode'];
 export const ASSERTIONS = ['status', 'equals', 'contains', 'matches', 'exitCode', 'stdoutContains', 'gte', 'lte', 'json'];
 
-const ROOT_KEYS = new Set(['name', 'description', 'config', 'vars', 'setup', 'steps', 'teardown']);
+const ROOT_KEYS = new Set(['name', 'description', 'config', 'vars', 'requires', 'setup', 'steps', 'teardown']);
 const STEP_FIELDS = new Set([...ACTIONS, 'json', 'headers', 'body', 'expect', 'capture', 'env', 'retry']);
 const VARIABLE = /\$\{(?:(env):)?([A-Za-z_][A-Za-z0-9_.-]*)\}/g;
 const CAPTURE_NAME = /^[A-Za-z_][A-Za-z0-9_.-]*$/;
@@ -236,6 +236,9 @@ function validateScenario(raw) {
   if (typeof raw.name !== 'string' || raw.name.trim() === '') {
     throw new ScenarioError('scenario.name 必须是非空字符串');
   }
+  if (raw.requires !== undefined && (!Array.isArray(raw.requires) || raw.requires.some(name => typeof name !== 'string' || !/^[a-z][a-z0-9_-]*$/.test(name)))) {
+    throw new ScenarioError('requires 必须是依赖名字符串列表');
+  }
   if (raw.config !== undefined) assertPlainObject(raw.config, 'config');
   if (raw.vars !== undefined) checkVariableValues(raw.vars);
   if (!Array.isArray(raw.steps) || raw.steps.length === 0) {
@@ -277,7 +280,7 @@ function collectPlaceholders(value, where, out) {
   }
 }
 
-function validatePlaceholders(steps, known, captures, groups = {}) {
+function validatePlaceholders(steps, known, captures, groups = {}, deferEnv = false) {
   const found = [];
   steps.forEach((step, index) => collectPlaceholders(step, `steps[${index}]`, found));
   for (const [name, list] of Object.entries(groups)) {
@@ -285,7 +288,7 @@ function validatePlaceholders(steps, known, captures, groups = {}) {
   }
   for (const { name, env, where } of found) {
     if (env) {
-      if (process.env[name] === undefined) {
+      if (!deferEnv && process.env[name] === undefined) {
         throw new ScenarioError(
           `环境变量 ${name} 未设置（位置：${where}）`,
           `导出 ${name}，改用 --var ${name}=...，或在 config 中提供同名标量；密码与 Token 不应写进 scenario。`,
@@ -377,17 +380,18 @@ export async function loadScenario(file, options = {}) {
     ...(raw.vars || {}),
     ...(options.vars || {}),
   };
-  const config = interpolate(mergedConfig, vars, 'config');
+  const config = options.deferEnv ? mergedConfig : interpolate(mergedConfig, vars, 'config');
   const setup = raw.setup || [];
   const teardown = raw.teardown || [];
   const captures = collectCaptures(raw.steps, setup, teardown);
   const known = new Set([...Object.keys(scalarConfig(config)), ...Object.keys(vars)]);
-  validatePlaceholders(raw.steps, known, captures, { setup, teardown });
+  validatePlaceholders(raw.steps, known, captures, { setup, teardown, config: [mergedConfig], vars: [vars] }, options.deferEnv);
 
   return {
     name: raw.name.trim(),
     description: raw.description || '',
     config,
+    requires: raw.requires || [],
     vars,
     setup,
     steps: raw.steps,

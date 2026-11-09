@@ -25,6 +25,7 @@ function renderFailure(step) {
 }
 
 function renderScenario(result) {
+  if (result.skipped) return `  <testsuite name="${escapeXml(result.name)}" tests="1" failures="0" skipped="1"><testcase name="dependency preflight"><skipped message="${escapeXml(result.skipReason)}"/></testcase></testsuite>`;
   const steps = result.steps || [];
   const failures = steps.filter((step) => !step.ok).length + (result.loadError ? 1 : 0);
   const time = ((result.durationMs || 0) / 1000).toFixed(3);
@@ -59,13 +60,14 @@ function renderScenario(result) {
  */
 export function toJUnit(result) {
   const scenarios = result.kind === 'suite' ? result.scenarios || [] : [result];
-  const tests = scenarios.reduce((sum, item) => sum + (item.steps || []).length + (item.loadError ? 1 : 0), 0);
+  const tests = scenarios.reduce((sum, item) => sum + (item.steps || []).length + (item.loadError ? 1 : 0) + (item.skipped ? 1 : 0), 0);
   const failures = scenarios.reduce(
     (sum, item) => sum + (item.steps || []).filter((step) => !step.ok).length + (item.loadError ? 1 : 0),
     0,
   );
   const time = ((result.durationMs || 0) / 1000).toFixed(3);
-  const header = `<?xml version="1.0" encoding="UTF-8"?>\n<testsuites name="${escapeXml(result.name)}" tests="${tests}" failures="${failures}" time="${time}">`;
+  const skipped = scenarios.filter(item => item.skipped).length;
+  const header = `<?xml version="1.0" encoding="UTF-8"?>\n<testsuites name="${escapeXml(result.name)}" tests="${tests}" failures="${failures}" time="${time}" skipped="${skipped}">`;
   const body = scenarios.map(renderScenario).join('\n');
   return `${header}\n${body}\n</testsuites>\n`;
 }

@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-09T12-16-verify-deps",
+  "at": "2026-11-09T12:16:01+08:00",
+  "kind": "integration",
+  "command": "FM_TEST_PW=<env> VERIFY_REQUIRE_FULL=1 ./harness/scripts/run-all.sh",
+  "env": "local",
+  "result": {
+    "total": 5,
+    "passed": 5,
+    "failed": 0,
+    "skipped": 0
+  },
+  "covers": [
+    "F-021"
+  ],
+  "evidence": [
+    "docs/reports/2026-11-09-verify-dependency-aware-validation.md",
+    "harness/scenarios/b1-ui-login.yml",
+    "harness/scenarios/b1-ios-logout.yml"
+  ],
+  "notes": "方案D验证：统一入口全套5/5、80步骤、0跳过；工具40+入口2项回归通过；缺密码普通3通过2跳过，严格退出1。业务验收状态未变。"
+}

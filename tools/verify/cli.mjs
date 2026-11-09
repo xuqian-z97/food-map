@@ -26,6 +26,9 @@ const USAGE = `通用验证工具（Node.js >= 20，零 npm 依赖）
   --config <cfg.yml>    覆盖 scenario.config（重复指定时最后一个生效）
   --evidence-dir <dir>  证据目录，默认 tools/verify/evidence
   --only <关键字>       只跑路径里包含该关键字的场景（目录模式）
+  --dependencies file  只读预检清单 JSON（目录模式）
+  --require-full       任何场景跳过都返回 1
+  --skip-deps a,b        跳过需要这些依赖的场景（network/sql/redis/device）
   --junit <file>        额外写 JUnit XML
   --list                只列出将被执行的场景，不执行
   --dry-run             只做加载和静态校验，不执行任何步骤
@@ -63,6 +66,9 @@ function parseArgs(argv) {
     evidenceDir: '',
     junitPath: '',
     only: '',
+    skipDeps: [],
+    dependenciesPath: '',
+    requireFull: process.env.VERIFY_REQUIRE_FULL === '1',
     list: false,
     dryRun: false,
     json: false,
@@ -102,6 +108,13 @@ function parseArgs(argv) {
       i += 1;
       continue;
     }
+    if (arg === '--require-full') { options.requireFull = true; continue; }
+    if (arg === '--dependencies') { options.dependenciesPath = nextValue(argv, i, arg); i += 1; continue; }
+    if (arg === '--skip-deps') {
+      options.skipDeps = nextValue(argv, i, '--skip-deps').split(',').map((item) => item.trim()).filter(Boolean);
+      i += 1;
+      continue;
+    }
     if (arg === '--only') {
       options.only = nextValue(argv, i, '--only');
       i += 1;
@@ -117,6 +130,8 @@ function parseArgs(argv) {
     options.target = arg;
   }
   if (!options.target) throw usageError('缺少 scenario 文件或目录路径');
+  if ((options.dependenciesPath || options.skipDeps.length || options.requireFull) && !isDirectory(options.target)) throw usageError('依赖感知选项仅用于目录套件');
+  if (options.skipDeps.some(name => !/^[a-z][a-z0-9_-]*$/.test(name))) throw usageError('非法依赖名');
   return options;
 }
 
@@ -160,12 +175,9 @@ function printable(result) {
 function printSummary(result, evidence) {
   const summary = result.summary || {};
   if (result.kind === 'suite') {
-    const line = result.ok
-      ? `通过 ${summary.passed}/${summary.scenarios} 个场景，耗时 ${result.durationMs}ms`
-      : `失败 ${summary.failed}/${summary.scenarios} 个场景，耗时 ${result.durationMs}ms`;
-    process.stdout.write(`${line}\n`);
-    for (const item of result.scenarios.filter((entry) => !entry.ok)) {
-      process.stdout.write(`  FAIL ${item.name}${item.loadError ? ` — ${item.loadError}` : ''}\n`);
+    process.stdout.write(`${result.status === 'partial' ? '部分执行（非全量通过）' : result.ok ? '通过' : '失败'}：${summary.passed} 通过 / ${summary.failed} 失败 / ${summary.skipped || 0} 跳过，共 ${summary.scenarios} 场景，耗时 ${result.durationMs}ms\n`);
+    for (const item of result.scenarios.filter(entry => !entry.ok)) {
+      process.stdout.write(`  ${item.skipped ? 'SKIP' : 'FAIL'} ${item.name}${item.skipReason ? ` — ${item.skipReason}` : ''}${item.loadError ? ` — ${item.loadError}` : ''}\n`);
     }
     if (evidence) {
       process.stdout.write(`证据: ${evidence.text}\n`);
@@ -223,12 +235,13 @@ async function main() {
       if (directoryMode) {
         const files = await collectScenarios(options.target);
         const selected = options.only ? files.filter((file) => file.includes(options.only)) : files;
+        if (!selected.length) throw usageError('没有匹配的场景');
         for (const file of selected) {
-          const scenario = await loadScenario(file, { configPath: options.configPath, vars: options.vars });
+          const scenario = await loadScenario(file, { configPath: options.configPath, vars: options.vars, deferEnv: true });
           results.push({ file, name: scenario.name, steps: scenario.steps.length, setup: scenario.setup.length, teardown: scenario.teardown.length });
         }
       } else {
-        const scenario = await loadScenario(options.target, { configPath: options.configPath, vars: options.vars });
+        const scenario = await loadScenario(options.target, { configPath: options.configPath, vars: options.vars, deferEnv: true });
         results.push({ file: resolve(options.target), name: scenario.name, steps: scenario.steps.length, setup: scenario.setup.length, teardown: scenario.teardown.length });
       }
     } catch (error) {
@@ -253,15 +266,19 @@ async function main() {
         vars: options.vars,
         log: progress,
         collectRules: suiteRules,
+        skipDeps: options.skipDeps,
+        requireFull: options.requireFull,
+        dependenciesPath: options.dependenciesPath,
       });
       for (const scenarioResult of result.scenarios) {
         try {
-          const scenario = await loadScenario(scenarioResult.source, { configPath: options.configPath, vars: options.vars });
+          const scenario = await loadScenario(scenarioResult.source, { configPath: options.configPath, vars: options.vars, deferEnv: true });
           const redactor = createRedactor(scenario.config.redact || []);
           attachRedactor(scenarioResult, redactor);
           await writeEvidence(scenarioResult, evidenceDir, { redactor });
         } catch (error) {
           scenarioResult.evidenceError = error.message;
+          result.exitCode = 2; result.ok = false; result.status = 'failed';
         }
       }
       attachRedactor(result, createRedactor([]));
@@ -288,7 +305,7 @@ async function main() {
 
   if (options.junitPath) {
     try {
-      writeFileSync(resolve(options.junitPath), toJUnit(result), 'utf8');
+      writeFileSync(resolve(options.junitPath), toJUnit(printable(result)), 'utf8');
     } catch (error) {
       process.stderr.write(`错误: JUnit 写入失败（${options.junitPath}）：${error.message}\n`);
       result.exitCode = 2;

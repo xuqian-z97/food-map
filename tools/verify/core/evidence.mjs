@@ -29,8 +29,9 @@ function renderText(result) {
   lines.push(`开始: ${result.startedAt}`);
   lines.push(`结束: ${result.finishedAt}`);
   lines.push(`耗时: ${result.durationMs}ms`);
-  lines.push(`结果: ${result.ok ? 'PASS' : 'FAIL'} (${result.summary.passed}/${result.summary.total})`);
+  lines.push(`结果: ${result.skipped ? 'SKIP' : result.ok ? 'PASS' : 'FAIL'} (${result.summary.passed}/${result.summary.total})`);
   lines.push('');
+  if (result.skipReason) lines.push(`跳过原因: ${result.skipReason}`);
   lines.push('#   结果  耗时     步骤');
   for (const step of result.steps) {
     lines.push(`${String(step.index).padEnd(4)}${(step.ok ? 'ok' : 'FAIL').padEnd(6)}${`${step.durationMs}ms`.padEnd(9)}${step.display}`);
@@ -88,12 +89,15 @@ function renderSuite(suite) {
   lines.push(`开始: ${suite.startedAt}`);
   lines.push(`结束: ${suite.finishedAt}`);
   lines.push(`耗时: ${suite.durationMs}ms`);
-  lines.push(`结果: ${suite.ok ? 'PASS' : 'FAIL'} (${suite.summary.passed}/${suite.summary.scenarios} 个场景，${suite.summary.steps} 个步骤)`);
+  lines.push(`结果: ${suite.status === 'partial' ? 'PARTIAL（非全量通过）' : suite.ok ? 'PASS' : 'FAIL'} (${suite.summary.passed}/${suite.summary.scenarios} 个场景，${suite.summary.steps} 个步骤)`);
   lines.push('');
+  lines.push(`统计: ${suite.summary.passed} 通过 / ${suite.summary.failed} 失败 / ${suite.summary.skipped || 0} 跳过`);
+  for (const check of suite.preflight || []) lines.push(`预检 ${check.name}: ${check.ready ? 'READY' : check.reasons.join('；')}`);
   lines.push('#   结果  耗时       场景');
   for (const item of suite.scenarios) {
     const source = item.source ? item.source.split('/').slice(-2).join('/') : '-';
-    lines.push(`${(item.ok ? 'ok' : 'FAIL').padEnd(6)}${`${item.durationMs}ms`.padEnd(11)}${item.name} (${source})`);
+    lines.push(`${(item.skipped ? 'SKIP' : item.ok ? 'ok' : 'FAIL').padEnd(6)}${`${item.durationMs}ms`.padEnd(11)}${item.name} (${source})`);
+    if (item.skipReason) lines.push(`      跳过原因: ${item.skipReason}`);
     if (item.loadError) lines.push(`      加载失败: ${item.loadError}`);
     for (const step of (item.steps || []).filter((entry) => !entry.ok)) {
       lines.push(`      失败: [${step.phase || 'step'} ${step.index}] ${step.display}${step.error ? ` — ${step.error}` : ''}`);
@@ -111,7 +115,7 @@ function renderSuite(suite) {
  */
 export async function writeSuiteEvidence(suite, evidenceDir, options = {}) {
   const date = new Date(suite.startedAt);
-  const base = `${localStamp(Number.isNaN(date.getTime()) ? new Date() : date)}-suite-${safeName(suite.name)}`;
+  const base = `${localStamp(Number.isNaN(date.getTime()) ? new Date() : date)}-${safeName(suite.runId || String(Date.now()))}-${safeName(suite.name)}`;
   const paths = {
     text: join(evidenceDir, `${base}.txt`),
     json: join(evidenceDir, `${base}.json`),

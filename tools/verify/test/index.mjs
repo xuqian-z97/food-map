@@ -3,3 +3,4 @@
 import './runner.test.mjs';
 import './scenario.test.mjs';
 import './features.test.mjs';
+import './deps.test.mjs';

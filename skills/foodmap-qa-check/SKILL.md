@@ -95,4 +95,4 @@ Harness：
 
 ## 联调验证
 
-提交前按 `AGENTS.md` §6.3.1 执行 `node tools/verify/cli.mjs run harness/scenarios/`，通过后用 `harness/scripts/verify-record.sh` 写台账。
+提交前以 `AGENTS.md` §6.3.1 为准：日常通过 `harness/scripts/verify.sh` 依赖感知运行，业务验收必须设置 `VERIFY_REQUIRE_FULL=1`，任何 SKIP 不得视为通过。真实全量通过后用 `harness/scripts/verify-record.sh` 写台账。

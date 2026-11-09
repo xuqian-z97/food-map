@@ -1,4 +1,5 @@
 name: B1 身份模型一致性核验
+requires: [sql]
 description: "核对 auth_identity_bindings / auth_sessions 与旧表是否全局一致：绑定数等于账号标识数、无孤儿绑定与会话、会话状态与 Refresh Token 一致、缺会话的 Token 只能由账号缺失解释"
 config:
   psql:

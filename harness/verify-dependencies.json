@@ -1,0 +1,26 @@
+{
+  "network": {"checks": [
+    {"type": "http", "url": "http://127.0.0.1:8080/internal/auth/health", "label": "认证网关不可达或权限受限"},
+    {"type": "http", "url": "http://127.0.0.1:8080/internal/users/health", "label": "用户服务网关路由不可达或权限受限"}
+  ]},
+  "sql": {"checks": [
+    {"type": "exec", "argv": ["docker", "exec", "foodmap-postgres", "psql", "-U", "foodmap", "-d", "foodmap_auth_db", "-tAc", "select 1"], "contains": "1", "label": "认证数据库不可查询（检查 OrbStack / 权限）"},
+    {"type": "exec", "argv": ["docker", "exec", "foodmap-postgres", "psql", "-U", "foodmap", "-d", "foodmap_user_db", "-tAc", "select 1"], "contains": "1", "label": "用户数据库不可查询（检查 OrbStack / 权限）"}
+  ]},
+  "redis": {"checks": [
+    {"type": "exec", "argv": ["docker", "exec", "foodmap-redis", "redis-cli", "ping"], "contains": "PONG", "label": "Redis 不可查询（检查 OrbStack / 权限）"}
+  ]},
+  "device": {"checks": [
+    {"type": "exec", "argv": ["xcrun", "simctl", "get_app_container", "A77A2428-9576-4533-8B62-0C267A395B29", "com.foodmap.FoodMapApp", "app"], "label": "指定模拟器不可用或未安装 FoodMapApp（请先启动设备、构建安装 Debug App）"},
+    {"type": "exec", "argv": ["xcrun", "simctl", "spawn", "A77A2428-9576-4533-8B62-0C267A395B29", "launchctl", "list"], "label": "指定模拟器未启动或 CoreSimulator 权限受限"}
+  ]},
+  "xcode": {"checks": [
+    {"type": "exec", "argv": ["xcodebuild", "-version"], "label": "完整 Xcode 不可用"}
+  ]},
+  "auth-log": {"checks": [
+    {"type": "file", "path": "/tmp/verify-auth.log", "label": "缺少可读认证日志 /tmp/verify-auth.log（需配置本地服务日志输出）"}
+  ]},
+  "test-password": {"checks": [
+    {"type": "env", "name": "FM_TEST_PW", "label": "未设置测试密码环境变量 FM_TEST_PW"}
+  ]}
+}

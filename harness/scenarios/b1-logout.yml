@@ -1,4 +1,5 @@
 name: B1 退出登录链路（接口级）
+requires: [network, sql, redis]
 description: "真实网关复跑 B1 登出链路：注册→登录→当前用户→登出→旧 Token 失效；Redis 与 PostgreSQL 走 docker exec，不落 Token"
 config:
   baseUrl: http://127.0.0.1:8080

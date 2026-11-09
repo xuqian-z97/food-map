@@ -20,7 +20,7 @@ node tools/verify/cli.mjs run harness/scenarios/ --json --evidence-dir /tmp/veri
 
 | 码 | 含义 | 你该做什么 |
 | --- | --- | --- |
-| `0` | 全部通过 | 继续下一步 |
+| `0` | 无运行失败（依赖感知模式可能部分跳过） | 检查 `ok`、`status` 和 `summary.skipped`，不能只看退出码 |
 | `1` | 至少一个步骤失败 | 看 `scenarios[i].steps[j].error` / `.hint` / `.checks`，判断是代码 bug 还是期望写错 |
 | `2` | 场景/配置/用法错误 | **不要改业务代码**，先修 scenario 或命令 |
 
@@ -113,3 +113,17 @@ node tools/verify/cli.mjs run harness/scenarios/ --json --evidence-dir /tmp/veri
 
 默认写在 `tools/verify/evidence/`（不提交仓库）。文件名含 runId，不会互相覆盖；
 落盘前会按内置规则脱敏 Bearer / JWT / 手机号，可在 `config.redact` 追加正则。
+
+## 9. 可选依赖感知套件
+
+```sh
+node tools/verify/cli.mjs run <场景目录> --dependencies <预检清单.json> --json
+# 验收禁止跳过（或设置 VERIFY_REQUIRE_FULL=1）
+node tools/verify/cli.mjs run <场景目录> --dependencies <预检清单.json> --require-full --json
+```
+
+- `requires: [sql, redis]` 显式补充 shell 隐藏的依赖；http/sql/redis/app/xcode 仍补充 network/sql/redis/device 依赖。无预检配置时不自动跳过。
+- 缺依赖为 `skipped:true, skipReason:...`，从未执行 setup/steps/teardown，不算 passed。
+- 部分执行：`status=partial, ok=false`。普通模式退出 0；严格模式退出 1。真实失败仍返回 1，配置错误 2。
+- `--dry-run` 不要求真实环境变量、不执行预检；缺失环境变量仍在真实执行前校验。
+- 清单格式和预检类型见 README 的依赖感知章节。预检命令来自受信项目维护者，仅使用只读检查；不读取/打印密码值。

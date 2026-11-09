@@ -1,4 +1,5 @@
 name: B1 iOS 登录后登出链路
+requires: [network, sql, redis, device, auth-log, test-password]
 description: "模拟器启动 Debug 构建，用探针完成登录→登出→检查探针日志与数据库 token 状态；Release 包不含探针"
 config:
   platform: ios

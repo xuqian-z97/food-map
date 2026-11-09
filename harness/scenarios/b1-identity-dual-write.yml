@@ -1,4 +1,5 @@
 name: 认证双写核验（身份绑定与会话）
+requires: [network, sql, redis]
 description: "注册、登录、登出后检查 auth_identity_bindings 与 auth_sessions 是否被真实写入：绑定 3 条、哈希与脱敏正确、会话状态随登出变化"
 config:
   baseUrl: http://127.0.0.1:8080

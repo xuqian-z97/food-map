@@ -18,4 +18,6 @@ run_check "validate integration" "harness/scripts/validate-integration.sh"
 run_check "validate ios" "harness/scripts/validate-ios.sh"
 run_check "validate git" "harness/scripts/validate-git.sh"
 
-printf '\nAll harness checks completed.\n'
+run_check "verify scenarios (dependency-aware; SKIP is not PASS)" "harness/scripts/verify.sh"
+
+printf '\nAll harness checks completed. Check verify summary for SKIP; acceptance requires VERIFY_REQUIRE_FULL=1.\n'

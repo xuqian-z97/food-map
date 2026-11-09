@@ -252,6 +252,14 @@ export async function runXcode(step, context) {
     value: failed,
     resultBundle,
   };
+  if (runResult.exitCode !== 0 || actual.total === 0 || actual.passed + actual.failed === 0) {
+    const error = new Error(runResult.exitCode !== 0
+      ? `xcodebuild test 失败（退出码 ${runResult.exitCode}），不能用 failed=0 判定通过`
+      : 'XCUITest 未执行任何可判定的用例，不能判定通过');
+    error.actual = actual;
+    error.hint = '检查 actual.stderr、xcresult 测试运行器启动/权限错误；不能以 0 passed / 0 failed 作为成功证据。';
+    throw error;
+  }
   const failure = firstFailure(tests, summaryJson);
   if (failure) actual.failureMessage = failure;
 
