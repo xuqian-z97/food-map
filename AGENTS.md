@@ -272,6 +272,15 @@ FoodMap 默认按可联调业务切片推进。每完成一个前端或后端功
 - iOS UI 自动化分两层：项目有 XCUITest target 时用 `xcode` 适配器跑 `xcodebuild test`（推荐，能真实点击和断言页面）；没有 UI 测试工程时退回项目自己的 DEBUG 探针，由 `app` 适配器负责启动、读沙盒日志和断言。
 - 新增 `xcode` 步骤前先确认 `xcodebuild -list` 能看到 scheme；改 `project.pbxproj` 必须单独提交并立即验证构建。
 
+### 6.3.1 验证纪律
+
+- 改动涉及 `after/`、`front/`、接口契约或 Flyway 时，提交前必须执行
+  `node tools/verify/cli.mjs run harness/scenarios/`；退出码非 0 不得提交，也不得通过修改断言来"变绿"。
+- 通过后写入台账：`harness/scripts/verify-record.sh <场景> --scope=... --kind=... --covers=...`。
+- 仅改文档或注释时，可只跑 `--dry-run`。
+- 服务或模拟器不可用时，必须在交付说明里写明"未执行 + 原因"，不得静默跳过。
+- `status check` 的"代码提交晚于最近一次测试运行"提示出现时，说明需要重新验证。
+
 ## 7. 前端 Agent
 
 ### 7.1 前端职责

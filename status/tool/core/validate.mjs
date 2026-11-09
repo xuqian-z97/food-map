@@ -94,6 +94,14 @@ export function validate(project, view, distPath, options = {}) {
       } else if (feature.stale) {
         push(warnings, 5, id, `状态为 ${feature.status}，但 paths 最近 ${view.staleCommitDays} 天无提交（最后 ${feature.code.shortSha} @ ${feature.code.date.slice(0, 10)}）`);
       }
+      const latestRunAt = feature.runs
+        .map((run) => Date.parse((run && run.data && run.data.at) || ''))
+        .filter((value) => Number.isFinite(value))
+        .sort((a, b) => b - a)[0];
+      const latestCommitAt = Date.parse(feature.code.date || '');
+      if (Number.isFinite(latestRunAt) && Number.isFinite(latestCommitAt) && latestRunAt < latestCommitAt) {
+        push(warnings, 8, id, `代码提交（${String(feature.code.date).slice(0, 10)}）晚于最近一次测试运行（${new Date(latestRunAt).toISOString().slice(0, 10)}），请重新验证并记录`);
+      }
     }
 
     if (feature.missingTasks) push(warnings, 6, id, `未完成且没有安排任务（界面标记为未排期）`);

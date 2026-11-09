@@ -92,3 +92,7 @@ Harness：
 - 明确说明哪些检查未执行及原因。
 - 权限、隐私、PUBLIC 统计问题必须高亮。
 - 不把“未测试”描述为“已通过”。
+
+## 联调验证
+
+提交前按 `AGENTS.md` §6.3.1 执行 `node tools/verify/cli.mjs run harness/scenarios/`，通过后用 `harness/scripts/verify-record.sh` 写台账。
