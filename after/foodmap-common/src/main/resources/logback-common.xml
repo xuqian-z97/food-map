@@ -30,7 +30,8 @@
     <springProperty scope="context" name="FOODMAP_LOG_DIR" source="foodmap.logging.dir"
                     defaultValue="/foodmap/logs"/>
 
-    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <!-- 使用失败安全实现：日志目录不可写时降级为仅控制台，不阻断服务启动。 -->
+    <appender name="FILE" class="com.foodmap.common.logging.ResilientRollingFileAppender">
         <file>${FOODMAP_LOG_DIR}/${FOODMAP_APP_NAME}.log</file>
         <append>true</append>
         <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
