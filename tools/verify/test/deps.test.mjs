@@ -143,3 +143,33 @@ test('Xcode 退出65或零执行不能以 failed=0 假绿', async () => {
     }), error => /不能/.test(error.message) && error.actual.total === 0);
   }
 });
+
+test('JUnit 写入失败必须让结果、证据和退出码同时失败', async (t) => {
+  const { execFile } = await import('node:child_process');
+  const { promisify } = await import('node:util');
+  const run = promisify(execFile);
+  const dir = await temp();
+  await scenario(dir, 'ok.yml', 'name: ok\nsteps:\n  - command: exit 0\n    expect: { exitCode: 0 }\n');
+  const evidenceDir = join(dir, 'ev');
+
+  await assert.rejects(
+    run(process.execPath, [cli, 'run', dir, '--json', '--evidence-dir', evidenceDir, '--junit', join(dir, 'absent/report.xml')]),
+    (error) => {
+      const printed = JSON.parse(error.stdout);
+      assert.equal(error.code, 2);
+      assert.equal(printed.exitCode, 2);
+      assert.equal(printed.ok, false);
+      assert.equal(printed.status, 'failed');
+      assert.match(printed.junitError, /JUnit 写入失败/);
+      return true;
+    },
+  );
+
+  const { readdir } = await import('node:fs/promises');
+  const saved = (await readdir(evidenceDir)).filter((name) => name.includes('suite-') && name.endsWith('.json'));
+  assert.ok(saved.length > 0, '应保留套件证据');
+  const disk = JSON.parse(await readFile(join(evidenceDir, saved[0]), 'utf8'));
+  assert.equal(disk.ok, false);
+  assert.equal(disk.exitCode, 2);
+  assert.equal(disk.status, 'failed');
+});

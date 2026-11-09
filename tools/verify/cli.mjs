@@ -307,8 +307,20 @@ async function main() {
     try {
       writeFileSync(resolve(options.junitPath), toJUnit(printable(result)), 'utf8');
     } catch (error) {
-      process.stderr.write(`错误: JUnit 写入失败（${options.junitPath}）：${error.message}\n`);
+      const message = `JUnit 写入失败（${options.junitPath}）：${error.message}`;
+      process.stderr.write(`错误: ${message}\n`);
+      // 产物缺失属于运行失败：内存结果、落盘证据和退出码必须一致，不能只改退出码。
       result.exitCode = 2;
+      result.ok = false;
+      result.status = 'failed';
+      result.junitError = message;
+      try {
+        const redactor = result.__redactor || createRedactor([]);
+        if (result.kind === 'suite') await writeSuiteEvidence(result, evidenceDir, { redactor });
+        else await writeEvidence(result, evidenceDir, { redactor });
+      } catch (rewriteError) {
+        process.stderr.write(`错误: 证据重写失败（${rewriteError.message}），以内存结果为准\n`);
+      }
     }
   }
 

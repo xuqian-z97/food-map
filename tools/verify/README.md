@@ -15,7 +15,7 @@ node tools/verify/cli.mjs run harness/scenarios/ --json --evidence-dir /tmp/veri
 | 前置/清理 | 顶层 `setup:` / `teardown:`；setup 失败即停，teardown 永远执行 |
 | 重试 | 任意步骤 `retry: { max: 3, intervalMs: 500 }` |
 | 套件 | `run <目录>` 聚合执行，输出单一 JSON + 退出码 |
-| JUnit | `--junit result.xml` |
+| JUnit | `--junit result.xml`；写入失败时整次运行记为失败（退出码 2、`status=failed`、落盘证据同步） |
 | 预演 | `--dry-run`（只校验）、`--list`、`--only <关键字>` |
 | 环境变量 | `${env:NAME}`，加载阶段校验是否存在 |
 | 证据脱敏 | 内置 Bearer / JWT / 手机号规则，`config.redact` 追加 |
