@@ -20,6 +20,13 @@ spring:
         server-addr: ${NACOS_SERVER_ADDR:nacos:8848}
 
 foodmap:
+  security:
+    # 仅 orbstack 容器网络开发默认值；prod profile 在 application-prod.yml 中要求显式注入 FOODMAP_TOKEN_SECRET。
+    token-secret: ${FOODMAP_TOKEN_SECRET:foodmap-dev-only-token-secret-please-change}
+  auth:
+    password:
+      # 仅 orbstack 容器网络开发默认值；prod profile 要求显式注入 AUTH_PEPPER。
+      pepper: ${AUTH_PEPPER:foodmap-dev-only-auth-pepper}
   redis:
     redisson:
       enabled: ${FOODMAP_REDISSON_ENABLED:true}

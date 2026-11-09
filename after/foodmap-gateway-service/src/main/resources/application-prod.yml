@@ -5,6 +5,9 @@ spring:
         server-addr: ${NACOS_SERVER_ADDR}
 
 foodmap:
+  security:
+    # 生产环境不允许任何默认密钥，缺失 FOODMAP_TOKEN_SECRET 时启动失败。
+    token-secret: ${FOODMAP_TOKEN_SECRET}
   redis:
     redisson:
       enabled: ${FOODMAP_REDISSON_ENABLED:true}

@@ -30,7 +30,8 @@ import java.util.Properties;
  * MyBatis SQL 日志拦截器，统一记录 SQL DEBUG 明细、慢 SQL 和异常 SQL 摘要。
  *
  * <p>该拦截器只输出经过脱敏和截断的 SQL，不改变 SQL 执行结果。生产环境默认关闭全量 DEBUG，
- * 但慢 SQL 和异常 SQL 仍以 WARN 输出，便于通过 requestId 或 traceId 定位数据库问题。</p>
+ * 但慢 SQL 和异常 SQL 仍以 WARN 输出，便于通过 requestId 或 traceId 定位数据库问题。所有 SQL 日志
+ * 都以 {@link LogMdcKeys#LOG_TYPE_SQL} 作为 MDC 日志类型，供采集链路按字段路由，不依赖 message 文本。</p>
  */
 @Intercepts({
         @Signature(type = Executor.class, method = "update", args = {MappedStatement.class, Object.class}),
@@ -162,15 +163,15 @@ public class MyBatisSqlLogInterceptor implements Interceptor {
                 LogField.of("actualSql", sql)
         };
         if (throwable != null) {
-            SafeLog.warn(LOGGER, "sql.execute.failed", fields);
+            SafeLog.warn(LOGGER, LogMdcKeys.LOG_TYPE_SQL, "sql.execute.failed", fields);
             return;
         }
         if (currentPolicy.isSlow(durationMs)) {
-            SafeLog.warn(LOGGER, "sql.execute.slow", fields);
+            SafeLog.warn(LOGGER, LogMdcKeys.LOG_TYPE_SQL, "sql.execute.slow", fields);
             return;
         }
         if (currentPolicy.shouldWriteDebug(mapperId, requestId, traceId)) {
-            SafeLog.debug(LOGGER, "sql.execute.debug", fields);
+            SafeLog.debug(LOGGER, LogMdcKeys.LOG_TYPE_SQL, "sql.execute.debug", fields);
         }
     }
 

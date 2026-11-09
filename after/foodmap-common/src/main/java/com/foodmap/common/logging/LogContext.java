@@ -7,6 +7,9 @@ import java.util.regex.Pattern;
 /**
  * 单次请求的日志上下文，负责校验或生成 requestId、traceId、spanId 并写入 MDC。
  *
+ * <p>写入 MDC 时同时把 {@link LogMdcKeys#LOG_TYPE} 默认设为 application，保证请求内业务日志和
+ * 框架日志都带可路由的日志类型。</p>
+ *
  * @param requestId 单次 HTTP 请求流水号。
  * @param traceId 跨服务链路追踪号。
  * @param spanId 当前调用段 ID。
@@ -50,7 +53,10 @@ public record LogContext(
     }
 
     /**
-     * 将日志上下文字段写入当前线程 MDC。
+     * 将日志上下文字段写入当前线程 MDC，并把日志类型默认设为 application。
+     *
+     * <p>请求线程默认输出业务日志；访问摘要和 SQL 日志由 {@link SafeLog} 调用点在输出时临时覆盖
+     * {@link LogMdcKeys#LOG_TYPE}，因此这里只需写入默认值。</p>
      */
     public void putToMdc() {
         put(LogMdcKeys.REQUEST_ID, requestId);
@@ -59,6 +65,7 @@ public record LogContext(
         put(LogMdcKeys.SERVICE_NAME, serviceName);
         put(LogMdcKeys.ACCOUNT_ID, accountId);
         put(LogMdcKeys.USER_ID, userId);
+        put(LogMdcKeys.LOG_TYPE, LogMdcKeys.LOG_TYPE_APPLICATION);
     }
 
     /**
@@ -71,6 +78,7 @@ public record LogContext(
         MDC.remove(LogMdcKeys.SERVICE_NAME);
         MDC.remove(LogMdcKeys.ACCOUNT_ID);
         MDC.remove(LogMdcKeys.USER_ID);
+        MDC.remove(LogMdcKeys.LOG_TYPE);
     }
 
     /**

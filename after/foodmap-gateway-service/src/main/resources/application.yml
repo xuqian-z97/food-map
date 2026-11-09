@@ -62,7 +62,9 @@ foodmap:
   env:
     profile: ${SPRING_PROFILES_ACTIVE:${FOODMAP_PROFILE:local}}
   security:
-    token-secret: ${FOODMAP_TOKEN_SECRET:foodmap-local-token-secret-please-change}
+    # 仅 local/orbstack 开发默认值，必须与 auth 服务同 profile 下的开发默认值保持一致；
+    # prod profile 在 application-prod.yml 中要求显式注入 FOODMAP_TOKEN_SECRET，无任何默认值。
+    token-secret: ${FOODMAP_TOKEN_SECRET:foodmap-dev-only-token-secret-please-change}
 
 management:
   endpoints:

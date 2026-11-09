@@ -18,3 +18,9 @@ spring:
     nacos:
       discovery:
         server-addr: ${NACOS_SERVER_ADDR}
+
+foodmap:
+  admin:
+    password:
+      # 生产环境不允许任何默认 pepper，缺失 ADMIN_PEPPER 时启动失败。
+      pepper: ${ADMIN_PEPPER}

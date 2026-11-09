@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  FoodMap 服务日志入口：只引用 foodmap-common 的统一模板，不在这里重复定义 appender、JSON 字段和日志目录。
+
+  新增服务时复制本文件即可。服务名、日志类型和脱敏规则统一由 logback-common.xml 和
+  com.foodmap.common.logging 下的日志门面维护，避免多服务各自漂移。
+-->
+<configuration>
+    <include resource="logback-common.xml"/>
+</configuration>

@@ -37,6 +37,21 @@ import java.util.List;
 public class GatewayAuthFilter implements GlobalFilter, Ordered {
     private static final String BEARER_PREFIX = "Bearer ";
     private static final int AUTH_FILTER_ORDER = -100;
+
+    /**
+     * Token 密钥最小长度，与认证服务 TokenSecretProperties 保持一致，避免网关接受认证服务拒绝的弱密钥。
+     */
+    private static final int MIN_TOKEN_SECRET_LENGTH = 32;
+
+    /**
+     * Token 密钥配置键，必须与认证服务使用同一个键和同一个环境变量。
+     */
+    private static final String TOKEN_SECRET_KEY = "foodmap.security.token-secret";
+
+    /**
+     * Token 密钥环境变量名，用于启动失败时给出可执行的修复提示。
+     */
+    private static final String TOKEN_SECRET_ENV = "FOODMAP_TOKEN_SECRET";
     private static final List<String> PUBLIC_API_PATHS = List.of(
             "/api/auth/register",
             "/api/auth/login",
@@ -51,27 +66,50 @@ public class GatewayAuthFilter implements GlobalFilter, Ordered {
     /**
      * 使用配置中的 Token 密钥创建网关认证过滤器，测试未注入拒绝名单时使用空操作客户端。
      *
+     * <p>该构造器保留给单元测试直接实例化使用，Spring 容器注入使用带拒绝名单客户端的构造器。</p>
+     *
      * @param tokenSecret 网关用于校验 Access Token 的 HMAC 密钥。
      */
-    public GatewayAuthFilter(
-            @Value("${foodmap.security.token-secret:foodmap-local-token-secret-please-change}") String tokenSecret
-    ) {
+    public GatewayAuthFilter(String tokenSecret) {
         this(tokenSecret, new NoopAccessTokenDenylistClient());
     }
 
     /**
      * 使用配置中的 Token 密钥和拒绝名单客户端创建网关认证过滤器。
      *
-     * @param tokenSecret 网关用于校验 Access Token 的 HMAC 密钥。
+     * <p>密钥只从 {@code foodmap.security.token-secret} 注入，不提供任何默认值：缺失或长度不足时
+     * 在 Bean 创建阶段直接抛出异常阻止网关启动，避免与认证服务签验不一致。</p>
+     *
+     * @param tokenSecret 网关用于校验 Access Token 的 HMAC 密钥，生产环境由 {@code FOODMAP_TOKEN_SECRET} 注入。
      * @param accessTokenDenylistClient Access Token 拒绝名单客户端。
      */
     @Autowired
     public GatewayAuthFilter(
-            @Value("${foodmap.security.token-secret:foodmap-local-token-secret-please-change}") String tokenSecret,
+            @Value("${foodmap.security.token-secret}") String tokenSecret,
             AccessTokenDenylistClient accessTokenDenylistClient
     ) {
-        this.tokenCodec = new HmacTokenCodec(tokenSecret);
+        this.tokenCodec = new HmacTokenCodec(requireUsableSecret(tokenSecret));
         this.accessTokenDenylistClient = accessTokenDenylistClient;
+    }
+
+    /**
+     * 校验 Token 密钥可用性，缺失或过短时直接阻止网关启动。
+     *
+     * <p>异常信息不输出密钥内容，避免密钥进入启动日志。</p>
+     *
+     * @param tokenSecret 配置解析得到的 Token 密钥，可能为空或过短。
+     * @return 通过校验的 Token 密钥原文。
+     */
+    private static String requireUsableSecret(String tokenSecret) {
+        if (tokenSecret == null || tokenSecret.isBlank()) {
+            throw new IllegalStateException(TOKEN_SECRET_KEY + " 未配置：必须通过环境变量 " + TOKEN_SECRET_ENV
+                    + " 注入至少 " + MIN_TOKEN_SECRET_LENGTH + " 字符的 HMAC 签名密钥");
+        }
+        if (tokenSecret.length() < MIN_TOKEN_SECRET_LENGTH) {
+            throw new IllegalStateException(TOKEN_SECRET_KEY + " 长度不足：当前 " + tokenSecret.length()
+                    + " 字符，至少需要 " + MIN_TOKEN_SECRET_LENGTH + " 字符；请检查环境变量 " + TOKEN_SECRET_ENV);
+        }
+        return tokenSecret;
     }
 
     /**

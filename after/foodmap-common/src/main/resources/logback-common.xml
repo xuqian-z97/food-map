@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  FoodMap 统一 logback 模板，由各服务 logback-spring.xml 通过 <include resource="logback-common.xml"/> 引用。
+
+  设计要点：
+  1. 控制台保持 Spring Boot 默认编码、颜色和 logging.pattern.* 配置，本地开发习惯不变。
+  2. 文件输出单行 JSON，供 Fluent Bit 以 Format json 解析，禁止再输出无法解析的纯文本。
+  3. JSON 顶层固定字段：timestamp、level、logger、thread、message、stackTrace，以及来自 MDC 的
+     requestId、traceId、spanId、serviceName、accountId、userId、logType。
+  4. logType 由编码器兜底成 application，并显式排除在 MDC 全量输出之外，保证每行 JSON 都有
+     可用于 Fluent Bit 路由的 logType，且不会出现重复字段。
+  5. 文件路径默认 /foodmap/logs/{service}.log；路径不可写时 logback 只记录状态错误并跳过文件
+     appender，控制台输出继续工作，不会阻断服务启动。
+
+  排查关注点：
+  - 日志没有 requestId/traceId 时先确认 LogMdcFilter 是否先于业务日志执行。
+  - 日志文件缺失时先确认 /foodmap/logs（或 foodmap.logging.dir）是否可写，再看 logback 状态错误。
+  - 修改字段名会同时影响 Fluent Bit 路由和 foodmap-log-service 的访问摘要落库，必须同步 T-029。
+-->
+<included>
+
+    <!-- Spring Boot 默认编码、颜色规则和日志级别，保证控制台输出与默认行为一致。 -->
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+    <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
+
+    <!-- 服务名取自 spring.application.name；缺失时回退到通用服务名，避免日志文件名不可预期。 -->
+    <springProperty scope="context" name="FOODMAP_APP_NAME" source="spring.application.name"
+                    defaultValue="foodmap-service"/>
+    <!-- 日志目录默认 /foodmap/logs 供 Fluent Bit 采集；本地可通过 foodmap.logging.dir 或 FOODMAP_LOGGING_DIR 指到可写目录。 -->
+    <springProperty scope="context" name="FOODMAP_LOG_DIR" source="foodmap.logging.dir"
+                    defaultValue="/foodmap/logs"/>
+
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${FOODMAP_LOG_DIR}/${FOODMAP_APP_NAME}.log</file>
+        <append>true</append>
+        <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+            <providers>
+                <!-- 默认使用 ISO_OFFSET_DATE_TIME，输出带时区偏移的单行时间戳。 -->
+                <timestamp>
+                    <fieldName>timestamp</fieldName>
+                </timestamp>
+                <logLevel>
+                    <fieldName>level</fieldName>
+                </logLevel>
+                <!-- 兜底 logType，避免框架日志缺少该字段导致 Fluent Bit 无法按字段路由；
+                     SafeLog 写入的值全部来自 LogMdcKeys 常量，不含引号或换行。 -->
+                <pattern>
+                    <pattern>{"logType":"%X{logType:-application}"}</pattern>
+                </pattern>
+                <loggerName>
+                    <fieldName>logger</fieldName>
+                </loggerName>
+                <threadName>
+                    <fieldName>thread</fieldName>
+                </threadName>
+                <mdc>
+                    <excludeMdcKeyName>logType</excludeMdcKeyName>
+                </mdc>
+                <message>
+                    <fieldName>message</fieldName>
+                </message>
+                <stackTrace>
+                    <fieldName>stackTrace</fieldName>
+                </stackTrace>
+            </providers>
+        </encoder>
+        <!-- 按天加大小滚动：滚动文件使用 .log.gz 后缀，不会被 Fluent Bit 的 /foodmap/logs/*.log 重复采集。 -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${FOODMAP_LOG_DIR}/${FOODMAP_APP_NAME}.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+            <maxFileSize>100MB</maxFileSize>
+            <maxHistory>7</maxHistory>
+            <totalSizeCap>2GB</totalSizeCap>
+        </rollingPolicy>
+    </appender>
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="FILE"/>
+    </root>
+</included>
