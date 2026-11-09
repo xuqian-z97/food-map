@@ -173,3 +173,25 @@ test('JUnit 写入失败必须让结果、证据和退出码同时失败', async
   assert.equal(disk.exitCode, 2);
   assert.equal(disk.status, 'failed');
 });
+
+test('JUnit 失败重写证据时仍保留场景自定义脱敏规则', async (t) => {
+  const { execFile } = await import('node:child_process');
+  const { promisify } = await import('node:util');
+  const run = promisify(execFile);
+  const dir = await temp();
+  const marker = 'QA_MARKER_CUSTOM_8917';
+  await scenario(dir, 'redact.yml', `name: custom redaction\nconfig:\n  redact:\n    - "${marker}"\nsteps:\n  - command: "printf ${marker}"\n    expect: { exitCode: 0 }\n`);
+  const evidenceDir = join(dir, 'ev');
+
+  await assert.rejects(
+    run(process.execPath, [cli, 'run', dir, '--json', '--evidence-dir', evidenceDir, '--junit', join(dir, 'absent/report.xml')]),
+    error => error.code === 2,
+  );
+
+  const { readdir } = await import('node:fs/promises');
+  const files = await readdir(evidenceDir);
+  const suiteJson = files.find(name => name.includes('suite-') && name.endsWith('.json'));
+  const content = await readFile(join(evidenceDir, suiteJson), 'utf8');
+  assert.doesNotMatch(content, new RegExp(marker));
+  assert.match(content, /REDACTED/);
+});

@@ -281,8 +281,10 @@ async function main() {
           result.exitCode = 2; result.ok = false; result.status = 'failed';
         }
       }
-      attachRedactor(result, createRedactor([]));
-      evidence = await writeSuiteEvidence(result, evidenceDir, { redactor: createRedactor(suiteRules) });
+      // 重写证据（如 JUnit 失败）必须复用同一套规则，否则只有自定义规则保护的内容会重新泄露。
+      const suiteRedactor = createRedactor(suiteRules);
+      attachRedactor(result, suiteRedactor);
+      evidence = await writeSuiteEvidence(result, evidenceDir, { redactor: suiteRedactor });
     } else {
       const scenario = await loadScenario(options.target, { configPath: options.configPath, vars: options.vars });
       const redactor = createRedactor(scenario.config.redact || []);
