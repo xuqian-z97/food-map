@@ -2,7 +2,9 @@ schemaVersion: 1
 id: T-029
 feature: F-019
 title: 应用服务挂载日志卷并对齐采集
-status: todo
+status: done
 priority: P0
 owner: agent
+doneAt: 2026-11-09T16:39:22+08:00
+commit: 80e9022
 planRef: docs/superpowers/plans/2026-11-09-backend-hardening.md
