@@ -1,0 +1,8 @@
+schemaVersion: 1
+id: T-025
+feature: F-024
+title: Token 密钥统一注入与 fail-fast
+status: todo
+priority: P0
+owner: agent
+planRef: docs/superpowers/plans/2026-11-09-backend-hardening.md

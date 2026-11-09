@@ -1,0 +1,8 @@
+schemaVersion: 1
+id: T-036
+feature: F-021
+title: nginx HTTPS 与安全响应头
+status: todo
+priority: P0
+owner: agent
+planRef: docs/superpowers/plans/2026-11-09-backend-hardening.md

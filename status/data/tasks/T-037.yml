@@ -1,0 +1,8 @@
+schemaVersion: 1
+id: T-037
+feature: F-021
+title: GitHub Actions CI 流水线
+status: todo
+priority: P1
+owner: agent
+planRef: docs/superpowers/plans/2026-11-09-backend-hardening.md

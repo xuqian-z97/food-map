@@ -1,0 +1,8 @@
+schemaVersion: 1
+id: T-041
+feature: F-027
+title: springdoc OpenAPI 与 API 版本策略
+status: todo
+priority: P1
+owner: agent
+planRef: docs/superpowers/plans/2026-11-09-backend-hardening.md

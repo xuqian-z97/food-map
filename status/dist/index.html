@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="color-scheme" content="light">
-<meta name="status-digest" content="b34968ea0692">
+<meta name="status-digest" content="fffc794447e6">
 <meta name="description" content="FoodMap 项目进度台账看板：功能点、任务、测试证据与验收门禁。生成物，请勿手改。">
-<title>FoodMap 进度看板 · d9bf502</title>
+<title>FoodMap 进度看板 · 0b9a4ac</title>
 <style>
 :root{--paper:#faf8f3;--white:#fffefa;--ink:#24352e;--muted:#65746c;--line:#dedfd5;--green:#265b47;--green-soft:#e8f0e8;--orange:#a94a2b;--orange-soft:#faeee3;--red:#9c4037;--blue:#3d5a80;--radius:8px}
 *{box-sizing:border-box}
@@ -96,20 +96,20 @@ footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--line);font-si
   <div class="eyebrow">FOODMAP · PROJECT LEDGER</div>
   <h1>事实台账，<em>已完成 6</em> / 待验收 1</h1>
   <div class="meta">
-    <span>生成 <code>2026-11-09 12:16</code></span>
-    <span>HEAD <code>d9bf502</code> main</span>
-    <span>数据摘要 <code>b34968ea0692</code></span>
-    <span>功能点 23 · 跨端 18 · 仅前端 2 · 仅后端 3</span>
+    <span>生成 <code>2026-11-09 12:18</code></span>
+    <span>HEAD <code>0b9a4ac</code> main</span>
+    <span>数据摘要 <code>fffc794447e6</code></span>
+    <span>功能点 30 · 跨端 18 · 仅前端 2 · 仅后端 10</span>
   </div>
 </header>
 
 <div class="kpis">
-  <div class="kpi"><span>功能点</span><strong>23</strong><small>含未开始</small></div>
+  <div class="kpi"><span>功能点</span><strong>30</strong><small>含未开始</small></div>
   <div class="kpi"><span>已完成</span><strong>6</strong><small>通过验收</small></div>
   <div class="kpi"><span>待验收</span><strong>1</strong><small>已实现或已提测</small></div>
   <div class="kpi"><span>未排任务</span><strong>5</strong><small>未完成且无任务</small></div>
-  <div class="kpi"><span>P0 未完成</span><strong>0</strong><small>最高优先级</small></div>
-  <div class="kpi"><span>任务</span><strong>13<small>/24</small></strong><small>已完成 / 总数</small></div>
+  <div class="kpi"><span>P0 未完成</span><strong>2</strong><small>最高优先级</small></div>
+  <div class="kpi"><span>任务</span><strong>13<small>/47</small></strong><small>已完成 / 总数</small></div>
 </div>
 
 <div class="bar">
@@ -124,7 +124,7 @@ footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--line);font-si
 
 <section id="backend">
   <h2>后端功能点（微服务视角）</h2>
-  <p class="lead">共 21 项（含跨端 18 项，只显示后端一侧）。模块为后端微服务名。</p>
+  <p class="lead">共 28 项（含跨端 18 项，只显示后端一侧）。模块为后端微服务名。</p>
   <div class="table-wrap"><table><thead><tr><th>功能点</th><th>状态</th><th>优先级</th><th>微服务</th><th>任务</th><th>验收单</th><th>最近提交</th></tr></thead><tbody>
 <tr data-row data-state="accepted" data-priority="P0" data-layer="fullstack">
   <td><a href="#F-001"><code>F-001</code></a><div class="t">账号注册与登录</div></td>
@@ -162,6 +162,24 @@ footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--line);font-si
   <td>A-005 · pass</td>
   <td class="nowrap">96aa22e<div class="muted">2026-11-06</div></td>
 </tr>
+<tr data-row data-state="planned" data-priority="P0" data-layer="backend">
+  <td><a href="#F-024"><code>F-024</code></a><div class="t">认证密钥与 Token 闭环</div></td>
+  <td><span class="st st-planned">已排期</span></td>
+  <td><span class="pr pr-P0">P0</span></td>
+  <td><code class="chip">foodmap-auth-service</code><code class="chip">foodmap-gateway-service</code><code class="chip">foodmap-common</code><code class="chip">foodmap-admin-service</code></td>
+  <td>6 项</td>
+  <td><span class="muted">—</span></td>
+  <td class="nowrap">5727226<div class="muted">2026-11-05</div></td>
+</tr>
+<tr data-row data-state="planned" data-priority="P0" data-layer="backend">
+  <td><a href="#F-025"><code>F-025</code></a><div class="t">内部信任与网关攻击面收敛</div></td>
+  <td><span class="st st-planned">已排期</span></td>
+  <td><span class="pr pr-P0">P0</span></td>
+  <td><code class="chip">foodmap-gateway-service</code><code class="chip">foodmap-user-service</code><code class="chip">foodmap-log-service</code><code class="chip">foodmap-common</code><code class="chip">foodmap-auth-service</code><code class="chip">foodmap-admin-service</code></td>
+  <td>4 项</td>
+  <td><span class="muted">—</span></td>
+  <td class="nowrap">5994d70<div class="muted">2026-06-29</div></td>
+</tr>
 <tr data-row data-state="planned" data-priority="P1" data-layer="fullstack">
   <td><a href="#F-022"><code>F-022</code></a><div class="t">Access Token 自动刷新</div></td>
   <td><span class="st st-planned">已排期</span></td>
@@ -178,6 +196,33 @@ footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--line);font-si
   <td><code class="chip">foodmap-auth-service</code></td>
   <td>1 项</td>
   <td>A-006 · pass</td>
+  <td class="nowrap">5727226<div class="muted">2026-11-05</div></td>
+</tr>
+<tr data-row data-state="planned" data-priority="P1" data-layer="backend">
+  <td><a href="#F-026"><code>F-026</code></a><div class="t">指标、追踪与就绪探针</div></td>
+  <td><span class="st st-planned">已排期</span></td>
+  <td><span class="pr pr-P1">P1</span></td>
+  <td><code class="chip">foodmap-common</code><code class="chip">foodmap-gateway-service</code></td>
+  <td>2 项</td>
+  <td><span class="muted">—</span></td>
+  <td class="nowrap">b37929c<div class="muted">2026-06-22</div></td>
+</tr>
+<tr data-row data-state="planned" data-priority="P1" data-layer="backend">
+  <td><a href="#F-027"><code>F-027</code></a><div class="t">OpenAPI 契约与版本策略</div></td>
+  <td><span class="st st-planned">已排期</span></td>
+  <td><span class="pr pr-P1">P1</span></td>
+  <td><code class="chip">foodmap-common</code><code class="chip">foodmap-gateway-service</code></td>
+  <td>2 项</td>
+  <td><span class="muted">—</span></td>
+  <td class="nowrap">5994d70<div class="muted">2026-06-29</div></td>
+</tr>
+<tr data-row data-state="planned" data-priority="P1" data-layer="backend">
+  <td><a href="#F-030"><code>F-030</code></a><div class="t">注册流程最终一致性</div></td>
+  <td><span class="st st-planned">已排期</span></td>
+  <td><span class="pr pr-P1">P1</span></td>
+  <td><code class="chip">foodmap-auth-service</code><code class="chip">foodmap-user-service</code></td>
+  <td>2 项</td>
+  <td><span class="muted">—</span></td>
   <td class="nowrap">5727226<div class="muted">2026-11-05</div></td>
 </tr>
 <tr data-row data-state="in_progress" data-priority="P1" data-layer="fullstack">
@@ -284,16 +329,16 @@ footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--line);font-si
   <td><span class="st st-in_progress">进行中</span></td>
   <td><span class="pr pr-P2">P2</span></td>
   <td><code class="chip">foodmap-common</code></td>
-  <td>1 项</td>
+  <td>7 项</td>
   <td><span class="muted">—</span></td>
-  <td class="nowrap">b1f3e9a<div class="muted">2026-11-07</div></td>
+  <td class="nowrap">0b9a4ac<div class="muted">2026-11-09</div></td>
 </tr>
 <tr data-row data-state="testing" data-priority="P2" data-layer="backend">
   <td><a href="#F-019"><code>F-019</code></a><div class="t">日志采集、查询与归档</div></td>
   <td><span class="st st-testing">待验收</span></td>
   <td><span class="pr pr-P2">P2</span></td>
   <td><code class="chip">foodmap-log-service</code><code class="chip">foodmap-admin-service</code><code class="chip">foodmap-common</code></td>
-  <td>1 项</td>
+  <td>4 项</td>
   <td><span class="muted">—</span></td>
   <td class="nowrap">5994d70<div class="muted">2026-06-29</div></td>
 </tr>
@@ -302,9 +347,27 @@ footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--line);font-si
   <td><span class="st st-in_progress">进行中</span></td>
   <td><span class="pr pr-P2">P2</span></td>
   <td><code class="chip">foodmap-admin-service</code></td>
-  <td>1 项</td>
+  <td>2 项</td>
   <td><span class="muted">—</span></td>
   <td class="nowrap">b37929c<div class="muted">2026-06-22</div></td>
+</tr>
+<tr data-row data-state="planned" data-priority="P2" data-layer="backend">
+  <td><a href="#F-028"><code>F-028</code></a><div class="t">分层重构与架构约束</div></td>
+  <td><span class="st st-planned">已排期</span></td>
+  <td><span class="pr pr-P2">P2</span></td>
+  <td><code class="chip">foodmap-auth-service</code><code class="chip">foodmap-user-service</code><code class="chip">foodmap-common</code></td>
+  <td>4 项</td>
+  <td><span class="muted">—</span></td>
+  <td class="nowrap">5727226<div class="muted">2026-11-05</div></td>
+</tr>
+<tr data-row data-state="planned" data-priority="P2" data-layer="backend">
+  <td><a href="#F-029"><code>F-029</code></a><div class="t">数据访问与异常映射加固</div></td>
+  <td><span class="st st-planned">已排期</span></td>
+  <td><span class="pr pr-P2">P2</span></td>
+  <td><code class="chip">foodmap-common</code><code class="chip">foodmap-user-service</code><code class="chip">foodmap-auth-service</code><code class="chip">foodmap-log-service</code></td>
+  <td>6 项</td>
+  <td><span class="muted">—</span></td>
+  <td class="nowrap">7a3dc57<div class="muted">2026-11-05</div></td>
 </tr>
 <tr data-row data-state="in_progress" data-priority="P2" data-layer="fullstack">
   <td><a href="#F-009"><code>F-009</code></a><div class="t">弱网摘要缓存</div></td>
@@ -480,9 +543,9 @@ footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--line);font-si
   <td><span class="st st-in_progress">进行中</span></td>
   <td><span class="pr pr-P2">P2</span></td>
   <td><code class="chip">App</code></td>
-  <td>1 项</td>
+  <td>7 项</td>
   <td><span class="muted">—</span></td>
-  <td class="nowrap">b1f3e9a<div class="muted">2026-11-07</div></td>
+  <td class="nowrap">0b9a4ac<div class="muted">2026-11-09</div></td>
 </tr>
 <tr data-row data-state="in_progress" data-priority="P2" data-layer="frontend">
   <td><a href="#F-008"><code>F-008</code></a><div class="t">城市与离线底图</div></td>
@@ -509,7 +572,24 @@ footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--line);font-si
   <h2>未完成功能点（按优先级）</h2>
   <p class="lead">P0 最高。标记"未排任务"的项说明还没有可执行任务，需要先排期。</p>
 <div class="grp">
-  <h3><span class="pr pr-P1">P1</span> <span class="muted">P1 高 · 11 项</span></h3>
+  <h3><span class="pr pr-P0">P0</span> <span class="muted">P0 最高 · 2 项</span></h3>
+  <div class="cards">
+    <article class="card" data-row data-state="planned" data-priority="P0" data-layer="backend">
+      <div class="card-top"><a href="#F-024"><code>F-024</code></a> <span class="st st-planned">已排期</span> <span class="ly ly-backend">后端</span></div>
+      <h4>认证密钥与 Token 闭环</h4>
+      <p class="muted">密钥统一注入且生产缺失即失败；Token 严格分段，登出后追加后缀仍返回 401</p>
+      <div class="card-meta"><span class="muted">任务 6 项</span><span class="blk">缺验收单</span><span class="blk">缺测试运行证据</span></div>
+    </article>
+    <article class="card" data-row data-state="planned" data-priority="P0" data-layer="backend">
+      <div class="card-top"><a href="#F-025"><code>F-025</code></a> <span class="st st-planned">已排期</span> <span class="ly ly-backend">后端</span></div>
+      <h4>内部信任与网关攻击面收敛</h4>
+      <p class="muted">关闭 discovery locator；内部接口需服务身份签名，无签名或重放返回 401</p>
+      <div class="card-meta"><span class="muted">任务 4 项</span><span class="blk">缺验收单</span><span class="blk">缺测试运行证据</span></div>
+    </article>
+  </div>
+</div>
+<div class="grp">
+  <h3><span class="pr pr-P1">P1</span> <span class="muted">P1 高 · 14 项</span></h3>
   <div class="cards">
     <article class="card" data-row data-state="in_progress" data-priority="P1" data-layer="frontend">
       <div class="card-top"><a href="#F-006"><code>F-006</code></a> <span class="st st-in_progress">进行中</span> <span class="ly ly-frontend">前端</span></div>
@@ -522,6 +602,24 @@ footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--line);font-si
       <h4>Access Token 自动刷新</h4>
       <p class="muted">401 时自动用 Refresh Token 换新 Access Token，并合并并发刷新请求</p>
       <div class="card-meta"><span class="muted">任务 1 项</span><span class="blk">缺验收单</span><span class="blk">缺测试运行证据</span></div>
+    </article>
+    <article class="card" data-row data-state="planned" data-priority="P1" data-layer="backend">
+      <div class="card-top"><a href="#F-026"><code>F-026</code></a> <span class="st st-planned">已排期</span> <span class="ly ly-backend">后端</span></div>
+      <h4>指标、追踪与就绪探针</h4>
+      <p class="muted">/actuator/prometheus 暴露 HikariCP、Redis pool 与 HTTP 指标，liveness/readiness 分离</p>
+      <div class="card-meta"><span class="muted">任务 2 项</span><span class="blk">缺验收单</span><span class="blk">缺测试运行证据</span></div>
+    </article>
+    <article class="card" data-row data-state="planned" data-priority="P1" data-layer="backend">
+      <div class="card-top"><a href="#F-027"><code>F-027</code></a> <span class="st st-planned">已排期</span> <span class="ly ly-backend">后端</span></div>
+      <h4>OpenAPI 契约与版本策略</h4>
+      <p class="muted">接口文档从代码生成，/api/v1 版本策略落地，docs/api 与实现一致</p>
+      <div class="card-meta"><span class="muted">任务 2 项</span><span class="blk">缺验收单</span><span class="blk">缺测试运行证据</span></div>
+    </article>
+    <article class="card" data-row data-state="planned" data-priority="P1" data-layer="backend">
+      <div class="card-top"><a href="#F-030"><code>F-030</code></a> <span class="st st-planned">已排期</span> <span class="ly ly-backend">后端</span></div>
+      <h4>注册流程最终一致性</h4>
+      <p class="muted">注册改本地事务加 Outbox，用户开通支持幂等键，失败有状态机与补偿</p>
+      <div class="card-meta"><span class="muted">任务 2 项</span><span class="blk">缺验收单</span><span class="blk">缺测试运行证据</span></div>
     </article>
     <article class="card" data-row data-state="in_progress" data-priority="P1" data-layer="fullstack">
       <div class="card-top"><a href="#F-007"><code>F-007</code></a> <span class="st st-in_progress">进行中</span> <span class="ly ly-fullstack">跨端</span></div>
@@ -580,7 +678,7 @@ footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--line);font-si
   </div>
 </div>
 <div class="grp">
-  <h3><span class="pr pr-P2">P2</span> <span class="muted">P2 中 · 6 项</span></h3>
+  <h3><span class="pr pr-P2">P2</span> <span class="muted">P2 中 · 8 项</span></h3>
   <div class="cards">
     <article class="card" data-row data-state="in_progress" data-priority="P2" data-layer="fullstack">
       <div class="card-top"><a href="#F-005"><code>F-005</code></a> <span class="st st-in_progress">进行中</span> <span class="ly ly-fullstack">跨端</span></div>
@@ -592,19 +690,31 @@ footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--line);font-si
       <div class="card-top"><a href="#F-021"><code>F-021</code></a> <span class="st st-in_progress">进行中</span> <span class="ly ly-fullstack">跨端</span></div>
       <h4>测试与部署</h4>
       <p class="muted">Harness 基础校验可用；缺 CI、iOS 测试 Target 与生产镜像</p>
-      <div class="card-meta"><span class="muted">任务 1 项</span><span class="blk">缺验收单</span></div>
+      <div class="card-meta"><span class="muted">任务 7 项</span><span class="blk">缺验收单</span></div>
     </article>
     <article class="card" data-row data-state="testing" data-priority="P2" data-layer="backend">
       <div class="card-top"><a href="#F-019"><code>F-019</code></a> <span class="st st-testing">待验收</span> <span class="ly ly-backend">后端</span></div>
       <h4>日志采集、查询与归档</h4>
       <p class="muted">requestId/traceId、SQL 脱敏、Kafka→ES 热日志、访问摘要与归档骨架</p>
-      <div class="card-meta"><span class="muted">任务 1 项</span><span class="blk">缺验收单</span></div>
+      <div class="card-meta"><span class="muted">任务 4 项</span><span class="blk">缺验收单</span></div>
     </article>
     <article class="card" data-row data-state="in_progress" data-priority="P2" data-layer="backend">
       <div class="card-top"><a href="#F-020"><code>F-020</code></a> <span class="st st-in_progress">进行中</span> <span class="ly ly-backend">后端</span></div>
       <h4>管理后台</h4>
       <p class="muted">管理员创建用例、日志查询代理与 LOG_ACCESS_READ 权限骨架</p>
-      <div class="card-meta"><span class="muted">任务 1 项</span><span class="blk">缺验收单</span></div>
+      <div class="card-meta"><span class="muted">任务 2 项</span><span class="blk">缺验收单</span></div>
+    </article>
+    <article class="card" data-row data-state="planned" data-priority="P2" data-layer="backend">
+      <div class="card-top"><a href="#F-028"><code>F-028</code></a> <span class="st st-planned">已排期</span> <span class="ly ly-backend">后端</span></div>
+      <h4>分层重构与架构约束</h4>
+      <p class="muted">端口不返回持久化实体，AuthServiceImpl 按用例拆分，ArchUnit 固化依赖方向</p>
+      <div class="card-meta"><span class="muted">任务 4 项</span><span class="blk">缺验收单</span><span class="blk">缺测试运行证据</span></div>
+    </article>
+    <article class="card" data-row data-state="planned" data-priority="P2" data-layer="backend">
+      <div class="card-top"><a href="#F-029"><code>F-029</code></a> <span class="st st-planned">已排期</span> <span class="ly ly-backend">后端</span></div>
+      <h4>数据访问与异常映射加固</h4>
+      <p class="muted">upsert 幂等返回 409，列表强制 limit，LIKE 转义，缺 header 返回 401，clientIp 掩码</p>
+      <div class="card-meta"><span class="muted">任务 6 项</span><span class="blk">缺验收单</span><span class="blk">缺测试运行证据</span></div>
     </article>
     <article class="card" data-row data-state="in_progress" data-priority="P2" data-layer="frontend">
       <div class="card-top"><a href="#F-008"><code>F-008</code></a> <span class="st st-in_progress">进行中</span> <span class="ly ly-frontend">前端</span></div>
@@ -627,8 +737,92 @@ footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--line);font-si
   <p class="lead">已完成任务记录实施时间点与提交；未完成任务按优先级排序。</p>
 <div class="two-col">
   <div>
-    <h3>未完成任务 <span class="muted">11 项 · 按优先级</span></h3>
+    <h3>未完成任务 <span class="muted">34 项 · 按优先级</span></h3>
     <div class="table-wrap"><table><thead><tr><th>任务</th><th>内容</th><th>功能点</th><th>优先级</th><th>状态</th></tr></thead><tbody>
+<tr data-row data-state="todo" data-priority="P0">
+  <td><code>T-025</code></td>
+  <td>Token 密钥统一注入与 fail-fast</td>
+  <td><a href="#F-024"><code>F-024</code></a></td>
+  <td><span class="pr pr-P0">P0</span></td>
+  <td>未开始</td>
+</tr>
+<tr data-row data-state="todo" data-priority="P0">
+  <td><code>T-026</code></td>
+  <td>Access/Refresh Token 严格分段校验</td>
+  <td><a href="#F-024"><code>F-024</code></a></td>
+  <td><span class="pr pr-P0">P0</span></td>
+  <td>未开始</td>
+</tr>
+<tr data-row data-state="todo" data-priority="P0">
+  <td><code>T-027</code></td>
+  <td>登出必须写拒绝名单</td>
+  <td><a href="#F-024"><code>F-024</code></a></td>
+  <td><span class="pr pr-P0">P0</span></td>
+  <td>未开始</td>
+</tr>
+<tr data-row data-state="todo" data-priority="P0">
+  <td><code>T-028</code></td>
+  <td>统一 logback JSON 与文件落盘</td>
+  <td><a href="#F-019"><code>F-019</code></a></td>
+  <td><span class="pr pr-P0">P0</span></td>
+  <td>未开始</td>
+</tr>
+<tr data-row data-state="todo" data-priority="P0">
+  <td><code>T-029</code></td>
+  <td>应用服务挂载日志卷并对齐采集</td>
+  <td><a href="#F-019"><code>F-019</code></a></td>
+  <td><span class="pr pr-P0">P0</span></td>
+  <td>未开始</td>
+</tr>
+<tr data-row data-state="todo" data-priority="P0">
+  <td><code>T-030</code></td>
+  <td>日志闭环端到端 verify 场景</td>
+  <td><a href="#F-019"><code>F-019</code></a></td>
+  <td><span class="pr pr-P0">P0</span></td>
+  <td>未开始</td>
+</tr>
+<tr data-row data-state="todo" data-priority="P0">
+  <td><code>T-031</code></td>
+  <td>关闭 gateway discovery locator</td>
+  <td><a href="#F-025"><code>F-025</code></a></td>
+  <td><span class="pr pr-P0">P0</span></td>
+  <td>未开始</td>
+</tr>
+<tr data-row data-state="todo" data-priority="P0">
+  <td><code>T-032</code></td>
+  <td>内部接口服务身份签名</td>
+  <td><a href="#F-025"><code>F-025</code></a></td>
+  <td><span class="pr pr-P0">P0</span></td>
+  <td>未开始</td>
+</tr>
+<tr data-row data-state="todo" data-priority="P0">
+  <td><code>T-033</code></td>
+  <td>后台 RBAC 服务端化</td>
+  <td><a href="#F-020"><code>F-020</code></a></td>
+  <td><span class="pr pr-P0">P0</span></td>
+  <td>未开始</td>
+</tr>
+<tr data-row data-state="todo" data-priority="P0">
+  <td><code>T-034</code></td>
+  <td>各服务多阶段 Dockerfile</td>
+  <td><a href="#F-021"><code>F-021</code></a></td>
+  <td><span class="pr pr-P0">P0</span></td>
+  <td>未开始</td>
+</tr>
+<tr data-row data-state="todo" data-priority="P0">
+  <td><code>T-035</code></td>
+  <td>生产 compose 补齐应用服务</td>
+  <td><a href="#F-021"><code>F-021</code></a></td>
+  <td><span class="pr pr-P0">P0</span></td>
+  <td>未开始</td>
+</tr>
+<tr data-row data-state="todo" data-priority="P0">
+  <td><code>T-036</code></td>
+  <td>nginx HTTPS 与安全响应头</td>
+  <td><a href="#F-021"><code>F-021</code></a></td>
+  <td><span class="pr pr-P0">P0</span></td>
+  <td>未开始</td>
+</tr>
 <tr data-row data-state="todo" data-priority="P1">
   <td><code>T-008</code></td>
   <td>APIClient 自动刷新与并发刷新合并</td>
@@ -685,6 +879,48 @@ footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--line);font-si
   <td><span class="pr pr-P1">P1</span></td>
   <td>未开始</td>
 </tr>
+<tr data-row data-state="todo" data-priority="P1">
+  <td><code>T-037</code></td>
+  <td>GitHub Actions CI 流水线</td>
+  <td><a href="#F-021"><code>F-021</code></a></td>
+  <td><span class="pr pr-P1">P1</span></td>
+  <td>未开始</td>
+</tr>
+<tr data-row data-state="todo" data-priority="P1">
+  <td><code>T-038</code></td>
+  <td>Testcontainers 集成测试</td>
+  <td><a href="#F-021"><code>F-021</code></a></td>
+  <td><span class="pr pr-P1">P1</span></td>
+  <td>未开始</td>
+</tr>
+<tr data-row data-state="todo" data-priority="P1">
+  <td><code>T-039</code></td>
+  <td>mvnw 与 enforcer 与 Redisson optional</td>
+  <td><a href="#F-021"><code>F-021</code></a></td>
+  <td><span class="pr pr-P1">P1</span></td>
+  <td>未开始</td>
+</tr>
+<tr data-row data-state="todo" data-priority="P1">
+  <td><code>T-040</code></td>
+  <td>Prometheus 指标与就绪探针</td>
+  <td><a href="#F-026"><code>F-026</code></a></td>
+  <td><span class="pr pr-P1">P1</span></td>
+  <td>未开始</td>
+</tr>
+<tr data-row data-state="todo" data-priority="P1">
+  <td><code>T-041</code></td>
+  <td>springdoc OpenAPI 与 API 版本策略</td>
+  <td><a href="#F-027"><code>F-027</code></a></td>
+  <td><span class="pr pr-P1">P1</span></td>
+  <td>未开始</td>
+</tr>
+<tr data-row data-state="todo" data-priority="P1">
+  <td><code>T-047</code></td>
+  <td>注册流程 Outbox 最终一致性</td>
+  <td><a href="#F-030"><code>F-030</code></a></td>
+  <td><span class="pr pr-P1">P1</span></td>
+  <td>未开始</td>
+</tr>
 <tr data-row data-state="todo" data-priority="P2">
   <td><code>T-020</code></td>
   <td>harness 增加 validate-status 并把 status check 接入 run-all</td>
@@ -703,6 +939,41 @@ footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--line);font-si
   <td><code>T-023</code></td>
   <td>接入离线底图真实下载状态</td>
   <td><a href="#F-008"><code>F-008</code></a></td>
+  <td><span class="pr pr-P2">P2</span></td>
+  <td>未开始</td>
+</tr>
+<tr data-row data-state="todo" data-priority="P2">
+  <td><code>T-042</code></td>
+  <td>AuthServiceImpl 按用例拆分</td>
+  <td><a href="#F-028"><code>F-028</code></a></td>
+  <td><span class="pr pr-P2">P2</span></td>
+  <td>未开始</td>
+</tr>
+<tr data-row data-state="todo" data-priority="P2">
+  <td><code>T-043</code></td>
+  <td>ArchUnit 分层约束</td>
+  <td><a href="#F-028"><code>F-028</code></a></td>
+  <td><span class="pr pr-P2">P2</span></td>
+  <td>未开始</td>
+</tr>
+<tr data-row data-state="todo" data-priority="P2">
+  <td><code>T-044</code></td>
+  <td>全局异常映射补全</td>
+  <td><a href="#F-029"><code>F-029</code></a></td>
+  <td><span class="pr pr-P2">P2</span></td>
+  <td>未开始</td>
+</tr>
+<tr data-row data-state="todo" data-priority="P2">
+  <td><code>T-045</code></td>
+  <td>数据访问加固与 LIKE 转义</td>
+  <td><a href="#F-029"><code>F-029</code></a></td>
+  <td><span class="pr pr-P2">P2</span></td>
+  <td>未开始</td>
+</tr>
+<tr data-row data-state="todo" data-priority="P2">
+  <td><code>T-046</code></td>
+  <td>clientIp 掩码与审计事件</td>
+  <td><a href="#F-029"><code>F-029</code></a></td>
   <td><span class="pr pr-P2">P2</span></td>
   <td>未开始</td>
 </tr>
@@ -961,6 +1232,55 @@ footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--line);font-si
 <li><code>front/FoodMapApp/FoodMapApp/Core/Auth/**</code></li></ul>
   </div>
 </details>
+<details class="item" id="F-024" data-row data-state="planned" data-priority="P0" data-layer="backend">
+  <summary><code>F-024</code> 认证密钥与 Token 闭环 <span class="st st-planned">已排期</span> <span class="pr pr-P0">P0</span> <span class="ly ly-backend">后端</span></summary>
+  <div class="item-body">
+    <p>密钥统一注入且生产缺失即失败；Token 严格分段，登出后追加后缀仍返回 401</p>
+    <dl>
+      <dt>后端模块</dt><dd><code class="chip">foodmap-auth-service</code><code class="chip">foodmap-gateway-service</code><code class="chip">foodmap-common</code><code class="chip">foodmap-admin-service</code></dd>
+      <dt>前端模块</dt><dd><span class="muted">—</span></dd>
+      <dt>最近提交</dt><dd><code>5727226</code> 2026-11-05 · feat: dual-write auth identity bindings and sessions, accept F-023</dd>
+      <dt>验收单</dt><dd><span class="muted">无验收单</span></dd>
+      <dt>联调 case</dt><dd><span class="muted">—</span></dd>
+      <dt>测试证据</dt><dd><span class="muted">无覆盖该功能点的运行记录</span></dd>
+      <dt>未完成原因</dt><dd><span class="blk">缺验收单</span><span class="blk">缺测试运行证据</span></dd>
+    </dl>
+    <h4>任务</h4><ul><li><code>T-025</code> Token 密钥统一注入与 fail-fast · todo</li>
+<li><code>T-026</code> Access/Refresh Token 严格分段校验 · todo</li>
+<li><code>T-027</code> 登出必须写拒绝名单 · todo</li>
+<li><code>T-025</code> Token 密钥统一注入与 fail-fast · todo</li>
+<li><code>T-026</code> Access/Refresh Token 严格分段校验 · todo</li>
+<li><code>T-027</code> 登出必须写拒绝名单 · todo</li></ul>
+    <h4>路径</h4><ul><li><code>after/foodmap-auth-service/src/**</code></li>
+<li><code>after/foodmap-gateway-service/src/**</code></li>
+<li><code>after/foodmap-common/src/main/java/com/foodmap/common/security/**</code></li>
+<li><code>after/foodmap-admin-service/src/main/java/com/foodmap/admin/service/**</code></li>
+<li><code>deploy/env.example</code></li></ul>
+  </div>
+</details>
+<details class="item" id="F-025" data-row data-state="planned" data-priority="P0" data-layer="backend">
+  <summary><code>F-025</code> 内部信任与网关攻击面收敛 <span class="st st-planned">已排期</span> <span class="pr pr-P0">P0</span> <span class="ly ly-backend">后端</span></summary>
+  <div class="item-body">
+    <p>关闭 discovery locator；内部接口需服务身份签名，无签名或重放返回 401</p>
+    <dl>
+      <dt>后端模块</dt><dd><code class="chip">foodmap-gateway-service</code><code class="chip">foodmap-user-service</code><code class="chip">foodmap-log-service</code><code class="chip">foodmap-common</code><code class="chip">foodmap-auth-service</code><code class="chip">foodmap-admin-service</code></dd>
+      <dt>前端模块</dt><dd><span class="muted">—</span></dd>
+      <dt>最近提交</dt><dd><code>5994d70</code> 2026-06-29 · fix auth logout access token denylist</dd>
+      <dt>验收单</dt><dd><span class="muted">无验收单</span></dd>
+      <dt>联调 case</dt><dd><span class="muted">—</span></dd>
+      <dt>测试证据</dt><dd><span class="muted">无覆盖该功能点的运行记录</span></dd>
+      <dt>未完成原因</dt><dd><span class="blk">缺验收单</span><span class="blk">缺测试运行证据</span></dd>
+    </dl>
+    <h4>任务</h4><ul><li><code>T-031</code> 关闭 gateway discovery locator · todo</li>
+<li><code>T-032</code> 内部接口服务身份签名 · todo</li>
+<li><code>T-031</code> 关闭 gateway discovery locator · todo</li>
+<li><code>T-032</code> 内部接口服务身份签名 · todo</li></ul>
+    <h4>路径</h4><ul><li><code>after/foodmap-gateway-service/src/main/resources/application.yml</code></li>
+<li><code>after/foodmap-common/src/main/java/com/foodmap/common/security/**</code></li>
+<li><code>after/foodmap-user-service/src/main/java/com/foodmap/user/controller/**</code></li>
+<li><code>after/foodmap-log-service/src/main/java/com/foodmap/log/controller/**</code></li></ul>
+  </div>
+</details>
 <details class="item" id="F-006" data-row data-state="in_progress" data-priority="P1" data-layer="frontend">
   <summary><code>F-006</code> iOS 应用壳与导航 <span class="st st-in_progress">进行中</span> <span class="pr pr-P1">P1</span> <span class="ly ly-frontend">前端</span></summary>
   <div class="item-body">
@@ -1012,6 +1332,63 @@ footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--line);font-si
     </dl>
     <h4>任务</h4><ul><li><code>T-024</code> 注册、登录、登出双写新身份表与会话表 · done · 2026-11-05 16:52</li></ul>
     <h4>路径</h4><ul><li><code>after/foodmap-auth-service/src/**</code></li></ul>
+  </div>
+</details>
+<details class="item" id="F-026" data-row data-state="planned" data-priority="P1" data-layer="backend">
+  <summary><code>F-026</code> 指标、追踪与就绪探针 <span class="st st-planned">已排期</span> <span class="pr pr-P1">P1</span> <span class="ly ly-backend">后端</span></summary>
+  <div class="item-body">
+    <p>/actuator/prometheus 暴露 HikariCP、Redis pool 与 HTTP 指标，liveness/readiness 分离</p>
+    <dl>
+      <dt>后端模块</dt><dd><code class="chip">foodmap-common</code><code class="chip">foodmap-gateway-service</code></dd>
+      <dt>前端模块</dt><dd><span class="muted">—</span></dd>
+      <dt>最近提交</dt><dd><code>b37929c</code> 2026-06-22 · feat: complete B1 auth backend integration</dd>
+      <dt>验收单</dt><dd><span class="muted">无验收单</span></dd>
+      <dt>联调 case</dt><dd><span class="muted">—</span></dd>
+      <dt>测试证据</dt><dd><span class="muted">无覆盖该功能点的运行记录</span></dd>
+      <dt>未完成原因</dt><dd><span class="blk">缺验收单</span><span class="blk">缺测试运行证据</span></dd>
+    </dl>
+    <h4>任务</h4><ul><li><code>T-040</code> Prometheus 指标与就绪探针 · todo</li>
+<li><code>T-040</code> Prometheus 指标与就绪探针 · todo</li></ul>
+    <h4>路径</h4><ul><li><code>after/pom.xml</code></li>
+<li><code>after/foodmap-common/pom.xml</code></li></ul>
+  </div>
+</details>
+<details class="item" id="F-027" data-row data-state="planned" data-priority="P1" data-layer="backend">
+  <summary><code>F-027</code> OpenAPI 契约与版本策略 <span class="st st-planned">已排期</span> <span class="pr pr-P1">P1</span> <span class="ly ly-backend">后端</span></summary>
+  <div class="item-body">
+    <p>接口文档从代码生成，/api/v1 版本策略落地，docs/api 与实现一致</p>
+    <dl>
+      <dt>后端模块</dt><dd><code class="chip">foodmap-common</code><code class="chip">foodmap-gateway-service</code></dd>
+      <dt>前端模块</dt><dd><span class="muted">—</span></dd>
+      <dt>最近提交</dt><dd><code>5994d70</code> 2026-06-29 · fix auth logout access token denylist</dd>
+      <dt>验收单</dt><dd><span class="muted">无验收单</span></dd>
+      <dt>联调 case</dt><dd><span class="muted">—</span></dd>
+      <dt>测试证据</dt><dd><span class="muted">无覆盖该功能点的运行记录</span></dd>
+      <dt>未完成原因</dt><dd><span class="blk">缺验收单</span><span class="blk">缺测试运行证据</span></dd>
+    </dl>
+    <h4>任务</h4><ul><li><code>T-041</code> springdoc OpenAPI 与 API 版本策略 · todo</li>
+<li><code>T-041</code> springdoc OpenAPI 与 API 版本策略 · todo</li></ul>
+    <h4>路径</h4><ul><li><code>after/foodmap-common/src/main/java/com/foodmap/common/controller/**</code></li>
+<li><code>deploy/**</code></li></ul>
+  </div>
+</details>
+<details class="item" id="F-030" data-row data-state="planned" data-priority="P1" data-layer="backend">
+  <summary><code>F-030</code> 注册流程最终一致性 <span class="st st-planned">已排期</span> <span class="pr pr-P1">P1</span> <span class="ly ly-backend">后端</span></summary>
+  <div class="item-body">
+    <p>注册改本地事务加 Outbox，用户开通支持幂等键，失败有状态机与补偿</p>
+    <dl>
+      <dt>后端模块</dt><dd><code class="chip">foodmap-auth-service</code><code class="chip">foodmap-user-service</code></dd>
+      <dt>前端模块</dt><dd><span class="muted">—</span></dd>
+      <dt>最近提交</dt><dd><code>5727226</code> 2026-11-05 · feat: dual-write auth identity bindings and sessions, accept F-023</dd>
+      <dt>验收单</dt><dd><span class="muted">无验收单</span></dd>
+      <dt>联调 case</dt><dd><span class="muted">—</span></dd>
+      <dt>测试证据</dt><dd><span class="muted">无覆盖该功能点的运行记录</span></dd>
+      <dt>未完成原因</dt><dd><span class="blk">缺验收单</span><span class="blk">缺测试运行证据</span></dd>
+    </dl>
+    <h4>任务</h4><ul><li><code>T-047</code> 注册流程 Outbox 最终一致性 · todo</li>
+<li><code>T-047</code> 注册流程 Outbox 最终一致性 · todo</li></ul>
+    <h4>路径</h4><ul><li><code>after/foodmap-auth-service/src/main/java/com/foodmap/auth/**</code></li>
+<li><code>after/foodmap-auth-service/src/main/resources/db/migration/**</code></li></ul>
   </div>
 </details>
 <details class="item" id="F-007" data-row data-state="in_progress" data-priority="P1" data-layer="fullstack">
@@ -1216,13 +1593,19 @@ footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--line);font-si
     <dl>
       <dt>后端模块</dt><dd><code class="chip">foodmap-common</code></dd>
       <dt>前端模块</dt><dd><code class="chip">App</code></dd>
-      <dt>最近提交</dt><dd><code>b1f3e9a</code> 2026-11-07 · test: clean user_db rows in ios probe teardown</dd>
+      <dt>最近提交</dt><dd><code>0b9a4ac</code> 2026-11-09 · feat: add dependency-aware local verification with explicit skips</dd>
       <dt>验收单</dt><dd><span class="muted">无验收单</span></dd>
       <dt>联调 case</dt><dd><span class="muted">—</span></dd>
       <dt>测试证据</dt><dd><code></code>  <code></code> </dd>
       <dt>未完成原因</dt><dd><span class="blk">缺验收单</span></dd>
     </dl>
-    <h4>任务</h4><ul><li><code>T-020</code> harness 增加 validate-status 并把 status check 接入 run-all · todo</li></ul>
+    <h4>任务</h4><ul><li><code>T-020</code> harness 增加 validate-status 并把 status check 接入 run-all · todo</li>
+<li><code>T-034</code> 各服务多阶段 Dockerfile · todo</li>
+<li><code>T-035</code> 生产 compose 补齐应用服务 · todo</li>
+<li><code>T-036</code> nginx HTTPS 与安全响应头 · todo</li>
+<li><code>T-037</code> GitHub Actions CI 流水线 · todo</li>
+<li><code>T-038</code> Testcontainers 集成测试 · todo</li>
+<li><code>T-039</code> mvnw 与 enforcer 与 Redisson optional · todo</li></ul>
     <h4>路径</h4><ul><li><code>harness/**</code></li>
 <li><code>deploy/**</code></li></ul>
   </div>
@@ -1240,7 +1623,10 @@ footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--line);font-si
       <dt>测试证据</dt><dd><code></code>  <code></code> </dd>
       <dt>未完成原因</dt><dd><span class="blk">缺验收单</span></dd>
     </dl>
-    <h4>任务</h4><ul><li><code>T-018</code> 日志平台 B1.5 代码、查询入口与归档骨架 · done · 2026-06-22 17:22</li></ul>
+    <h4>任务</h4><ul><li><code>T-018</code> 日志平台 B1.5 代码、查询入口与归档骨架 · done · 2026-06-22 17:22</li>
+<li><code>T-028</code> 统一 logback JSON 与文件落盘 · todo</li>
+<li><code>T-029</code> 应用服务挂载日志卷并对齐采集 · todo</li>
+<li><code>T-030</code> 日志闭环端到端 verify 场景 · todo</li></ul>
     <h4>路径</h4><ul><li><code>after/foodmap-log-service/src/**</code></li>
 <li><code>deploy/**</code></li></ul>
   </div>
@@ -1258,8 +1644,53 @@ footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--line);font-si
       <dt>测试证据</dt><dd><code></code> </dd>
       <dt>未完成原因</dt><dd><span class="blk">缺验收单</span></dd>
     </dl>
-    <h4>任务</h4><ul><li><code>T-019</code> 管理员创建用例与 LOG_ACCESS_READ 权限骨架 · done · 2026-06-22 17:22</li></ul>
+    <h4>任务</h4><ul><li><code>T-019</code> 管理员创建用例与 LOG_ACCESS_READ 权限骨架 · done · 2026-06-22 17:22</li>
+<li><code>T-033</code> 后台 RBAC 服务端化 · todo</li></ul>
     <h4>路径</h4><ul><li><code>after/foodmap-admin-service/src/**</code></li></ul>
+  </div>
+</details>
+<details class="item" id="F-028" data-row data-state="planned" data-priority="P2" data-layer="backend">
+  <summary><code>F-028</code> 分层重构与架构约束 <span class="st st-planned">已排期</span> <span class="pr pr-P2">P2</span> <span class="ly ly-backend">后端</span></summary>
+  <div class="item-body">
+    <p>端口不返回持久化实体，AuthServiceImpl 按用例拆分，ArchUnit 固化依赖方向</p>
+    <dl>
+      <dt>后端模块</dt><dd><code class="chip">foodmap-auth-service</code><code class="chip">foodmap-user-service</code><code class="chip">foodmap-common</code></dd>
+      <dt>前端模块</dt><dd><span class="muted">—</span></dd>
+      <dt>最近提交</dt><dd><code>5727226</code> 2026-11-05 · feat: dual-write auth identity bindings and sessions, accept F-023</dd>
+      <dt>验收单</dt><dd><span class="muted">无验收单</span></dd>
+      <dt>联调 case</dt><dd><span class="muted">—</span></dd>
+      <dt>测试证据</dt><dd><span class="muted">无覆盖该功能点的运行记录</span></dd>
+      <dt>未完成原因</dt><dd><span class="blk">缺验收单</span><span class="blk">缺测试运行证据</span></dd>
+    </dl>
+    <h4>任务</h4><ul><li><code>T-042</code> AuthServiceImpl 按用例拆分 · todo</li>
+<li><code>T-043</code> ArchUnit 分层约束 · todo</li>
+<li><code>T-042</code> AuthServiceImpl 按用例拆分 · todo</li>
+<li><code>T-043</code> ArchUnit 分层约束 · todo</li></ul>
+    <h4>路径</h4><ul><li><code>after/foodmap-auth-service/src/main/java/com/foodmap/auth/**</code></li>
+<li><code>after/foodmap-user-service/src/main/java/com/foodmap/user/**</code></li></ul>
+  </div>
+</details>
+<details class="item" id="F-029" data-row data-state="planned" data-priority="P2" data-layer="backend">
+  <summary><code>F-029</code> 数据访问与异常映射加固 <span class="st st-planned">已排期</span> <span class="pr pr-P2">P2</span> <span class="ly ly-backend">后端</span></summary>
+  <div class="item-body">
+    <p>upsert 幂等返回 409，列表强制 limit，LIKE 转义，缺 header 返回 401，clientIp 掩码</p>
+    <dl>
+      <dt>后端模块</dt><dd><code class="chip">foodmap-common</code><code class="chip">foodmap-user-service</code><code class="chip">foodmap-auth-service</code><code class="chip">foodmap-log-service</code></dd>
+      <dt>前端模块</dt><dd><span class="muted">—</span></dd>
+      <dt>最近提交</dt><dd><code>7a3dc57</code> 2026-11-05 · feat: migrate auth identity bindings and sessions, accept F-004</dd>
+      <dt>验收单</dt><dd><span class="muted">无验收单</span></dd>
+      <dt>联调 case</dt><dd><span class="muted">—</span></dd>
+      <dt>测试证据</dt><dd><span class="muted">无覆盖该功能点的运行记录</span></dd>
+      <dt>未完成原因</dt><dd><span class="blk">缺验收单</span><span class="blk">缺测试运行证据</span></dd>
+    </dl>
+    <h4>任务</h4><ul><li><code>T-044</code> 全局异常映射补全 · todo</li>
+<li><code>T-045</code> 数据访问加固与 LIKE 转义 · todo</li>
+<li><code>T-046</code> clientIp 掩码与审计事件 · todo</li>
+<li><code>T-044</code> 全局异常映射补全 · todo</li>
+<li><code>T-045</code> 数据访问加固与 LIKE 转义 · todo</li>
+<li><code>T-046</code> clientIp 掩码与审计事件 · todo</li></ul>
+    <h4>路径</h4><ul><li><code>after/foodmap-common/src/main/java/com/foodmap/common/web/**</code></li>
+<li><code>after/foodmap-common/src/main/java/com/foodmap/common/logging/**</code></li></ul>
   </div>
 </details>
 <details class="item" id="F-008" data-row data-state="in_progress" data-priority="P2" data-layer="frontend">
@@ -1301,7 +1732,7 @@ footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--line);font-si
 
 <footer>
   <span>FoodMap 进度台账 · 由 <code>status build</code> 生成，请勿手改</span>
-  <span>HEAD d9bf502 · 2026-11-09</span>
+  <span>HEAD 0b9a4ac · 2026-11-09</span>
   <span>时区 Asia/Shanghai</span>
   <a href="#backend">回到顶部 ↑</a>
 </footer>

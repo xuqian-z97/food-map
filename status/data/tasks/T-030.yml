@@ -1,0 +1,8 @@
+schemaVersion: 1
+id: T-030
+feature: F-019
+title: 日志闭环端到端 verify 场景
+status: todo
+priority: P0
+owner: agent
+planRef: docs/superpowers/plans/2026-11-09-backend-hardening.md

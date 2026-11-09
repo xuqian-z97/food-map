@@ -12,4 +12,5 @@ paths:
   - after/foodmap-admin-service/src/**
 tasks:
   - T-019
+  - T-033
 notes: "审核、举报、门店合并与用户管理闭环未实现"

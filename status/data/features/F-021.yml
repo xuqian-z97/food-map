@@ -15,4 +15,10 @@ paths:
   - deploy/**
 tasks:
   - T-020
+  - T-034
+  - T-035
+  - T-036
+  - T-037
+  - T-038
+  - T-039
 notes: 生产 Compose 业务容器仍为占位

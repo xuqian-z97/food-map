@@ -1,0 +1,24 @@
+schemaVersion: 1
+id: F-029
+title: 数据访问与异常映射加固
+layer: backend
+phase: B1.6
+priority: P2
+status: planned
+summary: "upsert 幂等返回 409，列表强制 limit，LIKE 转义，缺 header 返回 401，clientIp 掩码"
+backendModules:
+  - foodmap-common
+  - foodmap-user-service
+  - foodmap-auth-service
+  - foodmap-log-service
+paths:
+  - after/foodmap-common/src/main/java/com/foodmap/common/web/**
+  - after/foodmap-common/src/main/java/com/foodmap/common/logging/**
+tasks:
+  - T-044
+  - T-045
+  - T-046
+  - T-044
+  - T-045
+  - T-046
+notes: "P2-1/P2-2/P2-3 合集"

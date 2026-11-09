@@ -1,0 +1,8 @@
+schemaVersion: 1
+id: T-046
+feature: F-029
+title: clientIp 掩码与审计事件
+status: todo
+priority: P2
+owner: agent
+planRef: docs/superpowers/plans/2026-11-09-backend-hardening.md

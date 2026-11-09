@@ -1,0 +1,18 @@
+schemaVersion: 1
+id: F-027
+title: OpenAPI 契约与版本策略
+layer: backend
+phase: B1.6
+priority: P1
+status: planned
+summary: "接口文档从代码生成，/api/v1 版本策略落地，docs/api 与实现一致"
+backendModules:
+  - foodmap-common
+  - foodmap-gateway-service
+paths:
+  - after/foodmap-common/src/main/java/com/foodmap/common/controller/**
+  - deploy/**
+tasks:
+  - T-041
+  - T-041
+notes: "P1-4 契约漂移；同时修正 refresh 不轮换的文档偏差"

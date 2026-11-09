@@ -1,0 +1,8 @@
+schemaVersion: 1
+id: T-043
+feature: F-028
+title: ArchUnit 分层约束
+status: todo
+priority: P2
+owner: agent
+planRef: docs/superpowers/plans/2026-11-09-backend-hardening.md

@@ -1,0 +1,8 @@
+schemaVersion: 1
+id: T-028
+feature: F-019
+title: 统一 logback JSON 与文件落盘
+status: todo
+priority: P0
+owner: agent
+planRef: docs/superpowers/plans/2026-11-09-backend-hardening.md

@@ -1,0 +1,8 @@
+schemaVersion: 1
+id: T-031
+feature: F-025
+title: 关闭 gateway discovery locator
+status: todo
+priority: P0
+owner: agent
+planRef: docs/superpowers/plans/2026-11-09-backend-hardening.md

@@ -1,0 +1,8 @@
+schemaVersion: 1
+id: T-034
+feature: F-021
+title: 各服务多阶段 Dockerfile
+status: todo
+priority: P0
+owner: agent
+planRef: docs/superpowers/plans/2026-11-09-backend-hardening.md

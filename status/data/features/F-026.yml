@@ -1,0 +1,20 @@
+schemaVersion: 1
+id: F-026
+title: "指标、追踪与就绪探针"
+layer: backend
+phase: B1.6
+priority: P1
+status: planned
+summary: "/actuator/prometheus 暴露 HikariCP、Redis pool 与 HTTP 指标，liveness/readiness 分离"
+backendModules:
+  - foodmap-common
+  - foodmap-gateway-service
+paths:
+  - after/pom.xml
+  - after/foodmap-common/pom.xml
+tasks:
+  - T-040
+  - T-040
+dependsOn:
+  - F-021
+notes: P1-3 可观测性缺口

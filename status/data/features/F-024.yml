@@ -1,0 +1,29 @@
+schemaVersion: 1
+id: F-024
+title: 认证密钥与 Token 闭环
+layer: backend
+phase: B1.6
+priority: P0
+status: planned
+summary: "密钥统一注入且生产缺失即失败；Token 严格分段，登出后追加后缀仍返回 401"
+backendModules:
+  - foodmap-auth-service
+  - foodmap-gateway-service
+  - foodmap-common
+  - foodmap-admin-service
+paths:
+  - after/foodmap-auth-service/src/**
+  - after/foodmap-gateway-service/src/**
+  - after/foodmap-common/src/main/java/com/foodmap/common/security/**
+  - after/foodmap-admin-service/src/main/java/com/foodmap/admin/service/**
+  - deploy/env.example
+tasks:
+  - T-025
+  - T-026
+  - T-027
+  - T-025
+  - T-026
+  - T-027
+dependsOn:
+  - F-003
+notes: "P0-1/P0-2 改造；Refresh Token 为 4 段，分段校验必须按类型区分"

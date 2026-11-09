@@ -1,0 +1,8 @@
+schemaVersion: 1
+id: T-035
+feature: F-021
+title: 生产 compose 补齐应用服务
+status: todo
+priority: P0
+owner: agent
+planRef: docs/superpowers/plans/2026-11-09-backend-hardening.md

@@ -1,0 +1,20 @@
+schemaVersion: 1
+id: F-030
+title: 注册流程最终一致性
+layer: backend
+phase: B1.6
+priority: P1
+status: planned
+summary: "注册改本地事务加 Outbox，用户开通支持幂等键，失败有状态机与补偿"
+backendModules:
+  - foodmap-auth-service
+  - foodmap-user-service
+paths:
+  - after/foodmap-auth-service/src/main/java/com/foodmap/auth/**
+  - after/foodmap-auth-service/src/main/resources/db/migration/**
+tasks:
+  - T-047
+  - T-047
+dependsOn:
+  - F-021
+notes: "P1-2 事务内跨服务调用；消除孤儿用户"

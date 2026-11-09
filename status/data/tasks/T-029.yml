@@ -1,0 +1,8 @@
+schemaVersion: 1
+id: T-029
+feature: F-019
+title: 应用服务挂载日志卷并对齐采集
+status: todo
+priority: P0
+owner: agent
+planRef: docs/superpowers/plans/2026-11-09-backend-hardening.md

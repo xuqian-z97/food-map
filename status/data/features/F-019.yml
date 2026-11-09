@@ -15,4 +15,7 @@ paths:
   - deploy/**
 tasks:
   - T-018
+  - T-028
+  - T-029
+  - T-030
 notes: 多组件真实环境验收未完成

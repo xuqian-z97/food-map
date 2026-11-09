@@ -1,0 +1,8 @@
+schemaVersion: 1
+id: T-040
+feature: F-026
+title: Prometheus 指标与就绪探针
+status: todo
+priority: P1
+owner: agent
+planRef: docs/superpowers/plans/2026-11-09-backend-hardening.md

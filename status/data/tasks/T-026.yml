@@ -1,0 +1,8 @@
+schemaVersion: 1
+id: T-026
+feature: F-024
+title: "Access/Refresh Token 严格分段校验"
+status: todo
+priority: P0
+owner: agent
+planRef: docs/superpowers/plans/2026-11-09-backend-hardening.md

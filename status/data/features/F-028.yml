@@ -1,0 +1,23 @@
+schemaVersion: 1
+id: F-028
+title: 分层重构与架构约束
+layer: backend
+phase: B1.6
+priority: P2
+status: planned
+summary: "端口不返回持久化实体，AuthServiceImpl 按用例拆分，ArchUnit 固化依赖方向"
+backendModules:
+  - foodmap-auth-service
+  - foodmap-user-service
+  - foodmap-common
+paths:
+  - after/foodmap-auth-service/src/main/java/com/foodmap/auth/**
+  - after/foodmap-user-service/src/main/java/com/foodmap/user/**
+tasks:
+  - T-042
+  - T-043
+  - T-042
+  - T-043
+dependsOn:
+  - F-021
+notes: "P1-1 分层倒置；拆分前需 T-038 集成测试兜底"
