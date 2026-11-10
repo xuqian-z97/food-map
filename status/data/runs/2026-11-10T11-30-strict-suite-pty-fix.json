@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-10T11-30-strict-suite-pty-fix",
+  "at": "2026-11-10T11:30:29+08:00",
+  "kind": "integration",
+  "command": "FM_TEST_PW=<env> VERIFY_REQUIRE_FULL=1 ./harness/scripts/verify.sh（经 script 提供伪终端）",
+  "env": "local",
+  "result": {
+    "total": 10,
+    "passed": 10,
+    "failed": 0,
+    "skipped": 0
+  },
+  "covers": [
+    "F-001",
+    "F-003",
+    "F-019",
+    "F-021"
+  ],
+  "evidence": [
+    "docs/integration/B1.5-orbstack-logging/evidence/2026-11-10T11-28-suite-03429f56-dc70-482d-9b6d-033c11932c51-harness_scenarios.json"
+  ],
+  "notes": "全量严格套件 10/10 通过、0 跳过；xcodebuild 在非 tty 环境下报 Pseudo Terminal Setup Error(Errno 1)，用 script -q /dev/null 提供 pty 后 UI 用例正常执行。本次运行在所有提交之后，补齐 F-019 的验证缺口。"
+}
