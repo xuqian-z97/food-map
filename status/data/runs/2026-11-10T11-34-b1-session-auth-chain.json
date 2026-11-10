@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-10T11-34-b1-session-auth-chain",
+  "at": "2026-11-10T11:34:38+08:00",
+  "kind": "e2e",
+  "command": "b1-token-retention + b1-session-restart + b1-ui-login + b1-auth-negative + b1-logout（经 script 提供 pty）",
+  "env": "local",
+  "result": {
+    "total": 99,
+    "passed": 99,
+    "failed": 0,
+    "skipped": 0
+  },
+  "covers": [
+    "F-002",
+    "F-003"
+  ],
+  "evidence": [
+    "docs/integration/B1-auth-ios-backend/evidence/2026-11-10T11-33-a6ee8c90-B1 iOS 登录 UI 全链路.json"
+  ],
+  "notes": "F-002 重跑：me 200、冷启动恢复、临时网络故障保留 Token、过期 401、登出后 me 401 全链路 99/99 通过，含 iOS UI 用例 1 passed。"
+}

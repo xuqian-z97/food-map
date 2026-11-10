@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-10T11-34-identity-dual-write",
+  "at": "2026-11-10T11:34:28+08:00",
+  "kind": "integration",
+  "command": "node tools/verify/cli.mjs run harness/scenarios/b1-identity-dual-write.yml",
+  "env": "local",
+  "result": {
+    "total": 28,
+    "passed": 28,
+    "failed": 0,
+    "skipped": 0
+  },
+  "covers": [
+    "F-023"
+  ],
+  "evidence": [
+    "docs/integration/B1-auth-ios-backend/evidence/2026-11-10T11-32-0ed6f042-认证双写核验（身份绑定与会话）.json"
+  ],
+  "notes": "F-023 重跑：注册/登录/登出双写 28/28 通过，含 teardown 归零断言。"
+}

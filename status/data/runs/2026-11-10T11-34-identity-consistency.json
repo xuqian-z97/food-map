@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-10T11-34-identity-consistency",
+  "at": "2026-11-10T11:34:27+08:00",
+  "kind": "integration",
+  "command": "node tools/verify/cli.mjs run harness/scenarios/b1-identity-consistency.yml",
+  "env": "local",
+  "result": {
+    "total": 15,
+    "passed": 15,
+    "failed": 0,
+    "skipped": 0
+  },
+  "covers": [
+    "F-004"
+  ],
+  "evidence": [
+    "docs/integration/B1-auth-ios-backend/evidence/2026-11-10T11-32-f3498a0e-B1 身份模型一致性核验.json"
+  ],
+  "notes": "F-004 重跑：全局一致性 15/15 通过。原 b1-identity-migration.yml 已在 5727226 删除并被本场景取代，A-005 的证据引用需修正。"
+}
