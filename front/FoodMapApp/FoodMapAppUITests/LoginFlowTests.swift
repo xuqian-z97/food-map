@@ -93,4 +93,25 @@ final class LoginFlowTests: XCTestCase {
             "登录后没有进入地图页，检查网关是否可达、账号是否注册成功"
         )
     }
+
+    /// 短密码必须在提交前被本地拦截：只出现提示，不发起注册请求。
+    /// 是否真的没发请求由 `harness/scenarios/b1-register-validation.yml` 检查认证日志确认。
+    func testShortPasswordIsBlockedBeforeSubmit() {
+        let app = launchApp()
+
+        app.buttons["login.openRegister"].tap()
+        XCTAssertTrue(app.textFields["register.accountName"].waitForExistence(timeout: 10), "注册页没有出现")
+
+        replaceText(in: app.textFields["register.accountName"], with: "ui_probe_short_\(Int(Date().timeIntervalSince1970))")
+        replaceText(in: app.textFields["register.nickname"], with: "ui-probe")
+        replaceText(in: app.secureTextFields["register.password"], with: "abc")
+        replaceText(in: app.textFields["register.baseURL"], with: "http://127.0.0.1:8080")
+
+        app.buttons["register.submit"].tap()
+
+        let hint = app.staticTexts.matching(
+            NSPredicate(format: "label CONTAINS %@", "密码至少 8 位")
+        ).firstMatch
+        XCTAssertTrue(hint.waitForExistence(timeout: 10), "短密码没有被本地拦截，没有出现预期提示")
+    }
 }

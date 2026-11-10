@@ -1,0 +1,23 @@
+name: B1 注册短密码前端拦截
+requires: [network, device, xcode, auth-log]
+description: "XCUITest 在注册页输入 3 位密码并提交：页面出现本地提示，且认证日志本轮新增部分没有任何注册请求，证明拦截发生在发请求之前"
+config:
+  baseUrl: http://127.0.0.1:8080
+  xcode:
+    cwd: ../../front/FoodMapApp
+    project: FoodMapApp.xcodeproj
+    scheme: FoodMapApp
+    udid: A77A2428-9576-4533-8B62-0C267A395B29
+    derivedDataPath: .build/dd
+    codeSignIdentity: "-"
+steps:
+  - command: "wc -l < /tmp/verify-auth.log"
+    capture: { logStart: value }
+    expect: { exitCode: 0 }
+
+  - xcode: test -only-testing:FoodMapAppUITests/LoginFlowTests/testShortPasswordIsBlockedBeforeSubmit
+    expect: { equals: 0 }
+
+  # 本轮新增日志里不应出现任何注册请求
+  - command: "tail -n +$(( ${logStart} + 1 )) /tmp/verify-auth.log | grep -c 'path=/api/auth/register'"
+    expect: { equals: "0" }

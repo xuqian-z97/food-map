@@ -71,22 +71,27 @@ struct RegisterView: View {
                 TextField("账号名", text: $accountName)
                     .textInputAutocapitalization(.never)
                     .autocorrectionDisabled()
+                    .accessibilityIdentifier("register.accountName")
             }
             authField(icon: "phone.fill") {
                 TextField("手机号", text: $phone)
                     .keyboardType(.phonePad)
+                    .accessibilityIdentifier("register.phone")
             }
             authField(icon: "envelope.fill") {
                 TextField("邮箱", text: $email)
                     .textInputAutocapitalization(.never)
                     .autocorrectionDisabled()
                     .keyboardType(.emailAddress)
+                    .accessibilityIdentifier("register.email")
             }
             authField(icon: "leaf.fill") {
                 TextField("昵称", text: $nickname)
+                    .accessibilityIdentifier("register.nickname")
             }
             authField(icon: "lock.fill") {
                 SecureField("密码", text: $password)
+                    .accessibilityIdentifier("register.password")
             }
         }
     }
@@ -99,6 +104,7 @@ struct RegisterView: View {
                     .textInputAutocapitalization(.never)
                     .autocorrectionDisabled()
                     .keyboardType(.URL)
+                    .accessibilityIdentifier("register.baseURL")
             }
         }
     }
@@ -116,6 +122,7 @@ struct RegisterView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .background((message.contains("成功") ? FoodMapTheme.teaGreen : FoodMapTheme.persimmon).opacity(0.10))
             .clipShape(RoundedRectangle(cornerRadius: FoodMapTheme.cardCornerRadius, style: .continuous))
+            .accessibilityIdentifier("register.message")
         }
     }
 
@@ -136,6 +143,7 @@ struct RegisterView: View {
         }
         .buttonStyle(FoodMapPrimaryButtonStyle())
         .disabled(!canSubmit || isLoading)
+        .accessibilityIdentifier("register.submit")
     }
 
     private var canSubmit: Bool {

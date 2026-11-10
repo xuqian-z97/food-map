@@ -120,6 +120,7 @@ struct LoginView: View {
                     .frame(maxWidth: .infinity)
             }
             .buttonStyle(FoodMapSecondaryButtonStyle())
+            .accessibilityIdentifier("login.openRegister")
         }
     }
 

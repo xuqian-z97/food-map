@@ -12,6 +12,8 @@
 | `b1-identity-dual-write.yml` | 注册绑定双写、登录创建会话、登出撤销及脱敏字段 | Gateway/Auth/User + PostgreSQL + Redis |
 | `b1-logout.yml` | B1 登出链路：注册 → 登录 → `/api/users/me` → 登出 → 旧 Access 401 → 旧 Refresh 401 → Refresh 状态落库 → 拒绝名单只 +1 | Gateway + Auth + Redis + PostgreSQL（`foodmap-redis` / `foodmap-postgres` 容器） |
 | `b1-auth-negative.yml` | 负向与刷新边界：错误密码 401、重复注册 409、短密码 400、无 Token 401、内部接口 403、有效 Refresh 换到可用 Access | Gateway + Auth/User + PostgreSQL；需要 `FM_TEST_PW` |
+| `b1-register-validation.yml` | 注册短密码前端拦截：XCUITest 输入 3 位密码提交后出现本地提示，且本轮认证日志没有注册请求 | Xcode + 模拟器 + 认证日志；不需要数据库 |
+| `b1-token-retention.yml` | 临时网络故障：登录后把当前用户请求指向不可达网关，Token 仍保留；恢复后会话重建；最后登出清理 | 上面的服务 + 模拟器 Debug App + `FM_TEST_PW` |
 | `b1-session-restart.yml` | 登出后重启：探针登录→登出→重启→再次登出得到 `hasSession=false`，且本轮日志没有新的 `login.ok` | 上面的服务 + 模拟器 + Debug App；需要 `FM_TEST_PW` |
 | `b1-ui-login.yml` | **UI 全链路**：注册 → XCUITest 在模拟器输入账号密码并点击登录 → 断言进入地图页、`login_logs` 有 SUCCESS、认证日志 200 → 清理数据 | 上面的服务 + Xcode + 已启动模拟器；需要 `FM_TEST_PW` 环境变量 |
 | `b1-ios-logout.yml` | B1 iOS 端：模拟器启动 Debug 构建，探针完成登录与登出，检查探针日志与数据库 `REVOKED` | 上面的服务 + 已启动的模拟器 + Debug 构建（`#if DEBUG` 探针） |
@@ -76,7 +78,8 @@ node tools/verify/cli.mjs run harness/scenarios/b1-ios-logout.yml --evidence-dir
 | A-003 注册/登录正常路径、UI 进入地图 | [b1-ui-login.yml](b1-ui-login.yml)、[b1-logout.yml](b1-logout.yml) | 未覆盖 UI 注册及全部登录入口 |
 | A-002 登出、旧双 Token 拒绝、REVOKED/denylist | [b1-logout.yml](b1-logout.yml)、[b1-ios-logout.yml](b1-ios-logout.yml) | 探针不是按钮交互；缺独立重启断言 |
 | F-004/F-023 身份一致性与双写 | [b1-identity-consistency.yml](b1-identity-consistency.yml)、[b1-identity-dual-write.yml](b1-identity-dual-write.yml) | 全库异常须调查，不自动清理；不是仅核验本轮数据 |
-| 错误密码、重复注册、短密码、401/403 边界、刷新成功 | [b1-auth-negative.yml](b1-auth-negative.yml) | 短密码仅断言服务端 400；前端提交前拦截仍属 UI 用例 |
+| 错误密码、重复注册、短密码、401/403 边界、刷新成功 | [b1-auth-negative.yml](b1-auth-negative.yml) | 服务端 400 见 b1-auth-negative.yml；前端提交前拦截见 b1-register-validation.yml |
 | 登出后重启仍为未登录 | [b1-session-restart.yml](b1-session-restart.yml) | 通过探针日志证明 Keychain 已清空，不是 UI 点击路径 |
+| 临时网络故障不误清认证状态 | [b1-token-retention.yml](b1-token-retention.yml) | 用探针把当前用户请求指向不可达端口，断言 Token 保留且可恢复 |
 
 旧接口/双写场景仍含固定测试凭据与数据留存约定，迁移为统一环境变量和完整 teardown 属后续工作；依赖感知入口不自动修改这些业务断言或清理历史账号。

@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-10T10-20-b1-ui-negative-retention",
+  "at": "2026-11-10T10:20:24+08:00",
+  "kind": "integration",
+  "command": "FM_TEST_PW=<env> VERIFY_REQUIRE_FULL=1 ./harness/scripts/verify.sh",
+  "env": "local",
+  "result": {
+    "total": 10,
+    "passed": 10,
+    "failed": 0,
+    "skipped": 0
+  },
+  "covers": [
+    "F-001",
+    "F-003",
+    "F-021"
+  ],
+  "evidence": [
+    "harness/scenarios/b1-register-validation.yml",
+    "harness/scenarios/b1-token-retention.yml"
+  ],
+  "notes": "严格全套 10/10 通过、165 步、0 跳过：新增注册短密码前端拦截与临时网络故障不误清 Token 两个场景；前端补注册页可访问性标识与 UI 用例。"
+}
