@@ -1,0 +1,1612 @@
+{
+  "schemaVersion": 2,
+  "name": "B1 退出登录链路（接口级）",
+  "description": "真实网关复跑 B1 登出链路：注册→登录→当前用户→登出→旧 Token 失效；Redis 与 PostgreSQL 走 docker exec，不落 Token；teardown 只清理本轮账号并断言清零",
+  "runId": "run-20261110T060039Z-13ca76dc",
+  "source": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios/b1-logout.yml",
+  "ok": true,
+  "exitCode": 0,
+  "startedAt": "2026-11-10T06:00:39.810Z",
+  "finishedAt": "2026-11-10T06:00:42.969Z",
+  "durationMs": 3159,
+  "summary": {
+    "total": 30,
+    "passed": 30,
+    "failed": 0,
+    "skipped": 0,
+    "setupFailed": 0,
+    "teardownFailed": 0
+  },
+  "variableNames": [
+    "access",
+    "accountId",
+    "after",
+    "afterNoAuth",
+    "before",
+    "boundaryAccess",
+    "boundaryRefresh",
+    "dbContainer",
+    "redisContainer",
+    "refresh",
+    "revoked",
+    "runId",
+    "stamp",
+    "userDbName",
+    "userId"
+  ],
+  "steps": [
+    {
+      "index": 1,
+      "phase": "setup",
+      "action": "command",
+      "display": "command date +%s",
+      "expected": {
+        "exitCode": 0
+      },
+      "actual": {
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "1794290439\n",
+        "stderr": "",
+        "value": "1794290439",
+        "content": "1794290439\n",
+        "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+      },
+      "checks": [
+        {
+          "name": "exitCode",
+          "expected": 0,
+          "actual": 0,
+          "ok": true,
+          "error": "",
+          "message": ""
+        }
+      ],
+      "captures": [
+        "stamp"
+      ],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 9,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 2,
+      "phase": "setup",
+      "action": "http",
+      "display": "http POST /api/auth/register",
+      "expected": {
+        "status": 200,
+        "json": {
+          "code": "OK"
+        }
+      },
+      "actual": {
+        "method": "POST",
+        "url": "http://127.0.0.1:8080/api/auth/register",
+        "status": 200,
+        "statusText": "OK",
+        "headers": {
+          "content-type": "application/json",
+          "date": "Tue, 10 Nov 2026 06:00:39 GMT",
+          "transfer-encoding": "chunked",
+          "x-request-id": "okalhme0179an82zbhm3880l, okalhme0179an82zbhm3880l",
+          "x-span-id": "745g1nmmvwfcj4szx2j6ok2b, 5l7xbcl2n6etp18phyv6zdwi",
+          "x-trace-id": "sg18950qbtruppsit0sngb5z, sg18950qbtruppsit0sngb5z"
+        },
+        "body": "{\"success\":true,\"status\":200,\"code\":\"OK\",\"message\":\"success\",\"data\":{\"accountId\":null,\"userId\":200279,\"accountStatus\":\"NORMAL\"}}",
+        "json": {
+          "success": true,
+          "status": 200,
+          "code": "OK",
+          "message": "success",
+          "data": {
+            "accountId": null,
+            "userId": 200279,
+            "accountStatus": "NORMAL"
+          }
+        },
+        "jsonParsed": true,
+        "jsonError": "",
+        "value": {
+          "success": true,
+          "status": 200,
+          "code": "OK",
+          "message": "success",
+          "data": {
+            "accountId": null,
+            "userId": 200279,
+            "accountStatus": "NORMAL"
+          }
+        },
+        "content": "{\"success\":true,\"status\":200,\"code\":\"OK\",\"message\":\"success\",\"data\":{\"accountId\":null,\"userId\":200279,\"accountStatus\":\"NORMAL\"}}",
+        "durationMs": 131
+      },
+      "checks": [
+        {
+          "name": "status",
+          "expected": 200,
+          "actual": 200,
+          "ok": true,
+          "error": "",
+          "message": ""
+        },
+        {
+          "name": "json",
+          "expected": {
+            "code": "OK"
+          },
+          "actual": {
+            "success": true,
+            "status": 200,
+            "code": "OK",
+            "message": "success",
+            "data": {
+              "accountId": null,
+              "userId": 200279,
+              "accountStatus": "NORMAL"
+            }
+          },
+          "ok": true,
+          "error": "",
+          "message": ""
+        }
+      ],
+      "captures": [
+        "userId"
+      ],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 132,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 3,
+      "phase": "setup",
+      "action": "command",
+      "display": "command docker exec foodmap-postgres psql -U foodmap -d foodmap_auth_db -tAc \"select account_id fr…",
+      "expected": {
+        "exitCode": 0
+      },
+      "actual": {
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "100279\n",
+        "stderr": "",
+        "value": "100279",
+        "content": "100279\n",
+        "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+      },
+      "checks": [
+        {
+          "name": "exitCode",
+          "expected": 0,
+          "actual": 0,
+          "ok": true,
+          "error": "",
+          "message": ""
+        }
+      ],
+      "captures": [
+        "accountId"
+      ],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 265,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 1,
+      "phase": "step",
+      "action": "http",
+      "display": "http POST /api/auth/login",
+      "expected": {
+        "status": 200,
+        "json": {
+          "code": "OK"
+        }
+      },
+      "actual": {
+        "method": "POST",
+        "url": "http://127.0.0.1:8080/api/auth/login",
+        "status": 200,
+        "statusText": "OK",
+        "headers": {
+          "content-type": "application/json",
+          "date": "Tue, 10 Nov 2026 06:00:40 GMT",
+          "transfer-encoding": "chunked",
+          "x-request-id": "7dtth62i8t4dv8sqmhlvy200, 7dtth62i8t4dv8sqmhlvy200",
+          "x-span-id": "94ht3ugxnvjpyi6cm9j9zhk6, zd5m23y04fxufzs6ac0tsc7s",
+          "x-trace-id": "xh1ey0vxiix8yumseikefrgl, xh1ey0vxiix8yumseikefrgl"
+        },
+        "body": "{\"success\":true,\"status\":200,\"code\":\"OK\",\"message\":\"success\",\"data\":{\"accountId\":null,\"userId\":200279,\"accessToken\":\"[REDACTED]\",\"refreshToken\":\"[REDACTED]\",\"accessTokenExpiresTime\":\"2026-11-10T16:00:40.237532+08:00\",\"refreshTokenExpiresTime\":\"2026-12-10T14:00:40.237532+08:00\"}}",
+        "json": {
+          "success": true,
+          "status": 200,
+          "code": "OK",
+          "message": "success",
+          "data": {
+            "accountId": null,
+            "userId": 200279,
+            "accessToken": "[REDACTED]",
+            "refreshToken": "[REDACTED]",
+            "accessTokenExpiresTime": "[REDACTED]",
+            "refreshTokenExpiresTime": "[REDACTED]"
+          }
+        },
+        "jsonParsed": true,
+        "jsonError": "",
+        "value": {
+          "success": true,
+          "status": 200,
+          "code": "OK",
+          "message": "success",
+          "data": {
+            "accountId": null,
+            "userId": 200279,
+            "accessToken": "[REDACTED]",
+            "refreshToken": "[REDACTED]",
+            "accessTokenExpiresTime": "[REDACTED]",
+            "refreshTokenExpiresTime": "[REDACTED]"
+          }
+        },
+        "content": "{\"success\":true,\"status\":200,\"code\":\"OK\",\"message\":\"success\",\"data\":{\"accountId\":null,\"userId\":200279,\"accessToken\":\"[REDACTED]\",\"refreshToken\":\"[REDACTED]\",\"accessTokenExpiresTime\":\"2026-11-10T16:00:40.237532+08:00\",\"refreshTokenExpiresTime\":\"2026-12-10T14:00:40.237532+08:00\"}}",
+        "durationMs": 45
+      },
+      "checks": [
+        {
+          "name": "status",
+          "expected": 200,
+          "actual": 200,
+          "ok": true,
+          "error": "",
+          "message": ""
+        },
+        {
+          "name": "json",
+          "expected": {
+            "code": "OK"
+          },
+          "actual": {
+            "success": true,
+            "status": 200,
+            "code": "OK",
+            "message": "success",
+            "data": {
+              "accountId": null,
+              "userId": 200279,
+              "accessToken": "[REDACTED]",
+              "refreshToken": "[REDACTED]",
+              "accessTokenExpiresTime": "[REDACTED]",
+              "refreshTokenExpiresTime": "[REDACTED]"
+            }
+          },
+          "ok": true,
+          "error": "",
+          "message": ""
+        }
+      ],
+      "captures": [
+        "access",
+        "refresh"
+      ],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 45,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 2,
+      "phase": "step",
+      "action": "http",
+      "display": "http GET /api/users/me",
+      "expected": {
+        "status": 200,
+        "json": {
+          "code": "OK"
+        }
+      },
+      "actual": {
+        "method": "GET",
+        "url": "http://127.0.0.1:8080/api/users/me",
+        "status": 200,
+        "statusText": "OK",
+        "headers": {
+          "content-type": "application/json",
+          "date": "Tue, 10 Nov 2026 06:00:40 GMT",
+          "transfer-encoding": "chunked",
+          "x-request-id": "4bv1ufu1536293sor3fznlug, 4bv1ufu1536293sor3fznlug",
+          "x-span-id": "41aazpprhi2d08hjzfl18c0v, d0g1u0nibaxscilu158y8jfh",
+          "x-trace-id": "p7xh85x4oaihpw6527yvpw5c, p7xh85x4oaihpw6527yvpw5c"
+        },
+        "body": "{\"success\":true,\"status\":200,\"code\":\"OK\",\"message\":\"success\",\"data\":{\"userId\":200279,\"accountId\":null,\"accountName\":null,\"nickname\":\"verify-kit\",\"avatarMediaId\":null,\"userStatus\":\"NORMAL\"}}",
+        "json": {
+          "success": true,
+          "status": 200,
+          "code": "OK",
+          "message": "success",
+          "data": {
+            "userId": 200279,
+            "accountId": null,
+            "accountName": null,
+            "nickname": "verify-kit",
+            "avatarMediaId": null,
+            "userStatus": "NORMAL"
+          }
+        },
+        "jsonParsed": true,
+        "jsonError": "",
+        "value": {
+          "success": true,
+          "status": 200,
+          "code": "OK",
+          "message": "success",
+          "data": {
+            "userId": 200279,
+            "accountId": null,
+            "accountName": null,
+            "nickname": "verify-kit",
+            "avatarMediaId": null,
+            "userStatus": "NORMAL"
+          }
+        },
+        "content": "{\"success\":true,\"status\":200,\"code\":\"OK\",\"message\":\"success\",\"data\":{\"userId\":200279,\"accountId\":null,\"accountName\":null,\"nickname\":\"verify-kit\",\"avatarMediaId\":null,\"userStatus\":\"NORMAL\"}}",
+        "durationMs": 13
+      },
+      "checks": [
+        {
+          "name": "status",
+          "expected": 200,
+          "actual": 200,
+          "ok": true,
+          "error": "",
+          "message": ""
+        },
+        {
+          "name": "json",
+          "expected": {
+            "code": "OK"
+          },
+          "actual": {
+            "success": true,
+            "status": 200,
+            "code": "OK",
+            "message": "success",
+            "data": {
+              "userId": 200279,
+              "accountId": null,
+              "accountName": null,
+              "nickname": "verify-kit",
+              "avatarMediaId": null,
+              "userStatus": "NORMAL"
+            }
+          },
+          "ok": true,
+          "error": "",
+          "message": ""
+        }
+      ],
+      "captures": [],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 13,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 3,
+      "phase": "step",
+      "action": "http",
+      "display": "http GET /api/users/me",
+      "expected": {
+        "status": 401,
+        "json": {
+          "code": "UNAUTHORIZED"
+        }
+      },
+      "actual": {
+        "method": "GET",
+        "url": "http://127.0.0.1:8080/api/users/me",
+        "status": 401,
+        "statusText": "Unauthorized",
+        "headers": {
+          "content-length": "95",
+          "content-type": "application/json",
+          "x-request-id": "u3ahf8hvdv9bdxcnkq6fw4h3",
+          "x-span-id": "8atq9cfru7u9qcsory9wh8wp",
+          "x-trace-id": "l4ptax1zvybsms7mrzx9mrl0"
+        },
+        "body": "{\"success\":false,\"status\":401,\"code\":\"UNAUTHORIZED\",\"message\":\"Token 结构错误\",\"data\":null}",
+        "json": {
+          "success": false,
+          "status": 401,
+          "code": "UNAUTHORIZED",
+          "message": "Token 结构错误",
+          "data": null
+        },
+        "jsonParsed": true,
+        "jsonError": "",
+        "value": {
+          "success": false,
+          "status": 401,
+          "code": "UNAUTHORIZED",
+          "message": "Token 结构错误",
+          "data": null
+        },
+        "content": "{\"success\":false,\"status\":401,\"code\":\"UNAUTHORIZED\",\"message\":\"Token 结构错误\",\"data\":null}",
+        "durationMs": 2
+      },
+      "checks": [
+        {
+          "name": "status",
+          "expected": 401,
+          "actual": 401,
+          "ok": true,
+          "error": "",
+          "message": ""
+        },
+        {
+          "name": "json",
+          "expected": {
+            "code": "UNAUTHORIZED"
+          },
+          "actual": {
+            "success": false,
+            "status": 401,
+            "code": "UNAUTHORIZED",
+            "message": "Token 结构错误",
+            "data": null
+          },
+          "ok": true,
+          "error": "",
+          "message": ""
+        }
+      ],
+      "captures": [],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 2,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 4,
+      "phase": "step",
+      "action": "command",
+      "display": "command docker exec foodmap-redis redis-cli --scan --pattern 'foodmap:auth:access-token-denylist:v…",
+      "expected": {
+        "exitCode": 0
+      },
+      "actual": {
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "       1\n",
+        "stderr": "",
+        "value": "1",
+        "content": "       1\n",
+        "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+      },
+      "checks": [
+        {
+          "name": "exitCode",
+          "expected": 0,
+          "actual": 0,
+          "ok": true,
+          "error": "",
+          "message": ""
+        }
+      ],
+      "captures": [
+        "before"
+      ],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 34,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 5,
+      "phase": "step",
+      "action": "http",
+      "display": "http POST /api/auth/logout",
+      "expected": {
+        "status": 200
+      },
+      "actual": {
+        "method": "POST",
+        "url": "http://127.0.0.1:8080/api/auth/logout",
+        "status": 200,
+        "statusText": "OK",
+        "headers": {
+          "content-type": "application/json",
+          "date": "Tue, 10 Nov 2026 06:00:40 GMT",
+          "transfer-encoding": "chunked",
+          "x-request-id": "4ptkemamohaumhhz4wizwti6, 4ptkemamohaumhhz4wizwti6",
+          "x-span-id": "o6irjxdvy2hf9kv5idnjz9rn, hwk67z4aioouxsapl1i9jl3a",
+          "x-trace-id": "4svkyoyljmq5pf13rmq3zsm8, 4svkyoyljmq5pf13rmq3zsm8"
+        },
+        "body": "{\"success\":true,\"status\":200,\"code\":\"OK\",\"message\":\"success\",\"data\":null}",
+        "json": {
+          "success": true,
+          "status": 200,
+          "code": "OK",
+          "message": "success",
+          "data": null
+        },
+        "jsonParsed": true,
+        "jsonError": "",
+        "value": {
+          "success": true,
+          "status": 200,
+          "code": "OK",
+          "message": "success",
+          "data": null
+        },
+        "content": "{\"success\":true,\"status\":200,\"code\":\"OK\",\"message\":\"success\",\"data\":null}",
+        "durationMs": 21
+      },
+      "checks": [
+        {
+          "name": "status",
+          "expected": 200,
+          "actual": 200,
+          "ok": true,
+          "error": "",
+          "message": ""
+        }
+      ],
+      "captures": [],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 20,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 6,
+      "phase": "step",
+      "action": "command",
+      "display": "command docker exec foodmap-redis redis-cli --scan --pattern 'foodmap:auth:access-token-denylist:v…",
+      "expected": {
+        "exitCode": 0
+      },
+      "actual": {
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "       2\n",
+        "stderr": "",
+        "value": "2",
+        "content": "       2\n",
+        "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+      },
+      "checks": [
+        {
+          "name": "exitCode",
+          "expected": 0,
+          "actual": 0,
+          "ok": true,
+          "error": "",
+          "message": ""
+        }
+      ],
+      "captures": [
+        "after"
+      ],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 38,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 7,
+      "phase": "step",
+      "action": "command",
+      "display": "command [ 2 -eq $(( 1 + 1 )) ]",
+      "expected": {
+        "exitCode": 0
+      },
+      "actual": {
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "",
+        "stderr": "",
+        "value": "",
+        "content": "",
+        "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+      },
+      "checks": [
+        {
+          "name": "exitCode",
+          "expected": 0,
+          "actual": 0,
+          "ok": true,
+          "error": "",
+          "message": ""
+        }
+      ],
+      "captures": [],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 4,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 8,
+      "phase": "step",
+      "action": "http",
+      "display": "http GET /api/users/me",
+      "expected": {
+        "status": 401,
+        "json": {
+          "code": "UNAUTHORIZED"
+        }
+      },
+      "actual": {
+        "method": "GET",
+        "url": "http://127.0.0.1:8080/api/users/me",
+        "status": 401,
+        "statusText": "Unauthorized",
+        "headers": {
+          "content-length": "98",
+          "content-type": "application/json",
+          "x-request-id": "o5c9nld9oesgb18qejf66uez",
+          "x-span-id": "gdq3fho2hpgb80sij8o0azlm",
+          "x-trace-id": "pln8dj3vib5sr7ftyvuae0ru"
+        },
+        "body": "{\"success\":false,\"status\":401,\"code\":\"UNAUTHORIZED\",\"message\":\"Access Token已失效\",\"data\":null}",
+        "json": {
+          "success": false,
+          "status": 401,
+          "code": "UNAUTHORIZED",
+          "message": "Access Token已失效",
+          "data": null
+        },
+        "jsonParsed": true,
+        "jsonError": "",
+        "value": {
+          "success": false,
+          "status": 401,
+          "code": "UNAUTHORIZED",
+          "message": "Access Token已失效",
+          "data": null
+        },
+        "content": "{\"success\":false,\"status\":401,\"code\":\"UNAUTHORIZED\",\"message\":\"Access Token已失效\",\"data\":null}",
+        "durationMs": 3
+      },
+      "checks": [
+        {
+          "name": "status",
+          "expected": 401,
+          "actual": 401,
+          "ok": true,
+          "error": "",
+          "message": ""
+        },
+        {
+          "name": "json",
+          "expected": {
+            "code": "UNAUTHORIZED"
+          },
+          "actual": {
+            "success": false,
+            "status": 401,
+            "code": "UNAUTHORIZED",
+            "message": "Access Token已失效",
+            "data": null
+          },
+          "ok": true,
+          "error": "",
+          "message": ""
+        }
+      ],
+      "captures": [],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 3,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 9,
+      "phase": "step",
+      "action": "http",
+      "display": "http POST /api/auth/refresh",
+      "expected": {
+        "status": 401,
+        "json": {
+          "code": "UNAUTHORIZED"
+        }
+      },
+      "actual": {
+        "method": "POST",
+        "url": "http://127.0.0.1:8080/api/auth/refresh",
+        "status": 401,
+        "statusText": "Unauthorized",
+        "headers": {
+          "content-type": "application/json",
+          "date": "Tue, 10 Nov 2026 06:00:40 GMT",
+          "transfer-encoding": "chunked",
+          "x-request-id": "kp4c8wwpzd5hkvjrhsppnwia, kp4c8wwpzd5hkvjrhsppnwia",
+          "x-span-id": "lbn5r86zr0nz7tu7qq0lusp2, ekjmbtp48zi9bemveb5wubn7",
+          "x-trace-id": "gh61t28p9kx8z6z4az3mccbl, gh61t28p9kx8z6z4az3mccbl"
+        },
+        "body": "{\"success\":false,\"status\":401,\"code\":\"UNAUTHORIZED\",\"message\":\"Refresh Token已失效\",\"data\":null}",
+        "json": {
+          "success": false,
+          "status": 401,
+          "code": "UNAUTHORIZED",
+          "message": "Refresh Token已失效",
+          "data": null
+        },
+        "jsonParsed": true,
+        "jsonError": "",
+        "value": {
+          "success": false,
+          "status": 401,
+          "code": "UNAUTHORIZED",
+          "message": "Refresh Token已失效",
+          "data": null
+        },
+        "content": "{\"success\":false,\"status\":401,\"code\":\"UNAUTHORIZED\",\"message\":\"Refresh Token已失效\",\"data\":null}",
+        "durationMs": 9
+      },
+      "checks": [
+        {
+          "name": "status",
+          "expected": 401,
+          "actual": 401,
+          "ok": true,
+          "error": "",
+          "message": ""
+        },
+        {
+          "name": "json",
+          "expected": {
+            "code": "UNAUTHORIZED"
+          },
+          "actual": {
+            "success": false,
+            "status": 401,
+            "code": "UNAUTHORIZED",
+            "message": "Refresh Token已失效",
+            "data": null
+          },
+          "ok": true,
+          "error": "",
+          "message": ""
+        }
+      ],
+      "captures": [],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 8,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 10,
+      "phase": "step",
+      "action": "command",
+      "display": "command docker exec foodmap-postgres psql -U foodmap -d foodmap_auth_db -tAc \"select count(*) from…",
+      "expected": {
+        "exitCode": 0
+      },
+      "actual": {
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "1\n",
+        "stderr": "",
+        "value": "1",
+        "content": "1\n",
+        "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+      },
+      "checks": [
+        {
+          "name": "exitCode",
+          "expected": 0,
+          "actual": 0,
+          "ok": true,
+          "error": "",
+          "message": ""
+        }
+      ],
+      "captures": [
+        "revoked"
+      ],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 198,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 11,
+      "phase": "step",
+      "action": "command",
+      "display": "command [ 1 -eq 1 ]",
+      "expected": {
+        "exitCode": 0
+      },
+      "actual": {
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "",
+        "stderr": "",
+        "value": "",
+        "content": "",
+        "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+      },
+      "checks": [
+        {
+          "name": "exitCode",
+          "expected": 0,
+          "actual": 0,
+          "ok": true,
+          "error": "",
+          "message": ""
+        }
+      ],
+      "captures": [],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 4,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 12,
+      "phase": "step",
+      "action": "http",
+      "display": "http POST /api/auth/login",
+      "expected": {
+        "status": 200,
+        "json": {
+          "code": "OK"
+        }
+      },
+      "actual": {
+        "method": "POST",
+        "url": "http://127.0.0.1:8080/api/auth/login",
+        "status": 200,
+        "statusText": "OK",
+        "headers": {
+          "content-type": "application/json",
+          "date": "Tue, 10 Nov 2026 06:00:40 GMT",
+          "transfer-encoding": "chunked",
+          "x-request-id": "vfu77e74dy44v8h3hcojom4m, vfu77e74dy44v8h3hcojom4m",
+          "x-span-id": "j865daonhmifb9r2b8gzjo5j, bnloajtx1cdu0jxssax9igtt",
+          "x-trace-id": "gldjms6abu9gsp3f8j1jmz6j, gldjms6abu9gsp3f8j1jmz6j"
+        },
+        "body": "{\"success\":true,\"status\":200,\"code\":\"OK\",\"message\":\"success\",\"data\":{\"accountId\":null,\"userId\":200279,\"accessToken\":\"[REDACTED]\",\"refreshToken\":\"[REDACTED]\",\"accessTokenExpiresTime\":\"2026-11-10T16:00:40.613415+08:00\",\"refreshTokenExpiresTime\":\"2026-12-10T14:00:40.613415+08:00\"}}",
+        "json": {
+          "success": true,
+          "status": 200,
+          "code": "OK",
+          "message": "success",
+          "data": {
+            "accountId": null,
+            "userId": 200279,
+            "accessToken": "[REDACTED]",
+            "refreshToken": "[REDACTED]",
+            "accessTokenExpiresTime": "[REDACTED]",
+            "refreshTokenExpiresTime": "[REDACTED]"
+          }
+        },
+        "jsonParsed": true,
+        "jsonError": "",
+        "value": {
+          "success": true,
+          "status": 200,
+          "code": "OK",
+          "message": "success",
+          "data": {
+            "accountId": null,
+            "userId": 200279,
+            "accessToken": "[REDACTED]",
+            "refreshToken": "[REDACTED]",
+            "accessTokenExpiresTime": "[REDACTED]",
+            "refreshTokenExpiresTime": "[REDACTED]"
+          }
+        },
+        "content": "{\"success\":true,\"status\":200,\"code\":\"OK\",\"message\":\"success\",\"data\":{\"accountId\":null,\"userId\":200279,\"accessToken\":\"[REDACTED]\",\"refreshToken\":\"[REDACTED]\",\"accessTokenExpiresTime\":\"2026-11-10T16:00:40.613415+08:00\",\"refreshTokenExpiresTime\":\"2026-12-10T14:00:40.613415+08:00\"}}",
+        "durationMs": 42
+      },
+      "checks": [
+        {
+          "name": "status",
+          "expected": 200,
+          "actual": 200,
+          "ok": true,
+          "error": "",
+          "message": ""
+        },
+        {
+          "name": "json",
+          "expected": {
+            "code": "OK"
+          },
+          "actual": {
+            "success": true,
+            "status": 200,
+            "code": "OK",
+            "message": "success",
+            "data": {
+              "accountId": null,
+              "userId": 200279,
+              "accessToken": "[REDACTED]",
+              "refreshToken": "[REDACTED]",
+              "accessTokenExpiresTime": "[REDACTED]",
+              "refreshTokenExpiresTime": "[REDACTED]"
+            }
+          },
+          "ok": true,
+          "error": "",
+          "message": ""
+        }
+      ],
+      "captures": [
+        "boundaryAccess",
+        "boundaryRefresh"
+      ],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 42,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 13,
+      "phase": "step",
+      "action": "http",
+      "display": "http POST /api/auth/logout",
+      "expected": {
+        "status": 200
+      },
+      "actual": {
+        "method": "POST",
+        "url": "http://127.0.0.1:8080/api/auth/logout",
+        "status": 200,
+        "statusText": "OK",
+        "headers": {
+          "content-type": "application/json",
+          "date": "Tue, 10 Nov 2026 06:00:40 GMT",
+          "transfer-encoding": "chunked",
+          "x-request-id": "0xqnp5kl6uvoyoei6sdif66s, 0xqnp5kl6uvoyoei6sdif66s",
+          "x-span-id": "m6fb1r1heuncgib6qldd0m0t, h3ad3qcc1efpph3piq5gzg5k",
+          "x-trace-id": "ci80urb8c68z0e6tzp5orvak, ci80urb8c68z0e6tzp5orvak"
+        },
+        "body": "{\"success\":true,\"status\":200,\"code\":\"OK\",\"message\":\"success\",\"data\":null}",
+        "json": {
+          "success": true,
+          "status": 200,
+          "code": "OK",
+          "message": "success",
+          "data": null
+        },
+        "jsonParsed": true,
+        "jsonError": "",
+        "value": {
+          "success": true,
+          "status": 200,
+          "code": "OK",
+          "message": "success",
+          "data": null
+        },
+        "content": "{\"success\":true,\"status\":200,\"code\":\"OK\",\"message\":\"success\",\"data\":null}",
+        "durationMs": 14
+      },
+      "checks": [
+        {
+          "name": "status",
+          "expected": 200,
+          "actual": 200,
+          "ok": true,
+          "error": "",
+          "message": ""
+        }
+      ],
+      "captures": [],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 14,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 14,
+      "phase": "step",
+      "action": "http",
+      "display": "http GET /api/users/me",
+      "expected": {
+        "status": 200,
+        "json": {
+          "code": "OK"
+        }
+      },
+      "actual": {
+        "method": "GET",
+        "url": "http://127.0.0.1:8080/api/users/me",
+        "status": 200,
+        "statusText": "OK",
+        "headers": {
+          "content-type": "application/json",
+          "date": "Tue, 10 Nov 2026 06:00:40 GMT",
+          "transfer-encoding": "chunked",
+          "x-request-id": "lrfr46ekdnaydhxaftdmuf2d, lrfr46ekdnaydhxaftdmuf2d",
+          "x-span-id": "y6pd2oubi6ss3s15p68xohlb, qnuhzx7xcpxdqlv54r01j74s",
+          "x-trace-id": "432x57n0k7lzg9dkea4jhxzu, 432x57n0k7lzg9dkea4jhxzu"
+        },
+        "body": "{\"success\":true,\"status\":200,\"code\":\"OK\",\"message\":\"success\",\"data\":{\"userId\":200279,\"accountId\":null,\"accountName\":null,\"nickname\":\"verify-kit\",\"avatarMediaId\":null,\"userStatus\":\"NORMAL\"}}",
+        "json": {
+          "success": true,
+          "status": 200,
+          "code": "OK",
+          "message": "success",
+          "data": {
+            "userId": 200279,
+            "accountId": null,
+            "accountName": null,
+            "nickname": "verify-kit",
+            "avatarMediaId": null,
+            "userStatus": "NORMAL"
+          }
+        },
+        "jsonParsed": true,
+        "jsonError": "",
+        "value": {
+          "success": true,
+          "status": 200,
+          "code": "OK",
+          "message": "success",
+          "data": {
+            "userId": 200279,
+            "accountId": null,
+            "accountName": null,
+            "nickname": "verify-kit",
+            "avatarMediaId": null,
+            "userStatus": "NORMAL"
+          }
+        },
+        "content": "{\"success\":true,\"status\":200,\"code\":\"OK\",\"message\":\"success\",\"data\":{\"userId\":200279,\"accountId\":null,\"accountName\":null,\"nickname\":\"verify-kit\",\"avatarMediaId\":null,\"userStatus\":\"NORMAL\"}}",
+        "durationMs": 9
+      },
+      "checks": [
+        {
+          "name": "status",
+          "expected": 200,
+          "actual": 200,
+          "ok": true,
+          "error": "",
+          "message": ""
+        },
+        {
+          "name": "json",
+          "expected": {
+            "code": "OK"
+          },
+          "actual": {
+            "success": true,
+            "status": 200,
+            "code": "OK",
+            "message": "success",
+            "data": {
+              "userId": 200279,
+              "accountId": null,
+              "accountName": null,
+              "nickname": "verify-kit",
+              "avatarMediaId": null,
+              "userStatus": "NORMAL"
+            }
+          },
+          "ok": true,
+          "error": "",
+          "message": ""
+        }
+      ],
+      "captures": [],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 9,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 15,
+      "phase": "step",
+      "action": "command",
+      "display": "command docker exec foodmap-redis redis-cli --scan --pattern 'foodmap:auth:access-token-denylist:v…",
+      "expected": {
+        "exitCode": 0
+      },
+      "actual": {
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "       2\n",
+        "stderr": "",
+        "value": "2",
+        "content": "       2\n",
+        "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+      },
+      "checks": [
+        {
+          "name": "exitCode",
+          "expected": 0,
+          "actual": 0,
+          "ok": true,
+          "error": "",
+          "message": ""
+        }
+      ],
+      "captures": [
+        "afterNoAuth"
+      ],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 34,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 16,
+      "phase": "step",
+      "action": "command",
+      "display": "command [ 2 -eq 2 ]",
+      "expected": {
+        "exitCode": 0
+      },
+      "actual": {
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "",
+        "stderr": "",
+        "value": "",
+        "content": "",
+        "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+      },
+      "checks": [
+        {
+          "name": "exitCode",
+          "expected": 0,
+          "actual": 0,
+          "ok": true,
+          "error": "",
+          "message": ""
+        }
+      ],
+      "captures": [],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 4,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 17,
+      "phase": "step",
+      "action": "http",
+      "display": "http POST /api/auth/refresh",
+      "expected": {
+        "status": 401,
+        "json": {
+          "code": "UNAUTHORIZED"
+        }
+      },
+      "actual": {
+        "method": "POST",
+        "url": "http://127.0.0.1:8080/api/auth/refresh",
+        "status": 401,
+        "statusText": "Unauthorized",
+        "headers": {
+          "content-type": "application/json",
+          "date": "Tue, 10 Nov 2026 06:00:40 GMT",
+          "transfer-encoding": "chunked",
+          "x-request-id": "r93yv31iawajyvz0wj4raqrx, r93yv31iawajyvz0wj4raqrx",
+          "x-span-id": "jha04zxn53e99b5xfp4o9vzx, l1xdhbm09w4laj64slsf2j4e",
+          "x-trace-id": "xsd9bkijqgcmyasxyz144zcj, xsd9bkijqgcmyasxyz144zcj"
+        },
+        "body": "{\"success\":false,\"status\":401,\"code\":\"UNAUTHORIZED\",\"message\":\"Refresh Token已失效\",\"data\":null}",
+        "json": {
+          "success": false,
+          "status": 401,
+          "code": "UNAUTHORIZED",
+          "message": "Refresh Token已失效",
+          "data": null
+        },
+        "jsonParsed": true,
+        "jsonError": "",
+        "value": {
+          "success": false,
+          "status": 401,
+          "code": "UNAUTHORIZED",
+          "message": "Refresh Token已失效",
+          "data": null
+        },
+        "content": "{\"success\":false,\"status\":401,\"code\":\"UNAUTHORIZED\",\"message\":\"Refresh Token已失效\",\"data\":null}",
+        "durationMs": 8
+      },
+      "checks": [
+        {
+          "name": "status",
+          "expected": 401,
+          "actual": 401,
+          "ok": true,
+          "error": "",
+          "message": ""
+        },
+        {
+          "name": "json",
+          "expected": {
+            "code": "UNAUTHORIZED"
+          },
+          "actual": {
+            "success": false,
+            "status": 401,
+            "code": "UNAUTHORIZED",
+            "message": "Refresh Token已失效",
+            "data": null
+          },
+          "ok": true,
+          "error": "",
+          "message": ""
+        }
+      ],
+      "captures": [],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 8,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 1,
+      "phase": "teardown",
+      "action": "command",
+      "display": "command docker exec foodmap-postgres sh -c 'for t in user_settings user_profiles users; do psql -U…",
+      "expected": {
+        "exitCode": 0
+      },
+      "actual": {
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "",
+        "stderr": "",
+        "value": "",
+        "content": "",
+        "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+      },
+      "checks": [
+        {
+          "name": "exitCode",
+          "expected": 0,
+          "actual": 0,
+          "ok": true,
+          "error": "",
+          "message": ""
+        }
+      ],
+      "captures": [],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 525,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 2,
+      "phase": "teardown",
+      "action": "command",
+      "display": "command docker exec foodmap-postgres psql -U foodmap -d foodmap_auth_db -c \"delete from auth_sessi…",
+      "expected": {
+        "exitCode": 0
+      },
+      "actual": {
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "DELETE 2\n",
+        "stderr": "",
+        "value": "DELETE 2",
+        "content": "DELETE 2\n",
+        "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+      },
+      "checks": [
+        {
+          "name": "exitCode",
+          "expected": 0,
+          "actual": 0,
+          "ok": true,
+          "error": "",
+          "message": ""
+        }
+      ],
+      "captures": [],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 192,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 3,
+      "phase": "teardown",
+      "action": "command",
+      "display": "command docker exec foodmap-postgres psql -U foodmap -d foodmap_auth_db -c \"delete from auth_ident…",
+      "expected": {
+        "exitCode": 0
+      },
+      "actual": {
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "DELETE 1\n",
+        "stderr": "",
+        "value": "DELETE 1",
+        "content": "DELETE 1\n",
+        "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+      },
+      "checks": [
+        {
+          "name": "exitCode",
+          "expected": 0,
+          "actual": 0,
+          "ok": true,
+          "error": "",
+          "message": ""
+        }
+      ],
+      "captures": [],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 187,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 4,
+      "phase": "teardown",
+      "action": "command",
+      "display": "command docker exec foodmap-postgres psql -U foodmap -d foodmap_auth_db -c \"delete from login_logs…",
+      "expected": {
+        "exitCode": 0
+      },
+      "actual": {
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "DELETE 2\n",
+        "stderr": "",
+        "value": "DELETE 2",
+        "content": "DELETE 2\n",
+        "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+      },
+      "checks": [
+        {
+          "name": "exitCode",
+          "expected": 0,
+          "actual": 0,
+          "ok": true,
+          "error": "",
+          "message": ""
+        }
+      ],
+      "captures": [],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 196,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 5,
+      "phase": "teardown",
+      "action": "command",
+      "display": "command docker exec foodmap-postgres psql -U foodmap -d foodmap_auth_db -c \"delete from refresh_to…",
+      "expected": {
+        "exitCode": 0
+      },
+      "actual": {
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "DELETE 2\n",
+        "stderr": "",
+        "value": "DELETE 2",
+        "content": "DELETE 2\n",
+        "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+      },
+      "checks": [
+        {
+          "name": "exitCode",
+          "expected": 0,
+          "actual": 0,
+          "ok": true,
+          "error": "",
+          "message": ""
+        }
+      ],
+      "captures": [],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 191,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 6,
+      "phase": "teardown",
+      "action": "command",
+      "display": "command docker exec foodmap-postgres psql -U foodmap -d foodmap_auth_db -c \"delete from auth_crede…",
+      "expected": {
+        "exitCode": 0
+      },
+      "actual": {
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "DELETE 1\n",
+        "stderr": "",
+        "value": "DELETE 1",
+        "content": "DELETE 1\n",
+        "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+      },
+      "checks": [
+        {
+          "name": "exitCode",
+          "expected": 0,
+          "actual": 0,
+          "ok": true,
+          "error": "",
+          "message": ""
+        }
+      ],
+      "captures": [],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 189,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 7,
+      "phase": "teardown",
+      "action": "command",
+      "display": "command docker exec foodmap-postgres psql -U foodmap -d foodmap_auth_db -c \"delete from auth_accou…",
+      "expected": {
+        "exitCode": 0
+      },
+      "actual": {
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "DELETE 1\n",
+        "stderr": "",
+        "value": "DELETE 1",
+        "content": "DELETE 1\n",
+        "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+      },
+      "checks": [
+        {
+          "name": "exitCode",
+          "expected": 0,
+          "actual": 0,
+          "ok": true,
+          "error": "",
+          "message": ""
+        }
+      ],
+      "captures": [],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 198,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 8,
+      "phase": "teardown",
+      "action": "command",
+      "display": "command docker exec foodmap-postgres psql -U foodmap -d foodmap_auth_db -tAc \"select count(*) from…",
+      "expected": {
+        "equals": "0"
+      },
+      "actual": {
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "0\n",
+        "stderr": "",
+        "value": "0",
+        "content": "0\n",
+        "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+      },
+      "checks": [
+        {
+          "name": "equals",
+          "expected": "0",
+          "actual": "0",
+          "ok": true,
+          "error": "",
+          "message": ""
+        }
+      ],
+      "captures": [],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 198,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 9,
+      "phase": "teardown",
+      "action": "command",
+      "display": "command docker exec foodmap-postgres psql -U foodmap -d foodmap_auth_db -tAc \"select (select count…",
+      "expected": {
+        "equals": "0"
+      },
+      "actual": {
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "0\n",
+        "stderr": "",
+        "value": "0",
+        "content": "0\n",
+        "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+      },
+      "checks": [
+        {
+          "name": "equals",
+          "expected": "0",
+          "actual": "0",
+          "ok": true,
+          "error": "",
+          "message": ""
+        }
+      ],
+      "captures": [],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 198,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 10,
+      "phase": "teardown",
+      "action": "command",
+      "display": "command docker exec foodmap-postgres psql -U foodmap -d foodmap_auth_db -tAc \"select (select count…",
+      "expected": {
+        "equals": "0"
+      },
+      "actual": {
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "0\n",
+        "stderr": "",
+        "value": "0",
+        "content": "0\n",
+        "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+      },
+      "checks": [
+        {
+          "name": "equals",
+          "expected": "0",
+          "actual": "0",
+          "ok": true,
+          "error": "",
+          "message": ""
+        }
+      ],
+      "captures": [],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 195,
+      "error": "",
+      "hint": ""
+    }
+  ],
+  "evidence": {
+    "text": "/Users/zhangxuqian/myPrjDev/food-map/docs/integration/B1-auth-ios-backend/evidence/2026-11-10T14-00-13ca76dc-B1 退出登录链路（接口级）.txt",
+    "json": "/Users/zhangxuqian/myPrjDev/food-map/docs/integration/B1-auth-ios-backend/evidence/2026-11-10T14-00-13ca76dc-B1 退出登录链路（接口级）.json"
+  }
+}

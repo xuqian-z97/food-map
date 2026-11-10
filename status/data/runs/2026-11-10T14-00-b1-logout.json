@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-10T14-00-b1-logout",
+  "at": "2026-11-10T14:00:43+08:00",
+  "kind": "e2e",
+  "command": "node tools/verify/cli.mjs run harness/scenarios/b1-logout.yml",
+  "env": "local",
+  "result": {
+    "total": 30,
+    "passed": 30,
+    "failed": 0,
+    "skipped": 0
+  },
+  "covers": [
+    "F-024",
+    "F-025"
+  ],
+  "evidence": [
+    "docs/integration/B1-auth-ios-backend/evidence/2026-11-10T14-00-13ca76dc-B1 退出登录链路（接口级）.json"
+  ],
+  "notes": "F-025 验收复跑：registry→login→logout 30/30；注册链路覆盖 auth→user 内部签名 provision。"
+}
