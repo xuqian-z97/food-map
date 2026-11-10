@@ -33,7 +33,8 @@ class GatewayRouteConfigContractTest {
             "store-service",
             "recommendation-service",
             "community-service",
-            "media-service"
+            "media-service",
+            "admin-service"
     );
 
     @Test
@@ -57,6 +58,8 @@ class GatewayRouteConfigContractTest {
                 .contains("/api/auth/**", "/internal/auth/**");
         assertThat(pathPredicate(routeById("user-service")))
                 .contains("/api/users/**", "/internal/users/**");
+        assertThat(pathPredicate(routeById("admin-service")))
+                .contains("/api/admin/**", "/internal/admin/**");
     }
 
     @Test

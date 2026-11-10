@@ -3,6 +3,7 @@ package com.foodmap.admin.infrastructure.persistence.memory;
 import com.foodmap.admin.application.port.AdminUserRepository;
 import com.foodmap.admin.infrastructure.persistence.entity.AdminUserEntity;
 
+import java.time.OffsetDateTime;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -45,5 +46,27 @@ public class InMemoryAdminUserRepository implements AdminUserRepository {
     @Override
     public Optional<AdminUserEntity> findByUsername(String username) {
         return Optional.ofNullable(usersByUsername.get(username));
+    }
+
+    /**
+     * 按后台管理员业务主键返回管理员实体，内存替身不提供行级锁定语义。
+     *
+     * @param adminUserId 后台管理员业务主键。
+     * @return 查询到的后台管理员实体，未命中时返回空 Optional。
+     */
+    @Override
+    public Optional<AdminUserEntity> lockByAdminUserId(Long adminUserId) {
+        return findByAdminUserId(adminUserId);
+    }
+
+    /**
+     * 更新最近一次后台登录时间，内存替身直接回写实体字段。
+     *
+     * @param adminUserId 后台管理员业务主键。
+     * @param lastLoginTime 最近一次后台登录时间。
+     */
+    @Override
+    public void updateLastLoginTime(Long adminUserId, OffsetDateTime lastLoginTime) {
+        findByAdminUserId(adminUserId).ifPresent(entity -> entity.setLastLoginTime(lastLoginTime));
     }
 }

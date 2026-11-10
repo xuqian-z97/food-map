@@ -9,13 +9,14 @@ import org.springframework.stereotype.Component;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 import java.security.GeneralSecurityException;
+import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.util.Base64;
 import java.util.Locale;
 import java.util.Set;
 
 /**
- * 后台管理员 PBKDF2 密码哈希服务，负责把原始密码转换为带盐哈希字符串。
+ * 后台管理员 PBKDF2 密码哈希服务，负责把原始密码转换为带盐哈希字符串并校验存量哈希。
  *
  * <p>pepper 只从配置 {@code foodmap.admin.password.pepper} 注入，本类不提供无条件默认 pepper。
  * 生产环境必须通过环境变量 {@code ADMIN_PEPPER} 显式配置，缺失时启动阶段直接失败；只有
@@ -31,6 +32,8 @@ public class Pbkdf2AdminPasswordHashService implements AdminPasswordHashService 
     private static final int ITERATIONS = 120_000;
     private static final int KEY_LENGTH = 256;
     private static final int SALT_LENGTH = 16;
+    private static final String FORMAT_DELIMITER = "$";
+    private static final int HASH_PARTS = 4;
 
     /**
      * 管理员密码 pepper 配置键，生产环境由环境变量 {@code ADMIN_PEPPER} 注入。
@@ -56,6 +59,11 @@ public class Pbkdf2AdminPasswordHashService implements AdminPasswordHashService 
     private final SecureRandom secureRandom = new SecureRandom();
 
     /**
+     * 未知账号占位哈希，登录时对未知用户名执行等成本校验，避免通过响应时间探测账号是否存在。
+     */
+    private final String placeholderHash;
+
+    /**
      * Spring 注入入口：从配置读取 pepper，并只在 local / orbstack profile 下允许开发回退值。
      *
      * @param pepper 配置项 {@code foodmap.admin.password.pepper} 的绑定值，缺失时为空字符串。
@@ -67,6 +75,7 @@ public class Pbkdf2AdminPasswordHashService implements AdminPasswordHashService 
             Environment environment
     ) {
         this.pepper = resolvePepper(pepper, environment.getActiveProfiles());
+        this.placeholderHash = hash("foodmap-admin-placeholder-" + secureRandom.nextInt());
     }
 
     /**
@@ -76,6 +85,7 @@ public class Pbkdf2AdminPasswordHashService implements AdminPasswordHashService 
      */
     public Pbkdf2AdminPasswordHashService(String pepper) {
         this.pepper = Check.notBlank("pepper", pepper);
+        this.placeholderHash = hash("foodmap-admin-placeholder-" + secureRandom.nextInt());
     }
 
     /**
@@ -89,26 +99,76 @@ public class Pbkdf2AdminPasswordHashService implements AdminPasswordHashService 
         String checkedPassword = Check.notBlank("rawPassword", rawPassword);
         byte[] salt = new byte[SALT_LENGTH];
         secureRandom.nextBytes(salt);
-        byte[] hash = hash(checkedPassword, salt);
-        return ALGORITHM + "$" + ITERATIONS + "$"
-                + Base64.getEncoder().encodeToString(salt) + "$"
+        byte[] hash;
+        try {
+            hash = pbkdf2(checkedPassword, salt, ITERATIONS);
+        } catch (GeneralSecurityException ex) {
+            throw new IllegalStateException("failed to hash admin password", ex);
+        }
+        return ALGORITHM + FORMAT_DELIMITER + ITERATIONS + FORMAT_DELIMITER
+                + Base64.getEncoder().encodeToString(salt) + FORMAT_DELIMITER
                 + Base64.getEncoder().encodeToString(hash);
     }
 
     /**
-     * 执行 PBKDF2 哈希计算。
+     * 校验原始密码与存量哈希是否匹配，只支持已知算法和受控迭代次数，异常格式按校验失败处理。
+     *
+     * @param rawPassword 原始密码。
+     * @param storedHash 存量密码哈希。
+     * @return 匹配时返回 true，格式异常、算法未知或迭代次数不受控时返回 false。
+     */
+    @Override
+    public boolean matches(String rawPassword, String storedHash) {
+        if (rawPassword == null || rawPassword.isBlank() || storedHash == null || storedHash.isBlank()) {
+            return false;
+        }
+        String[] parts = storedHash.split("\\" + FORMAT_DELIMITER, -1);
+        if (parts.length != HASH_PARTS) {
+            return false;
+        }
+        if (!ALGORITHM.equals(parts[0])) {
+            return false;
+        }
+        int iterations;
+        try {
+            iterations = Integer.parseInt(parts[1]);
+        } catch (NumberFormatException ex) {
+            return false;
+        }
+        if (iterations != ITERATIONS) {
+            return false;
+        }
+        try {
+            byte[] salt = Base64.getDecoder().decode(parts[2]);
+            byte[] expected = Base64.getDecoder().decode(parts[3]);
+            byte[] actual = pbkdf2(rawPassword, salt, iterations);
+            return MessageDigest.isEqual(expected, actual);
+        } catch (IllegalArgumentException | GeneralSecurityException ex) {
+            return false;
+        }
+    }
+
+    /**
+     * 返回未知账号占位哈希，登录链路用它对未知用户名执行等成本校验。
+     *
+     * @return 启动阶段预生成的占位哈希。
+     */
+    public String placeholderHash() {
+        return placeholderHash;
+    }
+
+    /**
+     * 执行 PBKDF2 哈希计算，口令到字符数组的转换保持与 V1 存量哈希一致。
      *
      * @param rawPassword 原始密码。
      * @param salt 随机盐。
+     * @param iterations 迭代次数。
      * @return PBKDF2 哈希字节数组。
+     * @throws GeneralSecurityException 底层加密实现异常时抛出，由调用方按校验失败处理。
      */
-    private byte[] hash(String rawPassword, byte[] salt) {
-        try {
-            PBEKeySpec spec = new PBEKeySpec((rawPassword + pepper).toCharArray(), salt, ITERATIONS, KEY_LENGTH);
-            return SecretKeyFactory.getInstance(ALGORITHM).generateSecret(spec).getEncoded();
-        } catch (GeneralSecurityException e) {
-            throw new IllegalStateException("failed to hash admin password", e);
-        }
+    private byte[] pbkdf2(String rawPassword, byte[] salt, int iterations) throws GeneralSecurityException {
+        PBEKeySpec spec = new PBEKeySpec((rawPassword + pepper).toCharArray(), salt, iterations, KEY_LENGTH);
+        return SecretKeyFactory.getInstance(ALGORITHM).generateSecret(spec).getEncoded();
     }
 
     /**

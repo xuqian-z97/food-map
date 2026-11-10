@@ -420,6 +420,10 @@ deploy/env.example
 
 **背景**：`AdminPermissionGuard` 从 `X-Admin-User-Id` / `X-Admin-Permissions` 请求头读身份与权限；网关**完全不处理** `X-Admin-*`。任何能触达 admin 服务的调用方自带权限头即可通过。
 
+> 2026-11-10 更新：实现方案已评审定稿为独立管理员 RSA JWT + `admin_access_sessions` 会话表 + RBAC 五表，文件边界按
+> [T-033 设计稿](../specs/2026-11-10-t033-admin-rbac-implementation.md) §5 扩展（含 admin 登录/登出 DTO、Service、密钥配置、
+> 依赖声明、gateway 路由与后台验签分支、t033 场景与 T-032 探针改造），以任务卡 T-033 §3 为准。
+
 **允许修改**：
 ```text
 after/foodmap-admin-service/src/main/java/com/foodmap/admin/security/**

@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.foodmap.admin.infrastructure.persistence.mapper.AdminRolePermissionMapper">
+    <resultMap id="AdminRolePermissionResultMap" type="com.foodmap.admin.infrastructure.persistence.entity.AdminRolePermissionEntity">
+        <id property="id" column="id"/>
+        <result property="createdTime" column="created_time"/>
+        <result property="updatedTime" column="updated_time"/>
+        <result property="isDelete" column="is_delete"/>
+        <result property="relationId" column="relation_id"/>
+        <result property="roleId" column="role_id"/>
+        <result property="permissionId" column="permission_id"/>
+        <result property="grantedBy" column="granted_by"/>
+        <result property="grantedTime" column="granted_time"/>
+    </resultMap>
+
+    <sql id="BaseColumns">
+        id, created_time, updated_time, is_delete, relation_id, role_id,
+        permission_id, granted_by, granted_time
+    </sql>
+
+    <sql id="ConditionWhere">
+        where is_delete = 0
+        <if test="condition != null">
+            <if test="condition.id != null">and id = #{condition.id}</if>
+            <if test="condition.relationId != null">and relation_id = #{condition.relationId}</if>
+            <if test="condition.roleId != null">and role_id = #{condition.roleId}</if>
+            <if test="condition.permissionId != null">and permission_id = #{condition.permissionId}</if>
+        </if>
+    </sql>
+
+    <select id="selectById" resultMap="AdminRolePermissionResultMap">
+        select <include refid="BaseColumns"/>
+        from admin_role_permissions
+        where id = #{id} and is_delete = 0
+        limit 1
+    </select>
+
+    <select id="selectByBizId" resultMap="AdminRolePermissionResultMap">
+        select <include refid="BaseColumns"/>
+        from admin_role_permissions
+        where relation_id = #{relationId} and is_delete = 0
+        limit 1
+    </select>
+
+    <select id="selectListByCondition" resultMap="AdminRolePermissionResultMap">
+        select <include refid="BaseColumns"/>
+        from admin_role_permissions
+        <include refid="ConditionWhere"/>
+        order by id desc
+    </select>
+
+    <select id="selectPageByCondition" resultMap="AdminRolePermissionResultMap">
+        select <include refid="BaseColumns"/>
+        from admin_role_permissions
+        <include refid="ConditionWhere"/>
+        order by id desc
+        limit #{limit} offset #{offset}
+    </select>
+
+    <insert id="insertOne" parameterType="com.foodmap.admin.infrastructure.persistence.entity.AdminRolePermissionEntity">
+        insert into admin_role_permissions
+        (created_time, updated_time, is_delete, relation_id, role_id, permission_id, granted_by, granted_time)
+        values
+        (#{createdTime}, #{updatedTime}, #{isDelete}, #{relationId}, #{roleId}, #{permissionId}, #{grantedBy}, #{grantedTime})
+    </insert>
+
+    <insert id="insertBatch">
+        insert into admin_role_permissions
+        (created_time, updated_time, is_delete, relation_id, role_id, permission_id, granted_by, granted_time)
+        values
+        <foreach collection="items" item="item" separator=",">
+            (#{item.createdTime}, #{item.updatedTime}, #{item.isDelete}, #{item.relationId}, #{item.roleId},
+             #{item.permissionId}, #{item.grantedBy}, #{item.grantedTime})
+        </foreach>
+    </insert>
+
+    <update id="updateById" parameterType="com.foodmap.admin.infrastructure.persistence.entity.AdminRolePermissionEntity">
+        update admin_role_permissions
+        set role_id = #{roleId},
+            permission_id = #{permissionId},
+            granted_by = #{grantedBy},
+            granted_time = #{grantedTime},
+            updated_time = #{updatedTime},
+            is_delete = #{isDelete}
+        where id = #{id}
+    </update>
+
+    <update id="updateByBizId" parameterType="com.foodmap.admin.infrastructure.persistence.entity.AdminRolePermissionEntity">
+        update admin_role_permissions
+        set role_id = #{roleId},
+            permission_id = #{permissionId},
+            granted_by = #{grantedBy},
+            granted_time = #{grantedTime},
+            updated_time = #{updatedTime},
+            is_delete = #{isDelete}
+        where relation_id = #{relationId}
+    </update>
+
+    <update id="updateBatchByBizId">
+        <foreach collection="items" item="item" separator=";">
+            update admin_role_permissions
+            set role_id = #{item.roleId},
+                permission_id = #{item.permissionId},
+                granted_by = #{item.grantedBy},
+                granted_time = #{item.grantedTime},
+                updated_time = #{item.updatedTime},
+                is_delete = #{item.isDelete}
+            where relation_id = #{item.relationId}
+        </foreach>
+    </update>
+
+    <update id="logicDeleteById">
+        update admin_role_permissions
+        set is_delete = 1, updated_time = #{updatedTime}
+        where id = #{id}
+    </update>
+
+    <update id="logicDeleteByBizIds">
+        update admin_role_permissions
+        set is_delete = 1, updated_time = #{updatedTime}
+        where relation_id in
+        <foreach collection="relationIds" item="relationId" open="(" close=")" separator=",">
+            #{relationId}
+        </foreach>
+    </update>
+</mapper>

@@ -14,4 +14,46 @@ public interface AdminBusinessIdMapper {
      * @return 后台管理员业务主键。
      */
     Long nextAdminUserId();
+
+    /**
+     * 读取下一个后台角色业务主键。
+     *
+     * @return 后台角色业务主键。
+     */
+    Long nextAdminRoleId();
+
+    /**
+     * 读取下一个后台权限业务主键。
+     *
+     * @return 后台权限业务主键。
+     */
+    Long nextAdminPermissionId();
+
+    /**
+     * 读取下一个后台管理员角色关联业务主键。
+     *
+     * @return 后台管理员角色关联业务主键。
+     */
+    Long nextAdminUserRoleRelationId();
+
+    /**
+     * 读取下一个后台角色权限关联业务主键。
+     *
+     * @return 后台角色权限关联业务主键。
+     */
+    Long nextAdminRolePermissionRelationId();
+
+    /**
+     * 读取下一个后台会话业务主键。
+     *
+     * @return 后台会话业务主键。
+     */
+    Long nextAdminAccessSessionId();
+
+    /**
+     * 读取下一个后台操作业务主键。
+     *
+     * @return 后台操作业务主键。
+     */
+    Long nextAdminOperationId();
 }

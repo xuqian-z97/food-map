@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.foodmap.admin.infrastructure.persistence.mapper.AdminUserDefineMapper">
+    <resultMap id="AdminUserResultMap" type="com.foodmap.admin.infrastructure.persistence.entity.AdminUserEntity">
+        <id property="id" column="id"/>
+        <result property="createdTime" column="created_time"/>
+        <result property="updatedTime" column="updated_time"/>
+        <result property="isDelete" column="is_delete"/>
+        <result property="adminUserId" column="admin_user_id"/>
+        <result property="username" column="username"/>
+        <result property="passwordHash" column="password_hash"/>
+        <result property="displayName" column="display_name"/>
+        <result property="mobileMasked" column="mobile_masked"/>
+        <result property="emailMasked" column="email_masked"/>
+        <result property="adminStatus" column="admin_status"/>
+        <result property="permissionVersion" column="permission_version"/>
+        <result property="lastLoginTime" column="last_login_time"/>
+    </resultMap>
+
+    <select id="selectByAdminUserIdForUpdate" resultMap="AdminUserResultMap">
+        select id, created_time, updated_time, is_delete, admin_user_id, username,
+               password_hash, display_name, mobile_masked, email_masked,
+               admin_status, permission_version, last_login_time
+        from admin_users
+        where admin_user_id = #{adminUserId} and is_delete = 0
+        for update
+    </select>
+
+    <update id="updateLastLoginTime">
+        update admin_users
+        set last_login_time = #{lastLoginTime},
+            updated_time = #{updatedTime}
+        where admin_user_id = #{adminUserId} and is_delete = 0
+    </update>
+</mapper>

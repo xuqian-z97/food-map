@@ -6,4 +6,22 @@
     <select id="nextAdminUserId" resultType="long">
         select nextval('admin_user_id_seq')
     </select>
+    <select id="nextAdminRoleId" resultType="long">
+        select nextval('admin_role_id_seq')
+    </select>
+    <select id="nextAdminPermissionId" resultType="long">
+        select nextval('admin_permission_id_seq')
+    </select>
+    <select id="nextAdminUserRoleRelationId" resultType="long">
+        select nextval('admin_user_role_relation_id_seq')
+    </select>
+    <select id="nextAdminRolePermissionRelationId" resultType="long">
+        select nextval('admin_role_permission_relation_id_seq')
+    </select>
+    <select id="nextAdminAccessSessionId" resultType="long">
+        select nextval('admin_access_session_id_seq')
+    </select>
+    <select id="nextAdminOperationId" resultType="long">
+        select nextval('admin_operation_id_seq')
+    </select>
 </mapper>

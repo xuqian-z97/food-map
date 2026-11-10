@@ -1,0 +1,10 @@
+name: T-033 后台 RBAC 服务端化（接口级）
+requires: [admin-rbac, internal-log, internal-admin, internal-secret, test-password]
+description: "真实网关与管理后台验证后台登录/登出/RBAC：管理员账号按时间戳 psql 创建、密码运行时按 FM_TEST_PW 计算哈希；覆盖授权查询、无权限 403、伪造头/普通凭证 401、登出撤销、停用与权限版本失效、审计与 V2 种子；数据源故障 503 与过期 Token 由单元测试覆盖；teardown 只删本轮 admin_user_id 并断言清零"
+config:
+  commandTimeoutMs: 180000
+steps:
+  - command: "python3 admin-rbac-check.py"
+    expect:
+      exitCode: 0
+      stdoutContains: '"result": "pass"'

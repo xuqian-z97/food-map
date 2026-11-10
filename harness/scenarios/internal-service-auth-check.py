@@ -1,11 +1,16 @@
 #!/usr/bin/env python3
-"""内部签名真实链路回归；密钥仅从环境读取，输出只有状态码与非敏感摘要。"""
+"""内部签名真实链路回归；密钥仅从环境读取，输出只有状态码与非敏感摘要。
+
+管理员日志查询正向用例自 T-033 起改为先经后台登录取得 Access Token，再直连管理后台验证
+admin -> log 的真实内部签名调用；账号按时间戳创建并在结束时清理。
+"""
 import base64
 import hashlib
 import hmac
 import json
 import os
 import secrets
+import subprocess
 import time
 import urllib.error
 import urllib.request
@@ -66,10 +71,70 @@ tampered = headers('foodmap-admin-service', PATH)
 tampered['X-FoodMap-Signature'] = 'invalid'
 check('log-tampered-signature', 'http://127.0.0.1:8089' + PATH, 401, tampered, expected_code='UNAUTHORIZED')
 check('user-health-exempt', 'http://127.0.0.1:8082/internal/users/health', 200)
-# 当前管理员身份仍是 T-033 待整改的请求头骨架；此处只验证 admin -> log 自动签名。
+def _psql(sql):
+    """在管理后台库执行受控 SQL，返回去空白文本。"""
+    result = subprocess.run(
+        ['docker', 'exec', 'foodmap-postgres', 'psql', '-U', 'foodmap', '-d', 'foodmap_admin_db', '-tAc', sql],
+        capture_output=True, text=True, timeout=30)
+    if result.returncode != 0:
+        raise AssertionError('psql failed: ' + result.stderr.strip()[:200])
+    return result.stdout.strip()
+
+
+def create_probe_admin():
+    """创建本轮探针管理员并授予 OPS_VIEWER，密码哈希运行时按 FM_TEST_PW 计算。"""
+    username = 'zxq_t032_' + secrets.token_hex(6)
+    salt = secrets.token_bytes(16)
+    digest = hashlib.pbkdf2_hmac('sha256',
+                                 (os.environ['FM_TEST_PW'] + 'foodmap-admin-local-pepper').encode(),
+                                 salt, 120000, dklen=32)
+    password_hash_value = 'PBKDF2WithHmacSHA256$120000$%s$%s' % (
+        base64.b64encode(salt).decode(), base64.b64encode(digest).decode())
+    raw = _psql(
+        "insert into admin_users (created_time, updated_time, is_delete, admin_user_id, username, "
+        "password_hash, display_name, admin_status, permission_version) values "
+        "(now(), now(), 0, nextval('admin_user_id_seq'), '%s', '%s', 'verify', 'ACTIVE', 1) "
+        "returning admin_user_id" % (username, password_hash_value))
+    admin_id = [line for line in raw.splitlines() if line.strip().isdigit()][0].strip()
+    _psql("insert into admin_user_roles (created_time, updated_time, is_delete, relation_id, "
+          "admin_user_id, role_id, granted_by, granted_time) select now(), now(), 0, "
+          "nextval('admin_user_role_relation_id_seq'), %s, role_id, null, now() "
+          "from admin_roles where role_code='OPS_VIEWER' and is_delete=0" % admin_id)
+    return {'id': admin_id, 'username': username}
+
+
+def admin_login(admin):
+    """直连管理后台登录并返回 Access Token。"""
+    body = json.dumps({'username': admin['username'], 'password': os.environ['FM_TEST_PW']}).encode()
+    req = urllib.request.Request('http://127.0.0.1:8088/api/admin/auth/login', data=body,
+                                 headers={'Content-Type': 'application/json'}, method='POST')
+    with urllib.request.urlopen(req, timeout=15) as response:
+        payload = json.loads(response.read())
+    assert payload['code'] == 'OK', 'admin login failed: %s' % payload.get('code')
+    return payload['data']['accessToken']
+
+
+def cleanup_probe_admin(admin_id):
+    """只删除本轮探针管理员相关行并断言清零。"""
+    for table in ('admin_operation_logs', 'admin_access_sessions', 'admin_user_roles', 'admin_users'):
+        _psql('delete from %s where admin_user_id=%s' % (table, admin_id))
+    assert _psql('select count(*) from admin_users where admin_user_id=%s' % admin_id) == '0', \
+        'probe admin cleanup failed'
+
+
+# T-033 后：管理员必须先登录取得后台 Token，旧 X-Admin-* 请求头不再具备授权能力。
 marker = 'internal-auth-probe-' + secrets.token_hex(12)
-page = check('admin-http-client-to-log',
-             'http://127.0.0.1:8088/api/admin/logs/api-access?requestId=' + marker + '&pageSize=1',
-             200, {'X-Admin-User-Id': '1', 'X-Admin-Permissions': 'LOG_ACCESS_READ'}, expected_code='OK')
-assert page['data']['total'] == 0, 'admin query filter was not forwarded'
-print(json.dumps({'result': 'pass', 'checks': CHECKS, 'adminRbacValidated': False}, ensure_ascii=False))
+admin = create_probe_admin()
+try:
+    token = admin_login(admin)
+    page = check('admin-login-then-query-log',
+                 'http://127.0.0.1:8088/api/admin/logs/api-access?requestId=' + marker + '&pageSize=1',
+                 200, {'Authorization': 'Bearer ' + token}, expected_code='OK')
+    assert page['data']['total'] == 0, 'admin query filter was not forwarded'
+    check('legacy-admin-header-rejected',
+          'http://127.0.0.1:8088/api/admin/logs/api-access?requestId=' + marker + '&pageSize=1',
+          401, {'X-Admin-User-Id': '1', 'X-Admin-Permissions': 'LOG_ACCESS_READ'},
+          expected_code='UNAUTHORIZED')
+finally:
+    cleanup_probe_admin(admin['id'])
+print(json.dumps({'result': 'pass', 'checks': CHECKS, 'adminRbacValidated': True}, ensure_ascii=False))

@@ -12,32 +12,37 @@
 
 ## 3. 允许修改范围
 
+2026-11-10 主代理评审通过 [T-033 设计稿](../specs/2026-11-10-t033-admin-rbac-implementation.md) 后，文件边界按设计稿 §5 扩展如下：
+
 ```text
-after/foodmap-admin-service/src/main/java/com/foodmap/admin/security/**
-after/foodmap-admin-service/src/main/java/com/foodmap/admin/controller/**
-after/foodmap-admin-service/src/main/java/com/foodmap/admin/application/**
-after/foodmap-admin-service/src/main/java/com/foodmap/admin/infrastructure/persistence/**
-after/foodmap-admin-service/src/main/resources/db/migration/V2__*.sql（新建）
-after/foodmap-admin-service/src/main/resources/mapper/**
+after/foodmap-admin-service/src/main/java/com/foodmap/admin/**（含 security/controller/dto/service/config/application/infrastructure）
+after/foodmap-admin-service/src/main/resources/**（Flyway V2、mapper、profile 配置、开发密钥）
 after/foodmap-admin-service/src/test/**
-after/foodmap-gateway-service/src/main/java/com/foodmap/gateway/filter/GatewayAuthFilter.java（仅增加剥除 X-Admin-* 逻辑）
-after/foodmap-gateway-service/src/test/java/com/foodmap/gateway/**
+after/foodmap-gateway-service/src/main/java/com/foodmap/gateway/**
+after/foodmap-gateway-service/src/main/resources/**（路由、后台验签配置、profile 配置、开发公钥）
+after/foodmap-gateway-service/src/test/**
+harness/scenarios/t033-admin-rbac.yml（新建）与 admin-rbac-check.py（新建）
+harness/scenarios/internal-service-auth-check.py（仅后台正向用例改为登录取得 Token）
+harness/verify-dependencies.json（新增 t033 依赖预检）
+CODEX-after.md（RBAC 表结构与后台契约同步）
+docs/superpowers/agent-tasks/T-033-admin-rbac-server-side.md、docs/superpowers/plans/2026-11-09-backend-hardening.md（边界与状态同步）
 ```
 
 ## 4. 禁止修改范围
 
 ```text
 after/foodmap-common/**（需要改动时停止并报告）
-其他 after 服务、front/、deploy/、status/**
+其他 after 服务、front/、deploy/、status/**（台账由主代理在验收后按 §6.3.1 统一写入）
 ```
 
 ## 5. 具体交付物
 
-1. 网关在认证过滤器入口无条件移除 `X-Admin-User-Id`、`X-Admin-Permissions`，与现有 `X-FoodMap-*` 剥除逻辑并列。
-2. Flyway `V2__*.sql`：管理员角色与权限关系表（角色、角色权限、管理员角色），遵守固定字段、业务主键 sequence、部分唯一索引规则，并用 `comment on table` / `comment on column` 写全中文注释。
-3. 对应持久化实体（字段级 Javadoc）、标准 Mapper 与 Mapper.xml、仓储端口与实现。
-4. `AdminPermissionGuard` 只接收已验证的管理员身份标识，权限由服务端按身份查询；不再接受权限码请求头。管理员身份来源的设计（会话或签发的管理员 Token）若无现成实现，先在汇报中提出方案并停止，等主代理确认，不要自行扩大范围。
-5. 现有 `LOG_ACCESS_READ` 权限能力不得回归。
+1. 网关在认证过滤器入口按大小写不敏感规则无条件剥除所有 `X-Admin-*` 请求头（含同名多值头），与现有 `X-FoodMap-*` 剥除逻辑并列；为 `/api/admin/**` 声明显式路由，只对精确 `POST /api/admin/auth/login` 豁免后台验签，验签通过后透传原 `Authorization`，不生成任何 `X-Admin-*` 头。
+2. Flyway `V2__*.sql`：`admin_roles`、`admin_permissions`、`admin_user_roles`、`admin_role_permissions`、`admin_access_sessions`、`admin_operation_logs`，遵守固定字段、业务主键 sequence、部分唯一索引规则，并用 `comment on table` / `comment on column` 写全中文注释；预置 `OPS_VIEWER` 角色、`LOG_ACCESS_READ` 权限及关系。
+3. 对应持久化实体（字段级 Javadoc）、标准 Mapper 与 Mapper.xml、复杂 SQL 的 DefineMapper，以及仓储端口与实现；会话认证与授权快照查询从 `jti` 会话行开始校验管理员状态、权限版本与有效权限。
+4. 后台登录与登出：扩展密码组件 `matches`（解析现有 `算法$迭代次数$盐$摘要` 格式，常量时间比较，未知账号用占位哈希等成本校验）；独立 RSA RS256 JWT（默认 15 分钟）；登录成功在短事务内锁定账号行、复核状态与哈希、登记会话并写审计；登出按 `jti + adminUserId + 未撤销` 撤销会话。
+5. `AdminPermissionGuard` 只接收已验证的 `AuthenticatedAdmin`，权限由服务端按数据库授权判定；后台 MVC 拦截器独立验签并装配请求上下文；登录限流返回 `429`；受控初始化入口用于创建首批管理员。
+6. 现有 `LOG_ACCESS_READ` 日志查询能力与 T-032 内部签名链路不得回归。
 
 ## 6. 验收标准
 

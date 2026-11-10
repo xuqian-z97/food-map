@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.foodmap.admin.infrastructure.persistence.mapper.AdminAccessSessionDefineMapper">
+    <resultMap id="AdminSessionAdminRowResultMap" type="com.foodmap.admin.infrastructure.persistence.mybatis.AdminSessionAdminRow">
+        <result property="adminUserId" column="admin_user_id"/>
+        <result property="adminStatus" column="admin_status"/>
+        <result property="permissionVersion" column="permission_version"/>
+        <result property="expiresTime" column="expires_time"/>
+        <result property="revokedTime" column="revoked_time"/>
+    </resultMap>
+
+    <select id="selectSessionWithAdmin" resultMap="AdminSessionAdminRowResultMap">
+        select s.admin_user_id,
+               u.admin_status,
+               u.permission_version,
+               s.expires_time,
+               s.revoked_time
+        from admin_access_sessions s
+        join admin_users u on u.admin_user_id = s.admin_user_id and u.is_delete = 0
+        where s.token_id = #{tokenId}::uuid
+          and s.is_delete = 0
+        limit 1
+    </select>
+
+    <select id="selectActivePermissionCodes" resultType="string">
+        select distinct p.permission_code
+        from admin_user_roles ur
+        join admin_roles r on r.role_id = ur.role_id and r.is_delete = 0 and r.role_status = 'ACTIVE'
+        join admin_role_permissions rp on rp.role_id = ur.role_id and rp.is_delete = 0
+        join admin_permissions p on p.permission_id = rp.permission_id and p.is_delete = 0 and p.permission_status = 'ACTIVE'
+        where ur.admin_user_id = #{adminUserId}
+          and ur.is_delete = 0
+        order by p.permission_code
+    </select>
+
+    <update id="revokeActiveByTokenId">
+        update admin_access_sessions
+        set revoked_time = #{revokedTime},
+            updated_time = #{updatedTime}
+        where token_id = #{tokenId}::uuid
+          and admin_user_id = #{adminUserId}
+          and revoked_time is null
+          and is_delete = 0
+    </update>
+</mapper>

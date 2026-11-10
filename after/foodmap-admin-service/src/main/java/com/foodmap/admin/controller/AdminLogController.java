@@ -2,22 +2,23 @@ package com.foodmap.admin.controller;
 
 import com.foodmap.admin.dto.AdminApiAccessLogQueryRequest;
 import com.foodmap.admin.dto.AdminApiAccessLogResponse;
-import com.foodmap.admin.security.AdminAuthHeaders;
+import com.foodmap.admin.security.AdminAuthInterceptor;
 import com.foodmap.admin.security.AdminPermissionCode;
 import com.foodmap.admin.security.AdminPermissionGuard;
+import com.foodmap.admin.security.AuthenticatedAdmin;
 import com.foodmap.admin.service.AdminApiAccessLogQueryService;
 import com.foodmap.common.api.ApiResponse;
 import com.foodmap.common.api.PageResponse;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.OffsetDateTime;
 
 /**
- * 管理后台日志查询接口，负责对外提供后台日志检索入口。
+ * 管理后台日志查询接口，基于服务端装配的管理员上下文执行 RBAC 权限校验。
  */
 @RestController
 public class AdminLogController {
@@ -39,10 +40,9 @@ public class AdminLogController {
     }
 
     /**
-     * 分页查询接口访问摘要，后续会在该入口补齐后台管理员鉴权和 RBAC 权限校验。
+     * 分页查询接口访问摘要，需要 LOG_ACCESS_READ 权限，权限来自数据库当前授权。
      *
-     * @param adminUserId 后台管理员业务主键，来源于网关校验后的受信请求头。
-     * @param adminPermissions 后台管理员权限码列表，来源于网关校验后的受信请求头。
+     * @param request 当前请求，用于读取认证拦截器装配的管理员上下文。
      * @param requestId 请求流水号。
      * @param traceId 链路追踪号。
      * @param serviceName 服务名称。
@@ -56,8 +56,7 @@ public class AdminLogController {
      */
     @GetMapping("/api/admin/logs/api-access")
     public ApiResponse<PageResponse<AdminApiAccessLogResponse>> searchApiAccessLogs(
-            @RequestHeader(value = AdminAuthHeaders.ADMIN_USER_ID, required = false) String adminUserId,
-            @RequestHeader(value = AdminAuthHeaders.ADMIN_PERMISSIONS, required = false) String adminPermissions,
+            HttpServletRequest request,
             @RequestParam(required = false) String requestId,
             @RequestParam(required = false) String traceId,
             @RequestParam(required = false) String serviceName,
@@ -68,7 +67,8 @@ public class AdminLogController {
             @RequestParam(required = false) Integer pageIndex,
             @RequestParam(required = false) Integer pageSize
     ) {
-        permissionGuard.requirePermission(adminUserId, adminPermissions, AdminPermissionCode.LOG_ACCESS_READ);
+        AuthenticatedAdmin admin = (AuthenticatedAdmin) request.getAttribute(AdminAuthInterceptor.ATTR_AUTHENTICATED_ADMIN);
+        permissionGuard.requirePermission(admin, AdminPermissionCode.LOG_ACCESS_READ);
         return ApiResponse.ok(queryService.searchApiAccessLogs(new AdminApiAccessLogQueryRequest(
                 requestId,
                 traceId,

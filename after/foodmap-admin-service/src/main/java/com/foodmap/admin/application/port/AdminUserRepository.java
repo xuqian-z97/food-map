@@ -2,6 +2,7 @@ package com.foodmap.admin.application.port;
 
 import com.foodmap.admin.infrastructure.persistence.entity.AdminUserEntity;
 
+import java.time.OffsetDateTime;
 import java.util.Optional;
 
 /**
@@ -31,4 +32,20 @@ public interface AdminUserRepository {
      * @return 查询到的后台管理员实体，未命中时返回空 Optional。
      */
     Optional<AdminUserEntity> findByUsername(String username);
+
+    /**
+     * 按后台管理员业务主键锁定并查询管理员行，供登录短事务内复核账号状态和密码哈希。
+     *
+     * @param adminUserId 后台管理员业务主键。
+     * @return 锁定到的后台管理员实体，未命中时返回空 Optional。
+     */
+    Optional<AdminUserEntity> lockByAdminUserId(Long adminUserId);
+
+    /**
+     * 更新最近一次后台登录时间。
+     *
+     * @param adminUserId 后台管理员业务主键。
+     * @param lastLoginTime 最近一次后台登录时间。
+     */
+    void updateLastLoginTime(Long adminUserId, OffsetDateTime lastLoginTime);
 }

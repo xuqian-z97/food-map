@@ -31,6 +31,20 @@ foodmap:
     log-service:
       base-url: ${ADMIN_LOG_SERVICE_BASE_URL:http://127.0.0.1:8089}
       request-timeout: ${ADMIN_LOG_SERVICE_REQUEST_TIMEOUT:5s}
+    login-rate-limit:
+      max-failures: ${ADMIN_LOGIN_RATE_LIMIT_MAX_FAILURES:5}
+      window: ${ADMIN_LOGIN_RATE_LIMIT_WINDOW:5m}
+    bootstrap:
+      enabled: ${ADMIN_BOOTSTRAP_ENABLED:false}
+      entries:
+        - username: ${ADMIN_BOOTSTRAP_USERNAME:}
+          display-name: ${ADMIN_BOOTSTRAP_DISPLAY_NAME:}
+          password: ${ADMIN_BOOTSTRAP_PASSWORD:}
+          role-codes: ${ADMIN_BOOTSTRAP_ROLE_CODES:OPS_VIEWER}
+        - username: ${ADMIN_BOOTSTRAP_USERNAME_2:}
+          display-name: ${ADMIN_BOOTSTRAP_DISPLAY_NAME_2:}
+          password: ${ADMIN_BOOTSTRAP_PASSWORD_2:${ADMIN_BOOTSTRAP_PASSWORD:}}
+          role-codes: ${ADMIN_BOOTSTRAP_ROLE_CODES_2:}
 
 mybatis:
   mapper-locations: classpath*:mapper/**/*.xml

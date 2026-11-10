@@ -9,6 +9,7 @@ import com.foodmap.common.security.FoodMapAuthHeaders;
 import com.foodmap.common.security.HmacTokenCodec;
 import com.foodmap.common.security.NoopAccessTokenDenylistClient;
 import com.foodmap.common.security.TokenClaims;
+import com.foodmap.gateway.security.GatewayAdminTokenVerifier;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
@@ -16,6 +17,7 @@ import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
@@ -26,12 +28,14 @@ import reactor.core.publisher.Mono;
 import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * 网关认证过滤器，负责校验外部 Access Token 并向下游服务透传可信用户身份。
  *
- * <p>过滤器会覆盖客户端传入的 FoodMap 内部身份请求头，避免外部伪造用户身份。排查下游用户身份异常时，
- * 应先确认网关是否执行了本过滤器以及 Token 中的 userId 是否正确。</p>
+ * <p>过滤器会先按大小写不敏感规则清理客户端传入的 FoodMap 内部身份头和全部 `X-Admin-*` 后台头，
+ * 避免外部伪造用户或管理员身份。`/api/admin/**` 走独立的后台 Token 验签分支，与普通 App Token
+ * 分支互不通用。排查下游身份异常时，应先确认网关是否执行了本过滤器以及 Token 携带的身份是否正确。</p>
  */
 @Component
 public class GatewayAuthFilter implements GlobalFilter, Ordered {
@@ -52,6 +56,22 @@ public class GatewayAuthFilter implements GlobalFilter, Ordered {
      * Token 密钥环境变量名，用于启动失败时给出可执行的修复提示。
      */
     private static final String TOKEN_SECRET_ENV = "FOODMAP_TOKEN_SECRET";
+
+    /**
+     * 后台受保护路径前缀，走独立后台验签分支。
+     */
+    private static final String ADMIN_API_PREFIX = "/api/admin/";
+
+    /**
+     * 后台登录入口，唯一豁免后台 Token 验签的精确路径。
+     */
+    private static final String ADMIN_LOGIN_PATH = "/api/admin/auth/login";
+
+    /**
+     * 后台身份请求头统一前缀（小写形式），进入网关的外部请求一律剥除。
+     */
+    private static final String ADMIN_HEADER_PREFIX = "x-admin-";
+
     private static final List<String> PUBLIC_API_PATHS = List.of(
             "/api/auth/register",
             "/api/auth/login",
@@ -61,6 +81,7 @@ public class GatewayAuthFilter implements GlobalFilter, Ordered {
 
     private final HmacTokenCodec tokenCodec;
     private final AccessTokenDenylistClient accessTokenDenylistClient;
+    private final GatewayAdminTokenVerifier adminTokenVerifier;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     /**
@@ -69,9 +90,10 @@ public class GatewayAuthFilter implements GlobalFilter, Ordered {
      * <p>该构造器保留给单元测试直接实例化使用，Spring 容器注入使用带拒绝名单客户端的构造器。</p>
      *
      * @param tokenSecret 网关用于校验 Access Token 的 HMAC 密钥。
+     * @param adminTokenVerifier 网关侧后台 Token 验签组件。
      */
-    public GatewayAuthFilter(String tokenSecret) {
-        this(tokenSecret, new NoopAccessTokenDenylistClient());
+    public GatewayAuthFilter(String tokenSecret, GatewayAdminTokenVerifier adminTokenVerifier) {
+        this(tokenSecret, new NoopAccessTokenDenylistClient(), adminTokenVerifier);
     }
 
     /**
@@ -82,14 +104,17 @@ public class GatewayAuthFilter implements GlobalFilter, Ordered {
      *
      * @param tokenSecret 网关用于校验 Access Token 的 HMAC 密钥，生产环境由 {@code FOODMAP_TOKEN_SECRET} 注入。
      * @param accessTokenDenylistClient Access Token 拒绝名单客户端。
+     * @param adminTokenVerifier 网关侧后台 Token 验签组件。
      */
     @Autowired
     public GatewayAuthFilter(
             @Value("${foodmap.security.token-secret}") String tokenSecret,
-            AccessTokenDenylistClient accessTokenDenylistClient
+            AccessTokenDenylistClient accessTokenDenylistClient,
+            GatewayAdminTokenVerifier adminTokenVerifier
     ) {
         this.tokenCodec = new HmacTokenCodec(requireUsableSecret(tokenSecret));
         this.accessTokenDenylistClient = accessTokenDenylistClient;
+        this.adminTokenVerifier = adminTokenVerifier;
     }
 
     /**
@@ -113,7 +138,7 @@ public class GatewayAuthFilter implements GlobalFilter, Ordered {
     }
 
     /**
-     * 过滤外部 API 请求，公开认证接口放行，其它 `/api/**` 请求必须携带有效 Access Token。
+     * 过滤外部 API 请求：公开认证接口放行，后台路径走后台验签，其它 `/api/**` 请求必须携带有效 App Access Token。
      *
      * @param exchange 当前网关请求上下文。
      * @param chain 后续网关过滤器链。
@@ -125,6 +150,9 @@ public class GatewayAuthFilter implements GlobalFilter, Ordered {
         ServerWebExchange sanitizedExchange = stripTrustedIdentityHeaders(exchange);
         if (isInternalPath(path) && !isInternalHealthPath(path)) {
             return forbidden(sanitizedExchange, "内部接口不允许通过外部网关访问");
+        }
+        if (isAdminPath(path)) {
+            return filterAdminRequest(sanitizedExchange, chain, path);
         }
         if (!path.startsWith("/api/") || isPublicPath(path)) {
             return chain.filter(sanitizedExchange);
@@ -157,15 +185,64 @@ public class GatewayAuthFilter implements GlobalFilter, Ordered {
         return AUTH_FILTER_ORDER;
     }
 
+    /**
+     * 后台路径过滤：只有精确的登录 POST 豁免验签，其余请求必须携带单个有效后台 Bearer 凭证。
+     *
+     * <p>验签通过后只透传原始 Authorization，网关不生成任何 `X-Admin-*` 身份或权限头；会话与权限
+     * 判定由后台服务独立完成。</p>
+     *
+     * @param exchange 已剥除外部后台头的请求上下文。
+     * @param chain 后续网关过滤器链。
+     * @param path 请求路径。
+     * @return 当前请求的响应完成信号。
+     */
+    private Mono<Void> filterAdminRequest(ServerWebExchange exchange, GatewayFilterChain chain, String path) {
+        if (ADMIN_LOGIN_PATH.equals(path) && HttpMethod.POST.equals(exchange.getRequest().getMethod())) {
+            return chain.filter(exchange);
+        }
+        List<String> authorizationValues = exchange.getRequest().getHeaders().get(HttpHeaders.AUTHORIZATION);
+        if (authorizationValues == null || authorizationValues.size() != 1) {
+            return unauthorized(exchange, "缺少后台访问令牌");
+        }
+        String token = extractBearerToken(authorizationValues.get(0));
+        if (token == null) {
+            return unauthorized(exchange, "缺少后台访问令牌");
+        }
+        if (!adminTokenVerifier.verify(token)) {
+            return unauthorized(exchange, "无效的后台访问令牌");
+        }
+        return chain.filter(exchange);
+    }
+
+    /**
+     * 剥除客户端伪造的受信身份头：FoodMap 内部用户身份头和全部 `X-Admin-*` 后台头（含大小写变体和多值头）。
+     *
+     * @param exchange 当前网关请求上下文。
+     * @return 剥除后的请求上下文。
+     */
     @SuppressWarnings("deprecation")
     private ServerWebExchange stripTrustedIdentityHeaders(ServerWebExchange exchange) {
         ServerHttpRequest sanitizedRequest = exchange.getRequest().mutate()
                 .headers(headers -> {
                     headers.remove(FoodMapAuthHeaders.ACCOUNT_ID);
                     headers.remove(FoodMapAuthHeaders.USER_ID);
+                    List<String> adminHeaderNames = headers.keySet().stream()
+                            .filter(name -> name.toLowerCase(Locale.ROOT).startsWith(ADMIN_HEADER_PREFIX))
+                            .toList();
+                    adminHeaderNames.forEach(headers::remove);
                 })
                 .build();
         return exchange.mutate().request(sanitizedRequest).build();
+    }
+
+    /**
+     * 判断是否后台受保护路径。
+     *
+     * @param path 请求路径。
+     * @return 属于 `/api/admin/**` 时返回 true。
+     */
+    private boolean isAdminPath(String path) {
+        return path.startsWith(ADMIN_API_PREFIX);
     }
 
     private boolean isPublicPath(String path) {

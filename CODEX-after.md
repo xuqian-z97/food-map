@@ -529,8 +529,11 @@ foodmap_admin_db
 - 后台 Access Token 必须携带管理员业务主键、角色、权限版本和签发来源。
 - 管理后台高风险操作必须校验 RBAC 权限，并记录审计日志。
 - 生产环境中删除、封禁、强制下线、门店合并等高风险动作应支持二次确认或后续审批扩展。
-- B1.5 收尾阶段先使用受信内部请求头承接后台权限骨架：`X-Admin-User-Id` 表示后台管理员业务主键，`X-Admin-Permissions` 表示网关校验后台 Token 后透传的权限码列表。
-- 后台服务内部接口不能只依赖网关放行，Controller 或应用服务必须再次校验必要权限码；缺少后台身份返回 `401`，已认证但缺少权限返回 `403`。
+- 后台 Access Token 是独立的 RSA RS256 JWT（`foodmap.admin.token` 配置，默认 15 分钟），与 App HMAC Token 验签入口完全独立；后台服务持有私钥，网关只配置公钥。
+- 网关必须在认证过滤器最前面按大小写不敏感规则无条件剥除外部传入的所有 `X-Admin-*` 请求头，包括同名多值头；网关不签发任何 `X-Admin-*` 身份或权限头，验签通过后只透传原始 `Authorization`。
+- `/api/admin/**` 由网关显式路由保护，只有精确的 `POST /api/admin/auth/login` 豁免后台验签；普通 App Token 不能调用后台接口，后台 Token 也不能调用普通 App 接口。
+- 后台服务在 MVC 拦截器内独立验签后台 Token，并通过应用服务一次读取 `admin_access_sessions` 会话登记、管理员状态、权限版本和有效权限；会话未登记、已撤销、已过期、管理员停用或权限版本过期返回 `401`，身份有效但缺少权限返回 `403`，身份或会话数据源不可用返回 `503`。
+- 授权事实保存在 `foodmap_admin_db`：角色、权限、管理员角色关系和 Token 会话登记；每次受保护后台请求都会查询当前数据库授权，不信任 Token 内的权限快照。
 
 核心能力分期：
 
@@ -1506,6 +1509,20 @@ foodmap_admin_db
 | granted_by | bigint | 授权人后台管理员业务主键 |
 | granted_time | timestamptz not null | 授权时间 |
 
+表：`admin_access_sessions`
+
+中文名：后台 Token 会话登记表。
+
+用途：保存后台 Access Token 的签发登记，作为登出即时撤销和后台请求认证的事实源；重启或缓存丢失后已撤销 Token 不会恢复有效。
+
+| 字段名 | 推荐类型 | 中文注释 |
+| --- | --- | --- |
+| session_id | bigint not null | 后台会话业务主键 |
+| token_id | uuid not null | 后台 Access Token 的 JWT `jti`，全局唯一 |
+| admin_user_id | bigint not null | 后台管理员业务主键 |
+| expires_time | timestamptz not null | 会话过期时间，与 Token 过期时间一致 |
+| revoked_time | timestamptz | 会话撤销时间，登出后写入；空表示未撤销 |
+
 表：`content_reports`
 
 中文名：内容举报表。
@@ -2038,6 +2055,14 @@ GET /api/admin/operations
 - 审核、合并、用户管理类写接口必须具备幂等键或重复提交保护。
 - 后台查询日志和审计记录时必须按权限控制字段可见性，不能返回 Token、密码、完整手机号、完整邮箱、私密推荐正文、评论正文或图片签名 URL。
 
+首批已交付后台契约（T-033）：
+
+- `POST /api/admin/auth/login`：JSON 请求体 `username`、`password` 均必填，用户名最长 64 字符；成功响应 `data` 含 `accessToken`、`tokenType`（固定 `Bearer`）、`expiresTime`（带时区 ISO 8601），响应头必须带 `Cache-Control: no-store`。
+- `POST /api/admin/auth/logout`：需要 `Authorization: Bearer <admin-access-token>`，成功响应 `data` 为 `null`；登出后同一 Token 再访问受保护后台接口返回 `401`，重复登出幂等成功。
+- `GET /api/admin/logs/api-access`：需要 `LOG_ACCESS_READ` 权限，查询参数与响应结构沿用日志平台 `PageResponse` 契约，页码从 0 起，默认每页 20 条、上限 100 条。
+- 错误口径：`400/BAD_REQUEST` 参数校验失败；`401/UNAUTHORIZED` 登录凭据错误、账号停用或锁定、Token 缺失/验签失败/过期/已撤销/权限版本过期，登录失败提示统一避免暴露账号是否存在；`403/FORBIDDEN` 身份有效但权限不足；`429/TOO_MANY_REQUESTS` 后台登录限流；`503/SERVICE_UNAVAILABLE` 后台身份、会话或权限数据源不可用。
+- 后台 Token 只通过 `Authorization` 传输，`accessToken` 不进入访问日志、响应体采集或测试证据。
+
 ## 11. 安全和权限要求
 
 ### 11.1 认证
@@ -2081,6 +2106,10 @@ GET /api/admin/operations
 - 管理后台登录、登出、权限变更和高风险操作必须记录审计日志。
 - `/api/admin/**` 不能接受普通 App 用户 Access Token。
 - 后台管理员 Token 必须校验签名、过期时间、权限版本和管理员状态。
+- 后台 Token 使用独立 RSA 密钥对签发 RS256 JWT：`iss=foodmap-admin-service`、`aud=foodmap-admin-api`、`typ=foodmap-admin+jwt`、`sub` 为管理员业务主键十进制字符串、`jti` 为会话唯一标识、`permissionVersion` 为签发时权限版本；默认有效期 15 分钟，可通过 `foodmap.admin.token.ttl` 配置。
+- 后台受保护请求必须在后台服务完成验签并命中 `admin_access_sessions` 中未撤销、未过期的会话登记，同时校验管理员 `ACTIVE` 状态和当前权限版本；任一条件不满足返回 `401`。
+- 登出按 `jti + adminUserId + 未撤销` 条件撤销会话，首次撤销写审计；会话有效但权限为空用于区分 `401`（认证失败）和 `403`（授权不足）。
+- 密钥以外部文件或密钥系统注入，`local` / `orbstack` 允许仓库内开发密钥，`prod` 缺失或无法解析时拒绝启动；首版单密钥轮换需协调两端同步切换。
 - 管理后台查询用户、推荐、评论、媒体、日志和审计信息时必须执行字段级脱敏。
 - 管理后台导出能力后续实现时必须单独授权、记录导出范围，并限制导出频率。
 - 生产环境管理后台入口必须使用 HTTPS，并优先限制来源 IP、启用更严格限流和二次确认。

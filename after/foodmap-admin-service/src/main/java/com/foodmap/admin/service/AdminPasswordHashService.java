@@ -12,4 +12,13 @@ public interface AdminPasswordHashService {
      * @return 可持久化密码哈希。
      */
     String hash(String rawPassword);
+
+    /**
+     * 校验原始密码与存量密码哈希是否匹配，格式异常按校验失败处理。
+     *
+     * @param rawPassword 原始密码。
+     * @param storedHash 存量密码哈希，格式为 `算法$迭代次数$盐$摘要`。
+     * @return 匹配时返回 true。
+     */
+    boolean matches(String rawPassword, String storedHash);
 }

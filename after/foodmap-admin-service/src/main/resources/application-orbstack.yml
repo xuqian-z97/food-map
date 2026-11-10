@@ -23,3 +23,9 @@ foodmap:
   internal:
     enabled: true
     secret: ${FOODMAP_INTERNAL_SECRET:foodmap-dev-only-internal-secret-please-change}
+  admin:
+    token:
+      # 本机开发密钥只允许 orbstack 使用，生产由外部文件注入，见 application-prod.yml。
+      public-key-location: ${ADMIN_TOKEN_PUBLIC_KEY_LOCATION:classpath:keys/admin-token-dev-public.pem}
+      private-key-location: ${ADMIN_TOKEN_PRIVATE_KEY_LOCATION:classpath:keys/admin-token-dev-private.pem}
+      ttl: ${ADMIN_TOKEN_TTL:15m}

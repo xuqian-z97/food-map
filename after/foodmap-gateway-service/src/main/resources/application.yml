@@ -58,6 +58,10 @@ spring:
           uri: lb://foodmap-media-service
           predicates:
             - Path=/api/media/**,/internal/media/**
+        - id: admin-service
+          uri: lb://foodmap-admin-service
+          predicates:
+            - Path=/api/admin/**,/internal/admin/**
 
 foodmap:
   env:
@@ -66,6 +70,11 @@ foodmap:
     # 仅 local/orbstack 开发默认值，必须与 auth 服务同 profile 下的开发默认值保持一致；
     # prod profile 在 application-prod.yml 中要求显式注入 FOODMAP_TOKEN_SECRET，无任何默认值。
     token-secret: ${FOODMAP_TOKEN_SECRET:foodmap-dev-only-token-secret-please-change}
+  admin:
+    token:
+      # 仅 local/orbstack 开发公钥默认值；prod profile 在 application-prod.yml 中要求显式注入
+      # ADMIN_TOKEN_PUBLIC_KEY_LOCATION 指向部署注入的外部公钥文件，无任何默认值。
+      public-key-location: ${ADMIN_TOKEN_PUBLIC_KEY_LOCATION:classpath:keys/admin-token-dev-public.pem}
 
 management:
   endpoints:

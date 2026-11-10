@@ -27,3 +27,8 @@ foodmap:
     password:
       # 生产环境不允许任何默认 pepper，缺失 ADMIN_PEPPER 时启动失败。
       pepper: ${ADMIN_PEPPER}
+    token:
+      # 生产环境后台 Token 密钥必须由部署配置注入外部文件路径，缺失或无法解析时启动失败。
+      public-key-location: ${ADMIN_TOKEN_PUBLIC_KEY_LOCATION}
+      private-key-location: ${ADMIN_TOKEN_PRIVATE_KEY_LOCATION}
+      ttl: ${ADMIN_TOKEN_TTL:15m}

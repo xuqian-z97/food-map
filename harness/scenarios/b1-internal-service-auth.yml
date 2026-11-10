@@ -1,6 +1,6 @@
 name: B1 内部服务签名与后台日志真实链路
-requires: [network, redis, internal-log, internal-admin, internal-secret]
-description: "只读验证 locator、无签名、过期、重放、越权、篡改和 admin Java HttpClient 到 log 的真实签名链路；不验证 T-033 RBAC"
+requires: [network, redis, internal-log, internal-admin, internal-secret, test-password]
+description: "只读验证 locator、无签名、过期、重放、越权、篡改和 admin 登录后经 Java HttpClient 到 log 的真实签名链路；后台正向用例自 T-033 起改用登录 Access Token，并断言旧 X-Admin-* 头不再授权"
 config:
   commandTimeoutMs: 120000
 steps:

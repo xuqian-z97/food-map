@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.foodmap.admin.infrastructure.persistence.mapper.AdminOperationLogMapper">
+    <resultMap id="AdminOperationLogResultMap" type="com.foodmap.admin.infrastructure.persistence.entity.AdminOperationLogEntity">
+        <id property="id" column="id"/>
+        <result property="createdTime" column="created_time"/>
+        <result property="updatedTime" column="updated_time"/>
+        <result property="isDelete" column="is_delete"/>
+        <result property="operationId" column="operation_id"/>
+        <result property="adminUserId" column="admin_user_id"/>
+        <result property="operationModule" column="operation_module"/>
+        <result property="operationType" column="operation_type"/>
+        <result property="targetType" column="target_type"/>
+        <result property="targetId" column="target_id"/>
+        <result property="operationSummary" column="operation_summary"/>
+        <result property="operationResult" column="operation_result"/>
+        <result property="requestId" column="request_id"/>
+        <result property="traceId" column="trace_id"/>
+    </resultMap>
+
+    <sql id="BaseColumns">
+        id, created_time, updated_time, is_delete, operation_id, admin_user_id,
+        operation_module, operation_type, target_type, target_id,
+        operation_summary, operation_result, request_id, trace_id
+    </sql>
+
+    <sql id="ConditionWhere">
+        where is_delete = 0
+        <if test="condition != null">
+            <if test="condition.id != null">and id = #{condition.id}</if>
+            <if test="condition.operationId != null">and operation_id = #{condition.operationId}</if>
+            <if test="condition.adminUserId != null">and admin_user_id = #{condition.adminUserId}</if>
+            <if test="condition.operationModule != null and condition.operationModule != ''">and operation_module = #{condition.operationModule}</if>
+            <if test="condition.operationType != null and condition.operationType != ''">and operation_type = #{condition.operationType}</if>
+            <if test="condition.operationResult != null and condition.operationResult != ''">and operation_result = #{condition.operationResult}</if>
+            <if test="condition.requestId != null and condition.requestId != ''">and request_id = #{condition.requestId}</if>
+        </if>
+    </sql>
+
+    <select id="selectById" resultMap="AdminOperationLogResultMap">
+        select <include refid="BaseColumns"/>
+        from admin_operation_logs
+        where id = #{id} and is_delete = 0
+        limit 1
+    </select>
+
+    <select id="selectByBizId" resultMap="AdminOperationLogResultMap">
+        select <include refid="BaseColumns"/>
+        from admin_operation_logs
+        where operation_id = #{operationId} and is_delete = 0
+        limit 1
+    </select>
+
+    <select id="selectListByCondition" resultMap="AdminOperationLogResultMap">
+        select <include refid="BaseColumns"/>
+        from admin_operation_logs
+        <include refid="ConditionWhere"/>
+        order by id desc
+    </select>
+
+    <select id="selectPageByCondition" resultMap="AdminOperationLogResultMap">
+        select <include refid="BaseColumns"/>
+        from admin_operation_logs
+        <include refid="ConditionWhere"/>
+        order by id desc
+        limit #{limit} offset #{offset}
+    </select>
+
+    <insert id="insertOne" parameterType="com.foodmap.admin.infrastructure.persistence.entity.AdminOperationLogEntity">
+        insert into admin_operation_logs
+        (created_time, updated_time, is_delete, operation_id, admin_user_id, operation_module, operation_type,
+         target_type, target_id, operation_summary, operation_result, request_id, trace_id)
+        values
+        (#{createdTime}, #{updatedTime}, #{isDelete}, #{operationId}, #{adminUserId}, #{operationModule}, #{operationType},
+         #{targetType}, #{targetId}, #{operationSummary}, #{operationResult}, #{requestId}, #{traceId})
+    </insert>
+
+    <insert id="insertBatch">
+        insert into admin_operation_logs
+        (created_time, updated_time, is_delete, operation_id, admin_user_id, operation_module, operation_type,
+         target_type, target_id, operation_summary, operation_result, request_id, trace_id)
+        values
+        <foreach collection="items" item="item" separator=",">
+            (#{item.createdTime}, #{item.updatedTime}, #{item.isDelete}, #{item.operationId}, #{item.adminUserId},
+             #{item.operationModule}, #{item.operationType}, #{item.targetType}, #{item.targetId},
+             #{item.operationSummary}, #{item.operationResult}, #{item.requestId}, #{item.traceId})
+        </foreach>
+    </insert>
+
+    <update id="updateById" parameterType="com.foodmap.admin.infrastructure.persistence.entity.AdminOperationLogEntity">
+        update admin_operation_logs
+        set admin_user_id = #{adminUserId},
+            operation_module = #{operationModule},
+            operation_type = #{operationType},
+            target_type = #{targetType},
+            target_id = #{targetId},
+            operation_summary = #{operationSummary},
+            operation_result = #{operationResult},
+            request_id = #{requestId},
+            trace_id = #{traceId},
+            updated_time = #{updatedTime},
+            is_delete = #{isDelete}
+        where id = #{id}
+    </update>
+
+    <update id="updateByBizId" parameterType="com.foodmap.admin.infrastructure.persistence.entity.AdminOperationLogEntity">
+        update admin_operation_logs
+        set admin_user_id = #{adminUserId},
+            operation_module = #{operationModule},
+            operation_type = #{operationType},
+            target_type = #{targetType},
+            target_id = #{targetId},
+            operation_summary = #{operationSummary},
+            operation_result = #{operationResult},
+            request_id = #{requestId},
+            trace_id = #{traceId},
+            updated_time = #{updatedTime},
+            is_delete = #{isDelete}
+        where operation_id = #{operationId}
+    </update>
+
+    <update id="updateBatchByBizId">
+        <foreach collection="items" item="item" separator=";">
+            update admin_operation_logs
+            set admin_user_id = #{item.adminUserId},
+                operation_module = #{item.operationModule},
+                operation_type = #{item.operationType},
+                target_type = #{item.targetType},
+                target_id = #{item.targetId},
+                operation_summary = #{item.operationSummary},
+                operation_result = #{item.operationResult},
+                request_id = #{item.requestId},
+                trace_id = #{item.traceId},
+                updated_time = #{item.updatedTime},
+                is_delete = #{item.isDelete}
+            where operation_id = #{item.operationId}
+        </foreach>
+    </update>
+
+    <update id="logicDeleteById">
+        update admin_operation_logs
+        set is_delete = 1, updated_time = #{updatedTime}
+        where id = #{id}
+    </update>
+
+    <update id="logicDeleteByBizIds">
+        update admin_operation_logs
+        set is_delete = 1, updated_time = #{updatedTime}
+        where operation_id in
+        <foreach collection="operationIds" item="operationId" open="(" close=")" separator=",">
+            #{operationId}
+        </foreach>
+    </update>
+</mapper>

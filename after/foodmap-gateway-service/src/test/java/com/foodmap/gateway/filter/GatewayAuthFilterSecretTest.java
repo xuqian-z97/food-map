@@ -1,5 +1,8 @@
 package com.foodmap.gateway.filter;
 
+import com.foodmap.gateway.security.GatewayAdminTokenVerifier;
+import com.foodmap.gateway.security.TestAdminTokens;
+import com.nimbusds.jose.jwk.RSAKey;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -18,9 +21,15 @@ class GatewayAuthFilterSecretTest {
      */
     private static final String VALID_SECRET = "0123456789abcdef0123456789abcdef";
 
+    /**
+     * 后台测试密钥与验签器，密钥注入失败发生在验签器使用之前，与验签结果无关。
+     */
+    private static final RSAKey ADMIN_KEY = TestAdminTokens.generateKey();
+    private static final GatewayAdminTokenVerifier ADMIN_VERIFIER = TestAdminTokens.verifierFor(ADMIN_KEY);
+
     @Test
     void shouldRejectMissingTokenSecret() {
-        assertThatThrownBy(() -> new GatewayAuthFilter((String) null))
+        assertThatThrownBy(() -> new GatewayAuthFilter(null, ADMIN_VERIFIER))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("foodmap.security.token-secret")
                 .hasMessageContaining("FOODMAP_TOKEN_SECRET");
@@ -28,14 +37,14 @@ class GatewayAuthFilterSecretTest {
 
     @Test
     void shouldRejectBlankTokenSecret() {
-        assertThatThrownBy(() -> new GatewayAuthFilter("   "))
+        assertThatThrownBy(() -> new GatewayAuthFilter("   ", ADMIN_VERIFIER))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("FOODMAP_TOKEN_SECRET");
     }
 
     @Test
     void shouldRejectTokenSecretShorterThanMinimumLength() {
-        assertThatThrownBy(() -> new GatewayAuthFilter("0123456789abcdef0123456789abcde"))
+        assertThatThrownBy(() -> new GatewayAuthFilter("0123456789abcdef0123456789abcde", ADMIN_VERIFIER))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("foodmap.security.token-secret")
                 .hasMessageContaining("32");
@@ -43,7 +52,7 @@ class GatewayAuthFilterSecretTest {
 
     @Test
     void shouldAcceptTokenSecretMeetingMinimumLength() {
-        GatewayAuthFilter filter = new GatewayAuthFilter(VALID_SECRET);
+        GatewayAuthFilter filter = new GatewayAuthFilter(VALID_SECRET, ADMIN_VERIFIER);
 
         assertThat(filter.getOrder()).isEqualTo(-100);
     }

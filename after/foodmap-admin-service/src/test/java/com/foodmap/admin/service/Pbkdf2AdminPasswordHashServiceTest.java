@@ -84,4 +84,55 @@ class Pbkdf2AdminPasswordHashServiceTest {
             throw new IllegalStateException("读取 admin prod 配置失败", ex);
         }
     }
+
+    @Test
+    void matchesShouldAcceptHashedPasswordWithSamePepper() {
+        Pbkdf2AdminPasswordHashService service = new Pbkdf2AdminPasswordHashService("test-pepper");
+        String hash = service.hash(RAW_PASSWORD);
+
+        assertThat(service.matches(RAW_PASSWORD, hash)).isTrue();
+    }
+
+    @Test
+    void matchesShouldRejectWrongPasswordOrDifferentPepper() {
+        Pbkdf2AdminPasswordHashService service = new Pbkdf2AdminPasswordHashService("test-pepper");
+        String hash = service.hash(RAW_PASSWORD);
+
+        assertThat(service.matches("wrong-password", hash)).isFalse();
+        assertThat(new Pbkdf2AdminPasswordHashService("other-pepper").matches(RAW_PASSWORD, hash)).isFalse();
+    }
+
+    @Test
+    void matchesShouldRejectMalformedStoredHash() {
+        Pbkdf2AdminPasswordHashService service = new Pbkdf2AdminPasswordHashService("test-pepper");
+
+        assertThat(service.matches(RAW_PASSWORD, null)).isFalse();
+        assertThat(service.matches(RAW_PASSWORD, " ")).isFalse();
+        assertThat(service.matches(RAW_PASSWORD, "not-a-hash")).isFalse();
+        assertThat(service.matches(RAW_PASSWORD, "PBKDF2WithHmacSHA256$120000$only-salt")).isFalse();
+        assertThat(service.matches(RAW_PASSWORD, "PBKDF2WithHmacSHA256$120000$###$###")).isFalse();
+        assertThat(service.matches(null, service.hash(RAW_PASSWORD))).isFalse();
+    }
+
+    @Test
+    void matchesShouldRejectUnknownAlgorithmOrUncontrolledIterations() {
+        Pbkdf2AdminPasswordHashService service = new Pbkdf2AdminPasswordHashService("test-pepper");
+        String hash = service.hash(RAW_PASSWORD);
+        String[] parts = hash.split("\\$");
+
+        assertThat(service.matches(RAW_PASSWORD, "BCrypt$120000$" + parts[2] + "$" + parts[3])).isFalse();
+        assertThat(service.matches(RAW_PASSWORD, "PBKDF2WithHmacSHA256$1$" + parts[2] + "$" + parts[3])).isFalse();
+        assertThat(service.matches(RAW_PASSWORD, "PBKDF2WithHmacSHA256$abc$" + parts[2] + "$" + parts[3])).isFalse();
+    }
+
+    @Test
+    void placeholderHashShouldKeepEqualCostForUnknownAccount() {
+        Pbkdf2AdminPasswordHashService service = new Pbkdf2AdminPasswordHashService("test-pepper");
+
+        String placeholder = service.placeholderHash();
+
+        assertThat(placeholder).startsWith("PBKDF2WithHmacSHA256$120000$");
+        assertThat(service.matches(RAW_PASSWORD, placeholder)).isFalse();
+        assertThat(service.matches("any-other-password", placeholder)).isFalse();
+    }
 }
