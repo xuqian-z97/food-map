@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-10T09-49-scenario-hardening",
+  "at": "2026-11-10T09:49:36+08:00",
+  "kind": "integration",
+  "command": "FM_TEST_PW=<env> ./harness/scripts/verify.sh",
+  "env": "local",
+  "result": {
+    "total": 6,
+    "passed": 5,
+    "failed": 0,
+    "skipped": 1
+  },
+  "covers": [
+    "F-021"
+  ],
+  "evidence": [
+    "harness/scenarios/b1-logout.yml",
+    "harness/scenarios/b1-identity-dual-write.yml",
+    "harness/scenarios/README.md"
+  ],
+  "notes": "合并后 main 复跑：5通过/0失败/1跳过（b1-logging-closure 依赖的备用认证实例18081未启动）。场景凭据统一走FM_TEST_PW，teardown只清本轮accountId/userId并断言归零。"
+}
