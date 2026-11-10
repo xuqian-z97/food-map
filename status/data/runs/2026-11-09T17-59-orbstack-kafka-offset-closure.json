@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-09T17-59-orbstack-kafka-offset-closure",
+  "at": "2026-11-09T17:59:32+08:00",
+  "kind": "integration",
+  "command": "node tools/verify/cli.mjs run harness/scenarios/b1-logging-closure.yml",
+  "env": "local",
+  "result": {
+    "total": 1,
+    "passed": 1,
+    "failed": 0,
+    "skipped": 0
+  },
+  "covers": [
+    "F-019"
+  ],
+  "evidence": [
+    "docs/integration/B1.5-orbstack-logging/evidence"
+  ],
+  "notes": ""
+}

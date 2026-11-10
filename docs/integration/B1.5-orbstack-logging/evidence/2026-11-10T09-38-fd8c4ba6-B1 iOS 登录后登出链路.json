@@ -1,0 +1,671 @@
+{
+  "schemaVersion": 2,
+  "name": "B1 iOS 登录后登出链路",
+  "description": "模拟器启动 Debug 构建，用探针完成登录→登出→检查探针日志与数据库 token 状态；Release 包不含探针",
+  "runId": "run-20261110T013831Z-fd8c4ba6",
+  "source": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios/b1-ios-logout.yml",
+  "ok": true,
+  "exitCode": 0,
+  "startedAt": "2026-11-10T01:38:31.551Z",
+  "finishedAt": "2026-11-10T01:38:46.474Z",
+  "durationMs": 14924,
+  "summary": {
+    "total": 18,
+    "passed": 18,
+    "failed": 0,
+    "skipped": 0,
+    "setupFailed": 0,
+    "teardownFailed": 0
+  },
+  "variableNames": [
+    "account",
+    "bundleId",
+    "dbContainer",
+    "logStart",
+    "password",
+    "revoked",
+    "runId",
+    "userId"
+  ],
+  "steps": [
+    {
+      "index": 1,
+      "phase": "setup",
+      "action": "http",
+      "display": "http GET http://127.0.0.1:8080/internal/auth/health",
+      "expected": {
+        "status": 200
+      },
+      "actual": {
+        "method": "GET",
+        "url": "http://127.0.0.1:8080/internal/auth/health",
+        "status": 200,
+        "statusText": "OK",
+        "headers": {
+          "content-type": "application/json",
+          "date": "Tue, 10 Nov 2026 01:38:31 GMT",
+          "transfer-encoding": "chunked",
+          "x-request-id": "zyel3j79oa62la2r5a51hgev, zyel3j79oa62la2r5a51hgev",
+          "x-span-id": "jup9k8eow1nniorxttq5zezr, fgb6olvinb2tjggl1x8fwqb7",
+          "x-trace-id": "tbppkbn8gwnp4utkh9csm5h4, tbppkbn8gwnp4utkh9csm5h4"
+        },
+        "body": "{\"success\":true,\"status\":200,\"code\":\"OK\",\"message\":\"success\",\"data\":{\"serviceName\":\"foodmap-auth-service\",\"status\":\"UP\",\"checkedAt\":\"2026-11-10T01:38:31.553540Z\"}}",
+        "json": {
+          "success": true,
+          "status": 200,
+          "code": "OK",
+          "message": "success",
+          "data": {
+            "serviceName": "foodmap-auth-service",
+            "status": "UP",
+            "checkedAt": "2026-11-10T01:38:31.553540Z"
+          }
+        },
+        "jsonParsed": true,
+        "jsonError": "",
+        "value": {
+          "success": true,
+          "status": 200,
+          "code": "OK",
+          "message": "success",
+          "data": {
+            "serviceName": "foodmap-auth-service",
+            "status": "UP",
+            "checkedAt": "2026-11-10T01:38:31.553540Z"
+          }
+        },
+        "content": "{\"success\":true,\"status\":200,\"code\":\"OK\",\"message\":\"success\",\"data\":{\"serviceName\":\"foodmap-auth-service\",\"status\":\"UP\",\"checkedAt\":\"2026-11-10T01:38:31.553540Z\"}}",
+        "durationMs": 3
+      },
+      "checks": [
+        {
+          "name": "status",
+          "expected": 200,
+          "actual": 200,
+          "ok": true,
+          "error": "",
+          "message": ""
+        }
+      ],
+      "captures": [],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 4,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 2,
+      "phase": "setup",
+      "action": "command",
+      "display": "command printf 'zxq_ios_%s' $(date +%H%M%S)",
+      "expected": null,
+      "actual": {
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "zxq_ios_093831",
+        "stderr": "",
+        "value": "zxq_ios_093831",
+        "content": "zxq_ios_093831",
+        "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+      },
+      "checks": [],
+      "captures": [
+        "account"
+      ],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 8,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 3,
+      "phase": "setup",
+      "action": "http",
+      "display": "http POST http://127.0.0.1:8080/api/auth/register",
+      "expected": {
+        "status": 200
+      },
+      "actual": {
+        "method": "POST",
+        "url": "http://127.0.0.1:8080/api/auth/register",
+        "status": 200,
+        "statusText": "OK",
+        "headers": {
+          "content-type": "application/json",
+          "date": "Tue, 10 Nov 2026 01:38:31 GMT",
+          "transfer-encoding": "chunked",
+          "x-request-id": "wcxduu5aiv7y2jyzaov5xbw0, wcxduu5aiv7y2jyzaov5xbw0",
+          "x-span-id": "aqcuaorjz2vubub4homd40es, r1f5oa98w8gxvgu419abo1wg",
+          "x-trace-id": "xpa2a33ccricseeh73orlkff, xpa2a33ccricseeh73orlkff"
+        },
+        "body": "{\"success\":true,\"status\":200,\"code\":\"OK\",\"message\":\"success\",\"data\":{\"accountId\":null,\"userId\":200203,\"accountStatus\":\"NORMAL\"}}",
+        "json": {
+          "success": true,
+          "status": 200,
+          "code": "OK",
+          "message": "success",
+          "data": {
+            "accountId": null,
+            "userId": 200203,
+            "accountStatus": "NORMAL"
+          }
+        },
+        "jsonParsed": true,
+        "jsonError": "",
+        "value": {
+          "success": true,
+          "status": 200,
+          "code": "OK",
+          "message": "success",
+          "data": {
+            "accountId": null,
+            "userId": 200203,
+            "accountStatus": "NORMAL"
+          }
+        },
+        "content": "{\"success\":true,\"status\":200,\"code\":\"OK\",\"message\":\"success\",\"data\":{\"accountId\":null,\"userId\":200203,\"accountStatus\":\"NORMAL\"}}",
+        "durationMs": 50
+      },
+      "checks": [
+        {
+          "name": "status",
+          "expected": 200,
+          "actual": 200,
+          "ok": true,
+          "error": "",
+          "message": ""
+        }
+      ],
+      "captures": [
+        "userId"
+      ],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 50,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 4,
+      "phase": "setup",
+      "action": "command",
+      "display": "command wc -l < /tmp/verify-auth.log",
+      "expected": null,
+      "actual": {
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "    5197\n",
+        "stderr": "",
+        "value": "5197",
+        "content": "    5197\n",
+        "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+      },
+      "checks": [],
+      "captures": [
+        "logStart"
+      ],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 10,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 1,
+      "phase": "step",
+      "action": "app",
+      "display": "app terminate A77A2428-9576-4533-8B62-0C267A395B29 com.foodmap.FoodMapApp",
+      "expected": null,
+      "actual": {
+        "exitCode": 3,
+        "stdout": "",
+        "stderr": "An error was encountered processing the command (domain=NSPOSIXErrorDomain, code=3):\nSimulator device failed to terminate com.foodmap.FoodMapApp.\nfound nothing to terminate\nUnderlying error (domain=NSPOSIXErrorDomain, code=3):\n\tThe request to terminate \"com.foodmap.FoodMapApp\" failed. found nothing to terminate\n\tfound nothing to terminate\n",
+        "value": "",
+        "udid": "A77A2428-9576-4533-8B62-0C267A395B29",
+        "bundleId": "com.foodmap.FoodMapApp",
+        "platform": "ios"
+      },
+      "checks": [],
+      "captures": [],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 128,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 2,
+      "phase": "step",
+      "action": "app",
+      "display": "app launch A77A2428-9576-4533-8B62-0C267A395B29 com.foodmap.FoodMapApp",
+      "expected": null,
+      "actual": {
+        "exitCode": 0,
+        "stdout": "com.foodmap.FoodMapApp: 12117\n",
+        "stderr": "",
+        "value": "com.foodmap.FoodMapApp: 12117",
+        "udid": "A77A2428-9576-4533-8B62-0C267A395B29",
+        "bundleId": "com.foodmap.FoodMapApp",
+        "platform": "ios"
+      },
+      "checks": [],
+      "captures": [],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 221,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 3,
+      "phase": "step",
+      "action": "sleep",
+      "display": "sleep 12000ms",
+      "expected": null,
+      "actual": {
+        "value": 12000,
+        "durationMs": 12000
+      },
+      "checks": [],
+      "captures": [],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 12000,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 4,
+      "phase": "step",
+      "action": "app",
+      "display": "app readlog A77A2428-9576-4533-8B62-0C267A395B29 com.foodmap.FoodMapApp Documents/foodmap-automation.log",
+      "expected": {
+        "contains": [
+          "login.ok",
+          "logout.begin hasSession=true",
+          "logout.end sessionNil=true"
+        ]
+      },
+      "actual": {
+        "platform": "ios",
+        "udid": "A77A2428-9576-4533-8B62-0C267A395B29",
+        "bundleId": "com.foodmap.FoodMapApp",
+        "container": "/Users/zhangxuqian/Library/Developer/CoreSimulator/Devices/A77A2428-9576-4533-8B62-0C267A395B29/data/Containers/Data/Application/5EFAB5A7-8D4F-4CCD-9F1A-C51F00D71AB6",
+        "files": [
+          "/Users/zhangxuqian/Library/Developer/CoreSimulator/Devices/A77A2428-9576-4533-8B62-0C267A395B29/data/Containers/Data/Application/5EFAB5A7-8D4F-4CCD-9F1A-C51F00D71AB6/Documents/foodmap-automation.log"
+        ],
+        "content": "2026-11-05T07:35:18Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-05T07:35:18Z login.ok userId=200024\n2026-11-05T07:35:18Z logout.begin hasSession=true\n2026-11-05T07:35:18Z logout.end sessionNil=true message=none\n2026-11-05T07:36:31Z app.start automation=logout foodmapKeys=[\"FOODMAP_AUTOMATION\"]\n2026-11-05T07:36:31Z logout.begin hasSession=false\n2026-11-05T07:36:31Z logout.end sessionNil=true message=none\n2026-11-05T07:45:57Z app.start automation=error-states foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-05T07:45:57Z bad-password status=401 code=UNAUTHORIZED clearAuth=true message=账号或密码错误\n2026-11-05T07:45:57Z gateway-down status=-1 code=none clearAuth=false message=无法连接后端服务，请确认 Gateway 已启动\n2026-11-05T07:46:15Z app.start automation=keep-token foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-05T07:46:15Z retention.loginOk tokenPresent=true\n2026-11-05T07:46:15Z retention.tempCall status=-1 code=none clearAuth=false message=无法连接后端服务，请确认 Gateway 已启动\n2026-11-05T07:46:15Z retention.afterTempCall tokenPresent=true\n2026-11-05T07:46:15Z retention.afterRestoreDead tokenPresent=true sessionNil=true message=无法连接后端服务，请确认 Gateway 已启动\n2026-11-05T07:46:15Z retention.afterRecovery tokenPresent=true userId=200024\n2026-11-05T07:46:15Z retention.cleanup tokenPresent=false sessionNil=true\n2026-11-05T07:54:12Z app.start automation=login-disabled foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-05T07:54:12Z disabled.login status=403 code=FORBIDDEN clearAuth=true message=账号状态不允许登录 tokenPresent=false\n2026-11-05T07:56:38Z app.start automation=session-expired foodmapKeys=[\"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_SEED_ACCESS_TOKEN\", \"FOODMAP_SEED_REFRESH_TOKEN\"]\n2026-11-05T07:56:38Z expired.seeded tokenPresent=true\n2026-11-05T07:56:38Z expired.restore sessionNil=true tokenPresent=false message=Access Token已过期\n2026-11-05T08:05:58Z app.start automation=register-checks foodmapKeys=[\"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_NEW_ACCOUNT\"]\n2026-11-05T08:05:58Z register.shortPassword status=400 code=BAD_REQUEST clearAuth=false message=password 个数必须在8和128之间\n2026-11-05T08:05:58Z register.valid userId=200027 accountStatus=NORMAL\n2026-11-05T08:12:53Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-05T08:12:54Z login.ok userId=200024\n2026-11-05T08:12:54Z logout.begin hasSession=true\n2026-11-05T08:12:54Z logout.end sessionNil=true message=none\n2026-11-05T08:27:12Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_PASSWORD\"]\n2026-11-05T08:27:12Z login.ok userId=200024\n2026-11-05T08:27:12Z logout.begin hasSession=true\n2026-11-05T08:27:12Z logout.end sessionNil=true message=none\n2026-11-05T08:27:32Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-05T08:27:32Z login.ok userId=200024\n2026-11-05T08:27:32Z logout.begin hasSession=true\n2026-11-05T08:27:32Z logout.end sessionNil=true message=none\n2026-11-06T05:32:37Z app.start automation=none foodmapKeys=[]\n2026-11-06T05:32:42Z app.start automation=none foodmapKeys=[]\n2026-11-06T05:32:49Z app.start automation=none foodmapKeys=[]\n2026-11-06T05:40:19Z app.start automation=none foodmapKeys=[]\n2026-11-06T05:50:20Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-06T05:50:20Z login.ok userId=200024\n2026-11-06T05:50:20Z logout.begin hasSession=true\n2026-11-06T05:50:20Z logout.end sessionNil=true message=none\n2026-11-06T05:50:39Z app.start automation=none foodmapKeys=[]\n2026-11-06T05:52:27Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-06T05:52:27Z login.ok userId=200024\n2026-11-06T05:52:27Z logout.begin hasSession=true\n2026-11-06T05:52:27Z logout.end sessionNil=true message=none\n2026-11-06T05:52:46Z app.start automation=none foodmapKeys=[]\n2026-11-06T06:06:40Z app.start automation=none foodmapKeys=[]\n2026-11-06T06:07:14Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-06T06:07:14Z login.ok userId=200024\n2026-11-06T06:07:14Z logout.begin hasSession=true\n2026-11-06T06:07:14Z logout.end sessionNil=true message=none\n2026-11-06T06:07:32Z app.start automation=none foodmapKeys=[]\n2026-11-06T06:08:15Z app.start automation=none foodmapKeys=[]\n2026-11-06T06:11:09Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-06T06:11:09Z login.ok userId=200024\n2026-11-06T06:11:09Z logout.begin hasSession=true\n2026-11-06T06:11:09Z logout.end sessionNil=true message=none\n2026-11-06T06:11:28Z app.start automation=none foodmapKeys=[]\n2026-11-06T09:47:53Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-06T09:47:53Z login.ok userId=200052\n2026-11-06T09:47:53Z logout.begin hasSession=true\n2026-11-06T09:47:54Z logout.end sessionNil=true message=none\n2026-11-06T09:48:23Z app.start automation=none foodmapKeys=[]\n2026-11-06T09:49:13Z app.start automation=none foodmapKeys=[]\n2026-11-06T09:49:26Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-06T09:49:26Z login.ok userId=200056\n2026-11-06T09:49:26Z logout.begin hasSession=true\n2026-11-06T09:49:26Z logout.end sessionNil=true message=none\n2026-11-06T09:49:50Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-06T09:49:50Z login.ok userId=200058\n2026-11-06T09:49:50Z logout.begin hasSession=true\n2026-11-06T09:49:50Z logout.end sessionNil=true message=none\n2026-11-06T09:50:13Z app.start automation=none foodmapKeys=[]\n2026-11-06T09:50:58Z app.start automation=none foodmapKeys=[]\n2026-11-06T09:51:21Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-06T09:51:21Z login.failed error=server(status: 401, code: \"UNAUTHORIZED\", message: \"账号或密码错误\")\n2026-11-06T09:51:39Z app.start automation=none foodmapKeys=[]\n2026-11-07T06:49:06Z app.start automation=none foodmapKeys=[]\n2026-11-07T06:49:23Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-07T06:49:24Z login.failed error=server(status: 401, code: \"UNAUTHORIZED\", message: \"账号或密码错误\")\n2026-11-07T06:49:41Z app.start automation=none foodmapKeys=[]\n2026-11-07T06:49:57Z app.start automation=none foodmapKeys=[]\n2026-11-07T07:15:39Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-07T07:15:39Z login.ok userId=200071\n2026-11-07T07:15:39Z logout.begin hasSession=true\n2026-11-07T07:15:39Z logout.end sessionNil=true message=none\n2026-11-07T07:16:01Z app.start automation=none foodmapKeys=[]\n2026-11-07T07:35:24Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-07T07:35:24Z login.ok userId=200074\n2026-11-07T07:35:24Z logout.begin hasSession=true\n2026-11-07T07:35:24Z logout.end sessionNil=true message=none\n2026-11-07T07:35:46Z app.start automation=none foodmapKeys=[]\n2026-11-07T07:39:28Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-07T07:39:28Z login.ok userId=200078\n2026-11-07T07:39:28Z logout.begin hasSession=true\n2026-11-07T07:39:28Z logout.end sessionNil=true message=none\n2026-11-07T07:39:49Z app.start automation=none foodmapKeys=[]\n2026-11-07T08:05:50Z app.start automation=none foodmapKeys=[]\n2026-11-07T08:06:06Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-07T08:06:06Z login.ok userId=200084\n2026-11-07T08:06:06Z logout.begin hasSession=true\n2026-11-07T08:06:06Z logout.end sessionNil=true message=none\n2026-11-07T08:06:25Z app.start automation=none foodmapKeys=[]\n2026-11-07T08:06:41Z app.start automation=none foodmapKeys=[]\n2026-11-07T08:12:15Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-07T08:12:15Z login.ok userId=200089\n2026-11-07T08:12:15Z logout.begin hasSession=true\n2026-11-07T08:12:15Z logout.end sessionNil=true message=none\n2026-11-07T08:12:36Z app.start automation=none foodmapKeys=[]\n2026-11-07T08:39:50Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-07T08:39:50Z login.ok userId=200093\n2026-11-07T08:39:50Z logout.begin hasSession=true\n2026-11-07T08:39:50Z logout.end sessionNil=true message=none\n2026-11-07T08:40:12Z app.start automation=none foodmapKeys=[]\n2026-11-07T08:43:06Z app.start automation=none foodmapKeys=[]\n2026-11-07T08:43:22Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-07T08:43:22Z login.ok userId=200099\n2026-11-07T08:43:22Z logout.begin hasSession=true\n2026-11-07T08:43:22Z logout.end sessionNil=true message=none\n2026-11-07T08:43:41Z app.start automation=none foodmapKeys=[]\n2026-11-07T08:43:57Z app.start automation=none foodmapKeys=[]\n2026-11-07T08:49:00Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-07T08:49:00Z login.ok userId=200103\n2026-11-07T08:49:00Z logout.begin hasSession=true\n2026-11-07T08:49:00Z logout.end sessionNil=true message=none\n2026-11-07T08:49:52Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-07T08:49:52Z login.ok userId=200105\n2026-11-07T08:49:52Z logout.begin hasSession=true\n2026-11-07T08:49:52Z logout.end sessionNil=true message=none\n2026-11-07T08:50:13Z app.start automation=none foodmapKeys=[]\n2026-11-07T08:50:42Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-07T08:50:42Z login.ok userId=200109\n2026-11-07T08:50:42Z logout.begin hasSession=true\n2026-11-07T08:50:42Z logout.end sessionNil=true message=none\n2026-11-07T08:51:02Z app.start automation=none foodmapKeys=[]\n2026-11-07T08:54:05Z app.start automation=none foodmapKeys=[]\n2026-11-07T08:54:21Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-07T08:54:21Z login.ok userId=200115\n2026-11-07T08:54:21Z logout.begin hasSession=true\n2026-11-07T08:54:21Z logout.end sessionNil=true message=none\n2026-11-07T08:54:40Z app.start automation=none foodmapKeys=[]\n2026-11-07T08:54:56Z app.start automation=none foodmapKeys=[]\n2026-11-09T04:05:13Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-09T04:05:13Z login.ok userId=200120\n2026-11-09T04:05:13Z logout.begin hasSession=true\n2026-11-09T04:05:14Z logout.end sessionNil=true message=none\n2026-11-09T04:07:11Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-09T04:07:11Z login.ok userId=200124\n2026-11-09T04:07:11Z logout.begin hasSession=true\n2026-11-09T04:07:11Z logout.end sessionNil=true message=none\n2026-11-09T04:07:38Z app.start automation=none foodmapKeys=[]\n2026-11-09T04:09:26Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-09T04:09:26Z login.ok userId=200128\n2026-11-09T04:09:26Z logout.begin hasSession=true\n2026-11-09T04:09:26Z logout.end sessionNil=true message=none\n2026-11-09T04:11:19Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-09T04:11:19Z login.ok userId=200132\n2026-11-09T04:11:19Z logout.begin hasSession=true\n2026-11-09T04:11:20Z logout.end sessionNil=true message=none\n2026-11-09T04:11:40Z app.start automation=none foodmapKeys=[]\n2026-11-09T06:31:22Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-09T06:31:23Z login.ok userId=200140\n2026-11-09T06:31:23Z logout.begin hasSession=true\n2026-11-09T06:31:23Z logout.end sessionNil=true message=none\n2026-11-09T06:31:51Z app.start automation=none foodmapKeys=[]\n2026-11-09T06:37:24Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-09T06:37:24Z login.ok userId=200150\n2026-11-09T06:37:24Z logout.begin hasSession=true\n2026-11-09T06:37:25Z logout.end sessionNil=true message=none\n2026-11-09T06:37:47Z app.start automation=none foodmapKeys=[]\n2026-11-09T06:47:09Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-09T06:47:10Z login.ok userId=200154\n2026-11-09T06:47:10Z logout.begin hasSession=true\n2026-11-09T06:47:10Z logout.end sessionNil=true message=none\n2026-11-09T06:47:31Z app.start automation=none foodmapKeys=[]\n2026-11-09T06:51:24Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-09T06:51:24Z login.ok userId=200158\n2026-11-09T06:51:24Z logout.begin hasSession=true\n2026-11-09T06:51:24Z logout.end sessionNil=true message=none\n2026-11-09T06:51:45Z app.start automation=none foodmapKeys=[]\n2026-11-09T08:36:39Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-09T08:36:39Z login.ok userId=200170\n2026-11-09T08:36:39Z logout.begin hasSession=true\n2026-11-09T08:36:40Z logout.end sessionNil=true message=none\n2026-11-09T08:37:19Z app.start automation=none foodmapKeys=[]\n2026-11-09T08:37:40Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-09T08:37:40Z login.ok userId=200174\n2026-11-09T08:37:40Z logout.begin hasSession=true\n2026-11-09T08:37:40Z logout.end sessionNil=true message=none\n2026-11-09T08:38:03Z app.start automation=none foodmapKeys=[]\n2026-11-09T08:38:22Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-09T08:38:22Z login.ok userId=200178\n2026-11-09T08:38:22Z logout.begin hasSession=true\n2026-11-09T08:38:22Z logout.end sessionNil=true message=none\n2026-11-09T08:38:45Z app.start automation=none foodmapKeys=[]\n2026-11-09T09:53:37Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-09T09:53:38Z login.ok userId=200184\n2026-11-09T09:53:38Z logout.begin hasSession=true\n2026-11-09T09:53:38Z logout.end sessionNil=true message=none\n2026-11-10T01:26:32Z app.start automation=none foodmapKeys=[]\n2026-11-10T01:27:23Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-10T01:27:23Z login.ok userId=200193\n2026-11-10T01:27:23Z logout.begin hasSession=true\n2026-11-10T01:27:23Z logout.end sessionNil=true message=none\n2026-11-10T01:27:56Z app.start automation=none foodmapKeys=[]\n2026-11-10T01:36:06Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-10T01:36:06Z login.ok userId=200198\n2026-11-10T01:36:06Z logout.begin hasSession=true\n2026-11-10T01:36:06Z logout.end sessionNil=true message=none\n2026-11-10T01:36:38Z app.start automation=none foodmapKeys=[]\n2026-11-10T01:38:32Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-10T01:38:32Z login.ok userId=200203\n2026-11-10T01:38:32Z logout.begin hasSession=true\n2026-11-10T01:38:32Z logout.end sessionNil=true message=none\n",
+        "value": "2026-11-05T07:35:18Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-05T07:35:18Z login.ok userId=200024\n2026-11-05T07:35:18Z logout.begin hasSession=true\n2026-11-05T07:35:18Z logout.end sessionNil=true message=none\n2026-11-05T07:36:31Z app.start automation=logout foodmapKeys=[\"FOODMAP_AUTOMATION\"]\n2026-11-05T07:36:31Z logout.begin hasSession=false\n2026-11-05T07:36:31Z logout.end sessionNil=true message=none\n2026-11-05T07:45:57Z app.start automation=error-states foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-05T07:45:57Z bad-password status=401 code=UNAUTHORIZED clearAuth=true message=账号或密码错误\n2026-11-05T07:45:57Z gateway-down status=-1 code=none clearAuth=false message=无法连接后端服务，请确认 Gateway 已启动\n2026-11-05T07:46:15Z app.start automation=keep-token foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-05T07:46:15Z retention.loginOk tokenPresent=true\n2026-11-05T07:46:15Z retention.tempCall status=-1 code=none clearAuth=false message=无法连接后端服务，请确认 Gateway 已启动\n2026-11-05T07:46:15Z retention.afterTempCall tokenPresent=true\n2026-11-05T07:46:15Z retention.afterRestoreDead tokenPresent=true sessionNil=true message=无法连接后端服务，请确认 Gateway 已启动\n2026-11-05T07:46:15Z retention.afterRecovery tokenPresent=true userId=200024\n2026-11-05T07:46:15Z retention.cleanup tokenPresent=false sessionNil=true\n2026-11-05T07:54:12Z app.start automation=login-disabled foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-05T07:54:12Z disabled.login status=403 code=FORBIDDEN clearAuth=true message=账号状态不允许登录 tokenPresent=false\n2026-11-05T07:56:38Z app.start automation=session-expired foodmapKeys=[\"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_SEED_ACCESS_TOKEN\", \"FOODMAP_SEED_REFRESH_TOKEN\"]\n2026-11-05T07:56:38Z expired.seeded tokenPresent=true\n2026-11-05T07:56:38Z expired.restore sessionNil=true tokenPresent=false message=Access Token已过期\n2026-11-05T08:05:58Z app.start automation=register-checks foodmapKeys=[\"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_NEW_ACCOUNT\"]\n2026-11-05T08:05:58Z register.shortPassword status=400 code=BAD_REQUEST clearAuth=false message=password 个数必须在8和128之间\n2026-11-05T08:05:58Z register.valid userId=200027 accountStatus=NORMAL\n2026-11-05T08:12:53Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-05T08:12:54Z login.ok userId=200024\n2026-11-05T08:12:54Z logout.begin hasSession=true\n2026-11-05T08:12:54Z logout.end sessionNil=true message=none\n2026-11-05T08:27:12Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_PASSWORD\"]\n2026-11-05T08:27:12Z login.ok userId=200024\n2026-11-05T08:27:12Z logout.begin hasSession=true\n2026-11-05T08:27:12Z logout.end sessionNil=true message=none\n2026-11-05T08:27:32Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-05T08:27:32Z login.ok userId=200024\n2026-11-05T08:27:32Z logout.begin hasSession=true\n2026-11-05T08:27:32Z logout.end sessionNil=true message=none\n2026-11-06T05:32:37Z app.start automation=none foodmapKeys=[]\n2026-11-06T05:32:42Z app.start automation=none foodmapKeys=[]\n2026-11-06T05:32:49Z app.start automation=none foodmapKeys=[]\n2026-11-06T05:40:19Z app.start automation=none foodmapKeys=[]\n2026-11-06T05:50:20Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-06T05:50:20Z login.ok userId=200024\n2026-11-06T05:50:20Z logout.begin hasSession=true\n2026-11-06T05:50:20Z logout.end sessionNil=true message=none\n2026-11-06T05:50:39Z app.start automation=none foodmapKeys=[]\n2026-11-06T05:52:27Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-06T05:52:27Z login.ok userId=200024\n2026-11-06T05:52:27Z logout.begin hasSession=true\n2026-11-06T05:52:27Z logout.end sessionNil=true message=none\n2026-11-06T05:52:46Z app.start automation=none foodmapKeys=[]\n2026-11-06T06:06:40Z app.start automation=none foodmapKeys=[]\n2026-11-06T06:07:14Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-06T06:07:14Z login.ok userId=200024\n2026-11-06T06:07:14Z logout.begin hasSession=true\n2026-11-06T06:07:14Z logout.end sessionNil=true message=none\n2026-11-06T06:07:32Z app.start automation=none foodmapKeys=[]\n2026-11-06T06:08:15Z app.start automation=none foodmapKeys=[]\n2026-11-06T06:11:09Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-06T06:11:09Z login.ok userId=200024\n2026-11-06T06:11:09Z logout.begin hasSession=true\n2026-11-06T06:11:09Z logout.end sessionNil=true message=none\n2026-11-06T06:11:28Z app.start automation=none foodmapKeys=[]\n2026-11-06T09:47:53Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-06T09:47:53Z login.ok userId=200052\n2026-11-06T09:47:53Z logout.begin hasSession=true\n2026-11-06T09:47:54Z logout.end sessionNil=true message=none\n2026-11-06T09:48:23Z app.start automation=none foodmapKeys=[]\n2026-11-06T09:49:13Z app.start automation=none foodmapKeys=[]\n2026-11-06T09:49:26Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-06T09:49:26Z login.ok userId=200056\n2026-11-06T09:49:26Z logout.begin hasSession=true\n2026-11-06T09:49:26Z logout.end sessionNil=true message=none\n2026-11-06T09:49:50Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-06T09:49:50Z login.ok userId=200058\n2026-11-06T09:49:50Z logout.begin hasSession=true\n2026-11-06T09:49:50Z logout.end sessionNil=true message=none\n2026-11-06T09:50:13Z app.start automation=none foodmapKeys=[]\n2026-11-06T09:50:58Z app.start automation=none foodmapKeys=[]\n2026-11-06T09:51:21Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-06T09:51:21Z login.failed error=server(status: 401, code: \"UNAUTHORIZED\", message: \"账号或密码错误\")\n2026-11-06T09:51:39Z app.start automation=none foodmapKeys=[]\n2026-11-07T06:49:06Z app.start automation=none foodmapKeys=[]\n2026-11-07T06:49:23Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-07T06:49:24Z login.failed error=server(status: 401, code: \"UNAUTHORIZED\", message: \"账号或密码错误\")\n2026-11-07T06:49:41Z app.start automation=none foodmapKeys=[]\n2026-11-07T06:49:57Z app.start automation=none foodmapKeys=[]\n2026-11-07T07:15:39Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-07T07:15:39Z login.ok userId=200071\n2026-11-07T07:15:39Z logout.begin hasSession=true\n2026-11-07T07:15:39Z logout.end sessionNil=true message=none\n2026-11-07T07:16:01Z app.start automation=none foodmapKeys=[]\n2026-11-07T07:35:24Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-07T07:35:24Z login.ok userId=200074\n2026-11-07T07:35:24Z logout.begin hasSession=true\n2026-11-07T07:35:24Z logout.end sessionNil=true message=none\n2026-11-07T07:35:46Z app.start automation=none foodmapKeys=[]\n2026-11-07T07:39:28Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-07T07:39:28Z login.ok userId=200078\n2026-11-07T07:39:28Z logout.begin hasSession=true\n2026-11-07T07:39:28Z logout.end sessionNil=true message=none\n2026-11-07T07:39:49Z app.start automation=none foodmapKeys=[]\n2026-11-07T08:05:50Z app.start automation=none foodmapKeys=[]\n2026-11-07T08:06:06Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-07T08:06:06Z login.ok userId=200084\n2026-11-07T08:06:06Z logout.begin hasSession=true\n2026-11-07T08:06:06Z logout.end sessionNil=true message=none\n2026-11-07T08:06:25Z app.start automation=none foodmapKeys=[]\n2026-11-07T08:06:41Z app.start automation=none foodmapKeys=[]\n2026-11-07T08:12:15Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-07T08:12:15Z login.ok userId=200089\n2026-11-07T08:12:15Z logout.begin hasSession=true\n2026-11-07T08:12:15Z logout.end sessionNil=true message=none\n2026-11-07T08:12:36Z app.start automation=none foodmapKeys=[]\n2026-11-07T08:39:50Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-07T08:39:50Z login.ok userId=200093\n2026-11-07T08:39:50Z logout.begin hasSession=true\n2026-11-07T08:39:50Z logout.end sessionNil=true message=none\n2026-11-07T08:40:12Z app.start automation=none foodmapKeys=[]\n2026-11-07T08:43:06Z app.start automation=none foodmapKeys=[]\n2026-11-07T08:43:22Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-07T08:43:22Z login.ok userId=200099\n2026-11-07T08:43:22Z logout.begin hasSession=true\n2026-11-07T08:43:22Z logout.end sessionNil=true message=none\n2026-11-07T08:43:41Z app.start automation=none foodmapKeys=[]\n2026-11-07T08:43:57Z app.start automation=none foodmapKeys=[]\n2026-11-07T08:49:00Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-07T08:49:00Z login.ok userId=200103\n2026-11-07T08:49:00Z logout.begin hasSession=true\n2026-11-07T08:49:00Z logout.end sessionNil=true message=none\n2026-11-07T08:49:52Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-07T08:49:52Z login.ok userId=200105\n2026-11-07T08:49:52Z logout.begin hasSession=true\n2026-11-07T08:49:52Z logout.end sessionNil=true message=none\n2026-11-07T08:50:13Z app.start automation=none foodmapKeys=[]\n2026-11-07T08:50:42Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-07T08:50:42Z login.ok userId=200109\n2026-11-07T08:50:42Z logout.begin hasSession=true\n2026-11-07T08:50:42Z logout.end sessionNil=true message=none\n2026-11-07T08:51:02Z app.start automation=none foodmapKeys=[]\n2026-11-07T08:54:05Z app.start automation=none foodmapKeys=[]\n2026-11-07T08:54:21Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-07T08:54:21Z login.ok userId=200115\n2026-11-07T08:54:21Z logout.begin hasSession=true\n2026-11-07T08:54:21Z logout.end sessionNil=true message=none\n2026-11-07T08:54:40Z app.start automation=none foodmapKeys=[]\n2026-11-07T08:54:56Z app.start automation=none foodmapKeys=[]\n2026-11-09T04:05:13Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-09T04:05:13Z login.ok userId=200120\n2026-11-09T04:05:13Z logout.begin hasSession=true\n2026-11-09T04:05:14Z logout.end sessionNil=true message=none\n2026-11-09T04:07:11Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-09T04:07:11Z login.ok userId=200124\n2026-11-09T04:07:11Z logout.begin hasSession=true\n2026-11-09T04:07:11Z logout.end sessionNil=true message=none\n2026-11-09T04:07:38Z app.start automation=none foodmapKeys=[]\n2026-11-09T04:09:26Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-09T04:09:26Z login.ok userId=200128\n2026-11-09T04:09:26Z logout.begin hasSession=true\n2026-11-09T04:09:26Z logout.end sessionNil=true message=none\n2026-11-09T04:11:19Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-09T04:11:19Z login.ok userId=200132\n2026-11-09T04:11:19Z logout.begin hasSession=true\n2026-11-09T04:11:20Z logout.end sessionNil=true message=none\n2026-11-09T04:11:40Z app.start automation=none foodmapKeys=[]\n2026-11-09T06:31:22Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-09T06:31:23Z login.ok userId=200140\n2026-11-09T06:31:23Z logout.begin hasSession=true\n2026-11-09T06:31:23Z logout.end sessionNil=true message=none\n2026-11-09T06:31:51Z app.start automation=none foodmapKeys=[]\n2026-11-09T06:37:24Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-09T06:37:24Z login.ok userId=200150\n2026-11-09T06:37:24Z logout.begin hasSession=true\n2026-11-09T06:37:25Z logout.end sessionNil=true message=none\n2026-11-09T06:37:47Z app.start automation=none foodmapKeys=[]\n2026-11-09T06:47:09Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-09T06:47:10Z login.ok userId=200154\n2026-11-09T06:47:10Z logout.begin hasSession=true\n2026-11-09T06:47:10Z logout.end sessionNil=true message=none\n2026-11-09T06:47:31Z app.start automation=none foodmapKeys=[]\n2026-11-09T06:51:24Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-09T06:51:24Z login.ok userId=200158\n2026-11-09T06:51:24Z logout.begin hasSession=true\n2026-11-09T06:51:24Z logout.end sessionNil=true message=none\n2026-11-09T06:51:45Z app.start automation=none foodmapKeys=[]\n2026-11-09T08:36:39Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-09T08:36:39Z login.ok userId=200170\n2026-11-09T08:36:39Z logout.begin hasSession=true\n2026-11-09T08:36:40Z logout.end sessionNil=true message=none\n2026-11-09T08:37:19Z app.start automation=none foodmapKeys=[]\n2026-11-09T08:37:40Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-09T08:37:40Z login.ok userId=200174\n2026-11-09T08:37:40Z logout.begin hasSession=true\n2026-11-09T08:37:40Z logout.end sessionNil=true message=none\n2026-11-09T08:38:03Z app.start automation=none foodmapKeys=[]\n2026-11-09T08:38:22Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-09T08:38:22Z login.ok userId=200178\n2026-11-09T08:38:22Z logout.begin hasSession=true\n2026-11-09T08:38:22Z logout.end sessionNil=true message=none\n2026-11-09T08:38:45Z app.start automation=none foodmapKeys=[]\n2026-11-09T09:53:37Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-09T09:53:38Z login.ok userId=200184\n2026-11-09T09:53:38Z logout.begin hasSession=true\n2026-11-09T09:53:38Z logout.end sessionNil=true message=none\n2026-11-10T01:26:32Z app.start automation=none foodmapKeys=[]\n2026-11-10T01:27:23Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-10T01:27:23Z login.ok userId=200193\n2026-11-10T01:27:23Z logout.begin hasSession=true\n2026-11-10T01:27:23Z logout.end sessionNil=true message=none\n2026-11-10T01:27:56Z app.start automation=none foodmapKeys=[]\n2026-11-10T01:36:06Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-10T01:36:06Z login.ok userId=200198\n2026-11-10T01:36:06Z logout.begin hasSession=true\n2026-11-10T01:36:06Z logout.end sessionNil=true message=none\n2026-11-10T01:36:38Z app.start automation=none foodmapKeys=[]\n2026-11-10T01:38:32Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-10T01:38:32Z login.ok userId=200203\n2026-11-10T01:38:32Z logout.begin hasSession=true\n2026-11-10T01:38:32Z logout.end sessionNil=true message=none\n",
+        "bytes": 17045
+      },
+      "checks": [
+        {
+          "name": "contains",
+          "expected": [
+            "login.ok",
+            "logout.begin hasSession=true",
+            "logout.end sessionNil=true"
+          ],
+          "actual": "2026-11-05T07:35:18Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-05T07:35:18Z login.ok userId=200024\n2026-11-05T07:35:18Z logout.begin hasSession=true\n2026-11-05T07:35:18Z logout.end sessionNil=true message=none\n2026-11-05T07:36:31Z app.start automation=logout foodmapKeys=[\"FOODMAP_AUTOMATION\"]\n2026-11-05T07:36:31Z logout.begin hasSession=false\n2026-11-05T07:36:31Z logout.end sessionNil=true message=none\n2026-11-05T07:45:57Z app.start automation=error-states foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-05T07:45:57Z bad-password status=401 code=UNAUTHORIZED clearAuth=true message=账号或密码错误\n2026-11-05T07:45:57Z gateway-down status=-1 code=none clearAuth=false message=无法连接后端服务，请确认 Gateway 已启动\n2026-11-05T07:46:15Z app.start automation=keep-token foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-05T07:46:15Z retention.loginOk tokenPresent=true\n2026-11-05T07:46:15Z retention.tempCall status=-1 code=none clearAuth=false message=无法连接后端服务，请确认 Gateway 已启动\n2026-11-05T07:46:15Z retention.afterTempCall tokenPresent=true\n2026-11-05T07:46:15Z retention.afterRestoreDead tokenPresent=true sessionNil=true message=无法连接后端服务，请确认 Gateway 已启动\n2026-11-05T07:46:15Z retention.afterRecovery tokenPresent=true userId=200024\n2026-11-05T07:46:15Z retention.cleanup tokenPresent=false sessionNil=true\n2026-11-05T07:54:12Z app.start automation=login-disabled foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-05T07:54:12Z disabled.login status=403 code=FORBIDDEN clearAuth=true message=账号状态不允许登录 tokenPresent=false\n2026-11-05T07:56:38Z app.start automation=session-expired foodmapKeys=[\"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_SEED_ACCESS_TOKEN\", \"FOODMAP_SEED_REFRESH_TOKEN\"]\n2026-11-05T07:56:38Z expired.seeded tokenPresent=true\n2026-11-05T07:56:38Z expired.restore sessionNil=true tokenPresent=false message=Access Token已过期\n2026-11-05T08:05:58Z app.start automation=register-checks foodmapKeys=[\"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_NEW_ACCOUNT\"]\n2026-11-05T08:05:58Z register.shortPassword status=400 code=BAD_REQUEST clearAuth=false message=password 个数必须在8和128之间\n2026-11-05T08:05:58Z register.valid userId=200027 accountStatus=NORMAL\n2026-11-05T08:12:53Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-05T08:12:54Z login.ok userId=200024\n2026-11-05T08:12:54Z logout.begin hasSession=true\n2026-11-05T08:12:54Z logout.end sessionNil=true message=none\n2026-11-05T08:27:12Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_PASSWORD\"]\n2026-11-05T08:27:12Z login.ok userId=200024\n2026-11-05T08:27:12Z logout.begin hasSession=true\n2026-11-05T08:27:12Z logout.end sessionNil=true message=none\n2026-11-05T08:27:32Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-05T08:27:32Z login.ok userId=200024\n2026-11-05T08:27:32Z logout.begin hasSession=true\n2026-11-05T08:27:32Z logout.end sessionNil=true message=none\n2026-11-06T05:32:37Z app.start automation=none foodmapKeys=[]\n2026-11-06T05:32:42Z app.start automation=none foodmapKeys=[]\n2026-11-06T05:32:49Z app.start automation=none foodmapKeys=[]\n2026-11-06T05:40:19Z app.start automation=none foodmapKeys=[]\n2026-11-06T05:50:20Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-06T05:50:20Z login.ok userId=200024\n2026-11-06T05:50:20Z logout.begin hasSession=true\n2026-11-06T05:50:20Z logout.end sessionNil=true message=none\n2026-11-06T05:50:39Z app.start automation=none foodmapKeys=[]\n2026-11-06T05:52:27Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-06T05:52:27Z login.ok userId=200024\n2026-11-06T05:52:27Z logout.begin hasSession=true\n2026-11-06T05:52:27Z logout.end sessionNil=true message=none\n2026-11-06T05:52:46Z app.start automation=none foodmapKeys=[]\n2026-11-06T06:06:40Z app.start automation=none foodmapKeys=[]\n2026-11-06T06:07:14Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-06T06:07:14Z login.ok userId=200024\n2026-11-06T06:07:14Z logout.begin hasSession=true\n2026-11-06T06:07:14Z logout.end sessionNil=true message=none\n2026-11-06T06:07:32Z app.start automation=none foodmapKeys=[]\n2026-11-06T06:08:15Z app.start automation=none foodmapKeys=[]\n2026-11-06T06:11:09Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-06T06:11:09Z login.ok userId=200024\n2026-11-06T06:11:09Z logout.begin hasSession=true\n2026-11-06T06:11:09Z logout.end sessionNil=true message=none\n2026-11-06T06:11:28Z app.start automation=none foodmapKeys=[]\n2026-11-06T09:47:53Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-06T09:47:53Z login.ok userId=200052\n2026-11-06T09:47:53Z logout.begin hasSession=true\n2026-11-06T09:47:54Z logout.end sessionNil=true message=none\n2026-11-06T09:48:23Z app.start automation=none foodmapKeys=[]\n2026-11-06T09:49:13Z app.start automation=none foodmapKeys=[]\n2026-11-06T09:49:26Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-06T09:49:26Z login.ok userId=200056\n2026-11-06T09:49:26Z logout.begin hasSession=true\n2026-11-06T09:49:26Z logout.end sessionNil=true message=none\n2026-11-06T09:49:50Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-06T09:49:50Z login.ok userId=200058\n2026-11-06T09:49:50Z logout.begin hasSession=true\n2026-11-06T09:49:50Z logout.end sessionNil=true message=none\n2026-11-06T09:50:13Z app.start automation=none foodmapKeys=[]\n2026-11-06T09:50:58Z app.start automation=none foodmapKeys=[]\n2026-11-06T09:51:21Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-06T09:51:21Z login.failed error=server(status: 401, code: \"UNAUTHORIZED\", message: \"账号或密码错误\")\n2026-11-06T09:51:39Z app.start automation=none foodmapKeys=[]\n2026-11-07T06:49:06Z app.start automation=none foodmapKeys=[]\n2026-11-07T06:49:23Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-07T06:49:24Z login.failed error=server(status: 401, code: \"UNAUTHORIZED\", message: \"账号或密码错误\")\n2026-11-07T06:49:41Z app.start automation=none foodmapKeys=[]\n2026-11-07T06:49:57Z app.start automation=none foodmapKeys=[]\n2026-11-07T07:15:39Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-07T07:15:39Z login.ok userId=200071\n2026-11-07T07:15:39Z logout.begin hasSession=true\n2026-11-07T07:15:39Z logout.end sessionNil=true message=none\n2026-11-07T07:16:01Z app.start automation=none foodmapKeys=[]\n2026-11-07T07:35:24Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-07T07:35:24Z login.ok userId=200074\n2026-11-07T07:35:24Z logout.begin hasSession=true\n2026-11-07T07:35:24Z logout.end sessionNil=true message=none\n2026-11-07T07:35:46Z app.start automation=none foodmapKeys=[]\n2026-11-07T07:39:28Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-07T07:39:28Z login.ok userId=200078\n2026-11-07T07:39:28Z logout.begin hasSession=true\n2026-11-07T07:39:28Z logout.end sessionNil=true message=none\n2026-11-07T07:39:49Z app.start automation=none foodmapKeys=[]\n2026-11-07T08:05:50Z app.start automation=none foodmapKeys=[]\n2026-11-07T08:06:06Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-07T08:06:06Z login.ok userId=200084\n2026-11-07T08:06:06Z logout.begin hasSession=true\n2026-11-07T08:06:06Z logout.end sessionNil=true message=none\n2026-11-07T08:06:25Z app.start automation=none foodmapKeys=[]\n2026-11-07T08:06:41Z app.start automation=none foodmapKeys=[]\n2026-11-07T08:12:15Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-07T08:12:15Z login.ok userId=200089\n2026-11-07T08:12:15Z logout.begin hasSession=true\n2026-11-07T08:12:15Z logout.end sessionNil=true message=none\n2026-11-07T08:12:36Z app.start automation=none foodmapKeys=[]\n2026-11-07T08:39:50Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-07T08:39:50Z login.ok userId=200093\n2026-11-07T08:39:50Z logout.begin hasSession=true\n2026-11-07T08:39:50Z logout.end sessionNil=true message=none\n2026-11-07T08:40:12Z app.start automation=none foodmapKeys=[]\n2026-11-07T08:43:06Z app.start automation=none foodmapKeys=[]\n2026-11-07T08:43:22Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-07T08:43:22Z login.ok userId=200099\n2026-11-07T08:43:22Z logout.begin hasSession=true\n2026-11-07T08:43:22Z logout.end sessionNil=true message=none\n2026-11-07T08:43:41Z app.start automation=none foodmapKeys=[]\n2026-11-07T08:43:57Z app.start automation=none foodmapKeys=[]\n2026-11-07T08:49:00Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-07T08:49:00Z login.ok userId=200103\n2026-11-07T08:49:00Z logout.begin hasSession=true\n2026-11-07T08:49:00Z logout.end sessionNil=true message=none\n2026-11-07T08:49:52Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-07T08:49:52Z login.ok userId=200105\n2026-11-07T08:49:52Z logout.begin hasSession=true\n2026-11-07T08:49:52Z logout.end sessionNil=true message=none\n2026-11-07T08:50:13Z app.start automation=none foodmapKeys=[]\n2026-11-07T08:50:42Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-07T08:50:42Z login.ok userId=200109\n2026-11-07T08:50:42Z logout.begin hasSession=true\n2026-11-07T08:50:42Z logout.end sessionNil=true message=none\n2026-11-07T08:51:02Z app.start automation=none foodmapKeys=[]\n2026-11-07T08:54:05Z app.start automation=none foodmapKeys=[]\n2026-11-07T08:54:21Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-07T08:54:21Z login.ok userId=200115\n2026-11-07T08:54:21Z logout.begin hasSession=true\n2026-11-07T08:54:21Z logout.end sessionNil=true message=none\n2026-11-07T08:54:40Z app.start automation=none foodmapKeys=[]\n2026-11-07T08:54:56Z app.start automation=none foodmapKeys=[]\n2026-11-09T04:05:13Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-09T04:05:13Z login.ok userId=200120\n2026-11-09T04:05:13Z logout.begin hasSession=true\n2026-11-09T04:05:14Z logout.end sessionNil=true message=none\n2026-11-09T04:07:11Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-09T04:07:11Z login.ok userId=200124\n2026-11-09T04:07:11Z logout.begin hasSession=true\n2026-11-09T04:07:11Z logout.end sessionNil=true message=none\n2026-11-09T04:07:38Z app.start automation=none foodmapKeys=[]\n2026-11-09T04:09:26Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-09T04:09:26Z login.ok userId=200128\n2026-11-09T04:09:26Z logout.begin hasSession=true\n2026-11-09T04:09:26Z logout.end sessionNil=true message=none\n2026-11-09T04:11:19Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-09T04:11:19Z login.ok userId=200132\n2026-11-09T04:11:19Z logout.begin hasSession=true\n2026-11-09T04:11:20Z logout.end sessionNil=true message=none\n2026-11-09T04:11:40Z app.start automation=none foodmapKeys=[]\n2026-11-09T06:31:22Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-09T06:31:23Z login.ok userId=200140\n2026-11-09T06:31:23Z logout.begin hasSession=true\n2026-11-09T06:31:23Z logout.end sessionNil=true message=none\n2026-11-09T06:31:51Z app.start automation=none foodmapKeys=[]\n2026-11-09T06:37:24Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-09T06:37:24Z login.ok userId=200150\n2026-11-09T06:37:24Z logout.begin hasSession=true\n2026-11-09T06:37:25Z logout.end sessionNil=true message=none\n2026-11-09T06:37:47Z app.start automation=none foodmapKeys=[]\n2026-11-09T06:47:09Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-09T06:47:10Z login.ok userId=200154\n2026-11-09T06:47:10Z logout.begin hasSession=true\n2026-11-09T06:47:10Z logout.end sessionNil=true message=none\n2026-11-09T06:47:31Z app.start automation=none foodmapKeys=[]\n2026-11-09T06:51:24Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-09T06:51:24Z login.ok userId=200158\n2026-11-09T06:51:24Z logout.begin hasSession=true\n2026-11-09T06:51:24Z logout.end sessionNil=true message=none\n2026-11-09T06:51:45Z app.start automation=none foodmapKeys=[]\n2026-11-09T08:36:39Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-09T08:36:39Z login.ok userId=200170\n2026-11-09T08:36:39Z logout.begin hasSession=true\n2026-11-09T08:36:40Z logout.end sessionNil=true message=none\n2026-11-09T08:37:19Z app.start automation=none foodmapKeys=[]\n2026-11-09T08:37:40Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-09T08:37:40Z login.ok userId=200174\n2026-11-09T08:37:40Z logout.begin hasSession=true\n2026-11-09T08:37:40Z logout.end sessionNil=true message=none\n2026-11-09T08:38:03Z app.start automation=none foodmapKeys=[]\n2026-11-09T08:38:22Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-09T08:38:22Z login.ok userId=200178\n2026-11-09T08:38:22Z logout.begin hasSession=true\n2026-11-09T08:38:22Z logout.end sessionNil=true message=none\n2026-11-09T08:38:45Z app.start automation=none foodmapKeys=[]\n2026-11-09T09:53:37Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-09T09:53:38Z login.ok userId=200184\n2026-11-09T09:53:38Z logout.begin hasSession=true\n2026-11-09T09:53:38Z logout.end sessionNil=true message=none\n2026-11-10T01:26:32Z app.start automation=none foodmapKeys=[]\n2026-11-10T01:27:23Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-10T01:27:23Z login.ok userId=200193\n2026-11-10T01:27:23Z logout.begin hasSession=true\n2026-11-10T01:27:23Z logout.end sessionNil=true message=none\n2026-11-10T01:27:56Z app.start automation=none foodmapKeys=[]\n2026-11-10T01:36:06Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-10T01:36:06Z login.ok userId=200198\n2026-11-10T01:36:06Z logout.begin hasSession=true\n2026-11-10T01:36:06Z logout.end sessionNil=true message=none\n2026-11-10T01:36:38Z app.start automation=none foodmapKeys=[]\n2026-11-10T01:38:32Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-10T01:38:32Z login.ok userId=200203\n2026-11-10T01:38:32Z logout.begin hasSession=true\n2026-11-10T01:38:32Z logout.end sessionNil=true message=none\n",
+          "ok": true,
+          "error": "",
+          "message": ""
+        }
+      ],
+      "captures": [],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 160,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 5,
+      "phase": "step",
+      "action": "command",
+      "display": "command docker exec foodmap-postgres psql -U foodmap -d foodmap_auth_db -tAc \"select count(*) from…",
+      "expected": {
+        "exitCode": 0
+      },
+      "actual": {
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "1\n",
+        "stderr": "",
+        "value": "1",
+        "content": "1\n",
+        "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+      },
+      "checks": [
+        {
+          "name": "exitCode",
+          "expected": 0,
+          "actual": 0,
+          "ok": true,
+          "error": "",
+          "message": ""
+        }
+      ],
+      "captures": [
+        "revoked"
+      ],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 220,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 6,
+      "phase": "step",
+      "action": "command",
+      "display": "command [ 1 -ge 1 ]",
+      "expected": {
+        "exitCode": 0
+      },
+      "actual": {
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "",
+        "stderr": "",
+        "value": "",
+        "content": "",
+        "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+      },
+      "checks": [
+        {
+          "name": "exitCode",
+          "expected": 0,
+          "actual": 0,
+          "ok": true,
+          "error": "",
+          "message": ""
+        }
+      ],
+      "captures": [],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 4,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 1,
+      "phase": "teardown",
+      "action": "command",
+      "display": "command docker exec foodmap-postgres sh -c 'uid=$(psql -U foodmap -d foodmap_auth_db -tAc \"select …",
+      "expected": {
+        "exitCode": 0
+      },
+      "actual": {
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "",
+        "stderr": "",
+        "value": "",
+        "content": "",
+        "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+      },
+      "checks": [
+        {
+          "name": "exitCode",
+          "expected": 0,
+          "actual": 0,
+          "ok": true,
+          "error": "",
+          "message": ""
+        }
+      ],
+      "captures": [],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 689,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 2,
+      "phase": "teardown",
+      "action": "command",
+      "display": "command docker exec foodmap-postgres psql -U foodmap -d foodmap_auth_db -c \"delete from auth_sessi…",
+      "expected": {
+        "exitCode": 0
+      },
+      "actual": {
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "DELETE 1\n",
+        "stderr": "",
+        "value": "DELETE 1",
+        "content": "DELETE 1\n",
+        "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+      },
+      "checks": [
+        {
+          "name": "exitCode",
+          "expected": 0,
+          "actual": 0,
+          "ok": true,
+          "error": "",
+          "message": ""
+        }
+      ],
+      "captures": [],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 210,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 3,
+      "phase": "teardown",
+      "action": "command",
+      "display": "command docker exec foodmap-postgres psql -U foodmap -d foodmap_auth_db -c \"delete from auth_ident…",
+      "expected": {
+        "exitCode": 0
+      },
+      "actual": {
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "DELETE 1\n",
+        "stderr": "",
+        "value": "DELETE 1",
+        "content": "DELETE 1\n",
+        "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+      },
+      "checks": [
+        {
+          "name": "exitCode",
+          "expected": 0,
+          "actual": 0,
+          "ok": true,
+          "error": "",
+          "message": ""
+        }
+      ],
+      "captures": [],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 214,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 4,
+      "phase": "teardown",
+      "action": "command",
+      "display": "command docker exec foodmap-postgres psql -U foodmap -d foodmap_auth_db -c \"delete from login_logs…",
+      "expected": {
+        "exitCode": 0
+      },
+      "actual": {
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "DELETE 1\n",
+        "stderr": "",
+        "value": "DELETE 1",
+        "content": "DELETE 1\n",
+        "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+      },
+      "checks": [
+        {
+          "name": "exitCode",
+          "expected": 0,
+          "actual": 0,
+          "ok": true,
+          "error": "",
+          "message": ""
+        }
+      ],
+      "captures": [],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 203,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 5,
+      "phase": "teardown",
+      "action": "command",
+      "display": "command docker exec foodmap-postgres psql -U foodmap -d foodmap_auth_db -c \"delete from refresh_to…",
+      "expected": {
+        "exitCode": 0
+      },
+      "actual": {
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "DELETE 1\n",
+        "stderr": "",
+        "value": "DELETE 1",
+        "content": "DELETE 1\n",
+        "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+      },
+      "checks": [
+        {
+          "name": "exitCode",
+          "expected": 0,
+          "actual": 0,
+          "ok": true,
+          "error": "",
+          "message": ""
+        }
+      ],
+      "captures": [],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 204,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 6,
+      "phase": "teardown",
+      "action": "command",
+      "display": "command docker exec foodmap-postgres psql -U foodmap -d foodmap_auth_db -c \"delete from auth_crede…",
+      "expected": {
+        "exitCode": 0
+      },
+      "actual": {
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "DELETE 1\n",
+        "stderr": "",
+        "value": "DELETE 1",
+        "content": "DELETE 1\n",
+        "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+      },
+      "checks": [
+        {
+          "name": "exitCode",
+          "expected": 0,
+          "actual": 0,
+          "ok": true,
+          "error": "",
+          "message": ""
+        }
+      ],
+      "captures": [],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 210,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 7,
+      "phase": "teardown",
+      "action": "command",
+      "display": "command docker exec foodmap-postgres psql -U foodmap -d foodmap_auth_db -c \"delete from auth_accou…",
+      "expected": {
+        "exitCode": 0
+      },
+      "actual": {
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "DELETE 1\n",
+        "stderr": "",
+        "value": "DELETE 1",
+        "content": "DELETE 1\n",
+        "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+      },
+      "checks": [
+        {
+          "name": "exitCode",
+          "expected": 0,
+          "actual": 0,
+          "ok": true,
+          "error": "",
+          "message": ""
+        }
+      ],
+      "captures": [],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 194,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 8,
+      "phase": "teardown",
+      "action": "command",
+      "display": "command docker exec foodmap-postgres psql -U foodmap -d foodmap_auth_db -tAc \"select count(*) from…",
+      "expected": {
+        "equals": "0"
+      },
+      "actual": {
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "0\n",
+        "stderr": "",
+        "value": "0",
+        "content": "0\n",
+        "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+      },
+      "checks": [
+        {
+          "name": "equals",
+          "expected": "0",
+          "actual": "0",
+          "ok": true,
+          "error": "",
+          "message": ""
+        }
+      ],
+      "captures": [],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 191,
+      "error": "",
+      "hint": ""
+    }
+  ],
+  "evidence": {
+    "text": "/Users/zhangxuqian/myPrjDev/food-map/docs/integration/B1.5-orbstack-logging/evidence/2026-11-10T09-38-fd8c4ba6-B1 iOS 登录后登出链路.txt",
+    "json": "/Users/zhangxuqian/myPrjDev/food-map/docs/integration/B1.5-orbstack-logging/evidence/2026-11-10T09-38-fd8c4ba6-B1 iOS 登录后登出链路.json"
+  }
+}

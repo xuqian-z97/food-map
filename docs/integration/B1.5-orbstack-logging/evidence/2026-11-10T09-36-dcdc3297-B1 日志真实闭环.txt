@@ -1,0 +1,17 @@
+验证场景: B1 日志真实闭环
+Run ID: run-20261110T013620Z-dcdc3297
+Scenario: /Users/zhangxuqian/myPrjDev/food-map/harness/scenarios/b1-logging-closure.yml
+开始: 2026-11-10T01:36:20.721Z
+结束: 2026-11-10T01:36:32.129Z
+耗时: 11408ms
+结果: FAIL (0/1)
+
+#   结果  耗时     步骤
+1   FAIL  11407ms  command python3 logging-closure-check.py
+
+失败详情:
+[1] command python3 logging-closure-check.py
+  expected: {"exitCode":0,"stdoutContains":"\"result\": \"pass\""}
+  actual: {"exitCode":1,"signal":null,"stdout":"","stderr":"Traceback (most recent call last):\n  File \"/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios/logging-closure-check.py\", line 114, in <module>\n    results.extend([verify(register_rid, 200, 'POST', '/api/auth/register'),\n                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios/logging-closure-check.py\", line 62, in verify\n    source = next(h['_source'] f…
+  exitCode: expected 0 / actual 1
+  stdoutContains: expected "result": "pass" / actual (empty)

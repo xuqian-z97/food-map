@@ -1,0 +1,27 @@
+验证套件: harness/scenarios
+目录: /Users/zhangxuqian/myPrjDev/food-map/harness/scenarios
+开始: 2026-11-10T01:27:17.262Z
+结束: 2026-11-10T01:28:08.988Z
+耗时: 51726ms
+结果: PASS (6/6 个场景，81 个步骤)
+
+统计: 6 通过 / 0 失败 / 0 跳过
+预检 auth-log: READY
+预检 device: READY
+预检 logging-auth: READY
+预检 logging-db: READY
+预检 logging-es: READY
+预检 logging-files: READY
+预检 logging-kafka: READY
+预检 network: READY
+预检 redis: READY
+预检 sql: READY
+预检 test-password: READY
+预检 xcode: READY
+#   结果  耗时       场景
+ok    1666ms     B1 身份模型一致性核验 (scenarios/b1-identity-consistency.yml)
+ok    1608ms     认证双写核验（身份绑定与会话） (scenarios/b1-identity-dual-write.yml)
+ok    14851ms    B1 iOS 登录后登出链路 (scenarios/b1-ios-logout.yml)
+ok    13344ms    B1 日志真实闭环 (scenarios/b1-logging-closure.yml)
+ok    403ms      B1 退出登录链路（接口级） (scenarios/b1-logout.yml)
+ok    17655ms    B1 iOS 登录 UI 全链路 (scenarios/b1-ui-login.yml)

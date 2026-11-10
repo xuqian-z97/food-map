@@ -120,7 +120,32 @@ create database foodmap_media_db owner foodmap;
 
 B1.5-b 起，Kafka 作为日志缓冲管道进入本地 Compose，Fluent Bit 作为本地日志采集器，Elasticsearch 作为本地 7 天热查询存储，Logstash 作为 Kafka 到 Elasticsearch 的本地消费写入器，`log-postgres-migrate` 作为独立日志库迁移器，均进入 `logging` profile，但默认不随基础依赖启动。接口访问摘要由本机或后续容器化的 `foodmap-log-service` 消费落库，Kafka 消费默认关闭，需要显式打开。
 
-启动 Kafka、日志 topic 初始化、Fluent Bit 采集器、Elasticsearch、索引模板初始化、Logstash 消费写入器和日志库迁移：
+Java 在 IDEA/Maven 本机运行时，需要先指定同一个宿主机日志目录，并叠加 host 挂载配置（下文命令从仓库根目录执行）：
+
+```sh
+export FOODMAP_LOGGING_DIR="$HOME/.foodmap/logs"
+mkdir -p "$FOODMAP_LOGGING_DIR"
+# IDEA Run Configuration 的环境变量也设置 FOODMAP_LOGGING_DIR 为上述绝对路径。
+docker compose --env-file .env.dev -f deploy/docker-compose.dev.yml \
+  -f deploy/docker-compose.logging-host.yml --profile logging up -d \
+  kafka kafka-init fluent-bit elasticsearch elasticsearch-init logstash
+```
+
+`.env.dev` 在仓库根目录，不在 `deploy/` 下；缺失时从 `.env.dev.example` 复制。现有 PostgreSQL 数据卷不会重跑初始化 SQL；执行迁移前先确认 `foodmap_log_db` 存在，不存在时仅补建该库，禁止清空整个卷：
+
+```sh
+docker exec foodmap-postgres psql -U foodmap -d postgres -tAc \
+  "select datname from pg_database where datname = 'foodmap_log_db'"
+# 只有上条查询无结果时执行：
+docker exec foodmap-postgres psql -U foodmap -d postgres \
+  -c 'create database foodmap_log_db owner foodmap'
+docker compose --env-file .env.dev -f deploy/docker-compose.dev.yml \
+  --profile logging up log-postgres-migrate
+```
+
+OrbStack 在启动后可通过 `docker info` 验证引擎就绪。镜像首次下载依赖 Docker Hub 和 Elastic 官方仓库连通性；EOF、超时或标签不存在必须分别排查，不以运行中的容器数量代替链路验收。停止日志组件使用 `stop kafka fluent-bit elasticsearch logstash`，不要对整个项目执行 `down -v`，后者会删除业务数据库等已有卷。
+
+容器化应用使用基础配置的命名卷。启动 Kafka、日志 topic 初始化、Fluent Bit 采集器、Elasticsearch、索引模板初始化、Logstash 消费写入器和日志库迁移：
 
 ```sh
 docker compose --env-file .env.dev -f deploy/docker-compose.dev.yml --profile logging up -d kafka kafka-init fluent-bit elasticsearch elasticsearch-init logstash log-postgres-migrate
@@ -129,7 +154,7 @@ docker compose --env-file .env.dev -f deploy/docker-compose.dev.yml --profile lo
 查看日志 topic：
 
 ```sh
-docker exec -it foodmap-kafka kafka-topics.sh --bootstrap-server localhost:9092 --list
+docker exec -it foodmap-kafka /opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --list
 ```
 
 默认创建：
@@ -142,7 +167,7 @@ foodmap.logs.audit
 foodmap.logs.security
 ```
 
-Kafka 对外暴露 `localhost:9094`，容器网络内使用 `kafka:9092`。Fluent Bit 读取 `foodmap-app-logs` 共享卷中的 `/foodmap/logs/*.log`，按日志事件名前缀分流：`api.access.*` 进入 `foodmap.logs.api-access`，`sql.execute.*` 进入 `foodmap.logs.sql`，`audit.*` 和 `security.*` 分别进入对应 topic，未匹配日志进入 `foodmap.logs.application`。
+Kafka 使用 Apache 官方 `apache/kafka:3.9.1` ARM64 镜像，对外暴露 `localhost:9094`，容器网络内使用 `kafka:9092`。Fluent Bit 从 `/foodmap/logs/*.log` 读取单行 JSON，按顶层 `logType` 精确分流。采集器时间字段名为 `collectorTimestamp`，业务 `timestamp` 原样保留给 Logstash 解析，避免数字型 `@timestamp` 触发 `_timestampparsefailure`。基础配置读命名卷，本机 Java 模式叠加 host 配置读宿主机目录。
 
 Elasticsearch 对外暴露 `localhost:9200`，`elasticsearch-init` 会写入 `foodmap-logs-hot-7d` ILM 策略和 `foodmap-logs-*` 索引模板。Logstash 消费五类 Kafka topic，按 topic 补充 `logType`，并写入每日 `foodmap-logs-YYYY.MM.dd` 索引。
 
@@ -155,15 +180,33 @@ ADMIN_LOG_SERVICE_BASE_URL=http://127.0.0.1:8089
 ADMIN_LOG_SERVICE_REQUEST_TIMEOUT=5s
 ```
 
+本轮已验证的备用实例采用 `FOODMAP_LOGGING_DIR=/tmp/foodmap-orbstack-logs`、认证端口 18081、日志服务端口 18089，原有 8080/8081/8082 不替换。要复跑同一环境，Compose 也必须用这个目录；普通 IDEA 使用者可选择自己的持久目录并同步修改应用环境变量和 Compose 启动参数。日志栈容器不包含 Java 服务，因此重启 OrbStack 后还需要在 IDEA/Maven 启动日志消费服务。
+
+日志闭环复跑：
+
+```sh
+node tools/verify/cli.mjs run harness/scenarios/b1-logging-closure.yml
+```
+
+该场景检查健康请求 200、错误登录 401、注册/成功登录/登出 200 的完整链路。测试账号按运行时间生成，Refresh Token 会注销；账号和对应测试摘要保留用于追溯，不自动删除历史数据。`LOGGING_TEST_BASE_URL`、`LOGGING_TEST_ES_URL`、`FOODMAP_LOGGING_DIR` 可覆盖单场景连接；使用套件预检时也应同步 `harness/verify-dependencies.json` 的本机路径。
+
 本机启动接口访问摘要消费服务示例：
 
 ```sh
+# 从仓库根目录执行；数据库凭据由已配置的本机环境提供，不在命令中写真实密码。
+FOODMAP_LOGGING_DIR=/tmp/foodmap-orbstack-logs \
+SERVER_PORT=18089 \
+NACOS_DISCOVERY_ENABLED=false \
 LOG_SERVICE_API_ACCESS_CONSUMER_ENABLED=true \
 LOG_KAFKA_BROKERS=127.0.0.1:9094 \
-LOG_DB_URL=jdbc:postgresql://127.0.0.1:5432/foodmap_log_db \
-LOG_DB_USERNAME=foodmap \
-LOG_DB_PASSWORD=foodmap \
-./scripts/run-service.sh foodmap-log-service local
+./after/scripts/run-service.sh foodmap-log-service local
+
+# 备用认证实例，用户开通接口复用本机 8082；不会替换原有认证实例。
+FOODMAP_LOGGING_DIR=/tmp/foodmap-orbstack-logs \
+SERVER_PORT=18081 \
+NACOS_DISCOVERY_ENABLED=false \
+AUTH_USER_SERVICE_URL=http://127.0.0.1:8082 \
+./after/scripts/run-service.sh foodmap-auth-service local
 ```
 
 如需同时联调 15 天保留清理，可以额外设置：

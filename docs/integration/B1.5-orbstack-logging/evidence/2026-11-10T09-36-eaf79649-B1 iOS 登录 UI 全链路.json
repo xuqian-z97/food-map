@@ -1,0 +1,566 @@
+{
+  "schemaVersion": 2,
+  "name": "B1 iOS 登录 UI 全链路",
+  "description": "启动模拟器 Debug 构建，XCUITest 真实点击登录，再回到数据库和日志确认链路打通",
+  "runId": "run-20261110T013632Z-eaf79649",
+  "source": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios/b1-ui-login.yml",
+  "ok": true,
+  "exitCode": 0,
+  "startedAt": "2026-11-10T01:36:32.537Z",
+  "finishedAt": "2026-11-10T01:36:51.134Z",
+  "durationMs": 18597,
+  "summary": {
+    "total": 16,
+    "passed": 16,
+    "failed": 0,
+    "skipped": 0,
+    "setupFailed": 0,
+    "teardownFailed": 0
+  },
+  "variableNames": [
+    "account",
+    "dbContainer",
+    "logStart",
+    "loginCount",
+    "runId",
+    "userId"
+  ],
+  "steps": [
+    {
+      "index": 1,
+      "phase": "setup",
+      "action": "command",
+      "display": "command wc -l < /tmp/verify-auth.log",
+      "expected": null,
+      "actual": {
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "    5123\n",
+        "stderr": "",
+        "value": "5123",
+        "content": "    5123\n",
+        "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+      },
+      "checks": [],
+      "captures": [
+        "logStart"
+      ],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 10,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 2,
+      "phase": "setup",
+      "action": "http",
+      "display": "http GET http://127.0.0.1:8080/internal/auth/health",
+      "expected": {
+        "status": 200
+      },
+      "actual": {
+        "method": "GET",
+        "url": "http://127.0.0.1:8080/internal/auth/health",
+        "status": 200,
+        "statusText": "OK",
+        "headers": {
+          "content-type": "application/json",
+          "date": "Tue, 10 Nov 2026 01:36:32 GMT",
+          "transfer-encoding": "chunked",
+          "x-request-id": "2wc2g00pje5aevg485genmyg, 2wc2g00pje5aevg485genmyg",
+          "x-span-id": "db7un2trzlpoxm36fsh2r16q, dbjovpan5uhk8v9xd2peb4kw",
+          "x-trace-id": "9tkuiia22gd3v4z7e88dgv60, 9tkuiia22gd3v4z7e88dgv60"
+        },
+        "body": "{\"success\":true,\"status\":200,\"code\":\"OK\",\"message\":\"success\",\"data\":{\"serviceName\":\"foodmap-auth-service\",\"status\":\"UP\",\"checkedAt\":\"2026-11-10T01:36:32.549980Z\"}}",
+        "json": {
+          "success": true,
+          "status": 200,
+          "code": "OK",
+          "message": "success",
+          "data": {
+            "serviceName": "foodmap-auth-service",
+            "status": "UP",
+            "checkedAt": "2026-11-10T01:36:32.549980Z"
+          }
+        },
+        "jsonParsed": true,
+        "jsonError": "",
+        "value": {
+          "success": true,
+          "status": 200,
+          "code": "OK",
+          "message": "success",
+          "data": {
+            "serviceName": "foodmap-auth-service",
+            "status": "UP",
+            "checkedAt": "2026-11-10T01:36:32.549980Z"
+          }
+        },
+        "content": "{\"success\":true,\"status\":200,\"code\":\"OK\",\"message\":\"success\",\"data\":{\"serviceName\":\"foodmap-auth-service\",\"status\":\"UP\",\"checkedAt\":\"2026-11-10T01:36:32.549980Z\"}}",
+        "durationMs": 3
+      },
+      "checks": [
+        {
+          "name": "status",
+          "expected": 200,
+          "actual": 200,
+          "ok": true,
+          "error": "",
+          "message": ""
+        }
+      ],
+      "captures": [],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 3,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 3,
+      "phase": "setup",
+      "action": "command",
+      "display": "command printf 'zxq_ui_%s' $(date +%H%M%S)",
+      "expected": null,
+      "actual": {
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "zxq_ui_093632",
+        "stderr": "",
+        "value": "zxq_ui_093632",
+        "content": "zxq_ui_093632",
+        "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+      },
+      "checks": [],
+      "captures": [
+        "account"
+      ],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 8,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 4,
+      "phase": "setup",
+      "action": "http",
+      "display": "http POST http://127.0.0.1:8080/api/auth/register",
+      "expected": {
+        "status": 200
+      },
+      "actual": {
+        "method": "POST",
+        "url": "http://127.0.0.1:8080/api/auth/register",
+        "status": 200,
+        "statusText": "OK",
+        "headers": {
+          "content-type": "application/json",
+          "date": "Tue, 10 Nov 2026 01:36:32 GMT",
+          "transfer-encoding": "chunked",
+          "x-request-id": "hx3y8tur78kiq1oxodoxbh1a, hx3y8tur78kiq1oxodoxbh1a",
+          "x-span-id": "14hc684gwwjb7moe2pw79z65, wz06jrr0ccffla5941eaxyb7",
+          "x-trace-id": "fffcbgepwt0cld55uzglwpbv, fffcbgepwt0cld55uzglwpbv"
+        },
+        "body": "{\"success\":true,\"status\":200,\"code\":\"OK\",\"message\":\"success\",\"data\":{\"accountId\":null,\"userId\":200201,\"accountStatus\":\"NORMAL\"}}",
+        "json": {
+          "success": true,
+          "status": 200,
+          "code": "OK",
+          "message": "success",
+          "data": {
+            "accountId": null,
+            "userId": 200201,
+            "accountStatus": "NORMAL"
+          }
+        },
+        "jsonParsed": true,
+        "jsonError": "",
+        "value": {
+          "success": true,
+          "status": 200,
+          "code": "OK",
+          "message": "success",
+          "data": {
+            "accountId": null,
+            "userId": 200201,
+            "accountStatus": "NORMAL"
+          }
+        },
+        "content": "{\"success\":true,\"status\":200,\"code\":\"OK\",\"message\":\"success\",\"data\":{\"accountId\":null,\"userId\":200201,\"accountStatus\":\"NORMAL\"}}",
+        "durationMs": 44
+      },
+      "checks": [
+        {
+          "name": "status",
+          "expected": 200,
+          "actual": 200,
+          "ok": true,
+          "error": "",
+          "message": ""
+        }
+      ],
+      "captures": [
+        "userId"
+      ],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 45,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 1,
+      "phase": "step",
+      "action": "xcode",
+      "display": "xcode test (FoodMapApp)",
+      "expected": {
+        "equals": 0
+      },
+      "actual": {
+        "exitCode": 0,
+        "stdout": "pp to idle\n    t =     5.97s     Find the \"login.identifier\" TextField\n    t =     6.01s     Check for interrupting elements affecting \"login.identifier\" TextField\n    t =     6.03s     Synthesize event\n    t =     6.45s     Wait for com.foodmap.FoodMapApp to idle\n    t =     6.46s Tap \"login.password\" SecureTextField\n    t =     6.46s     Wait for com.foodmap.FoodMapApp to idle\n    t =     6.47s     Find the \"login.password\" SecureTextField\n    t =     6.49s     Check for interrupting elements affecting \"login.password\" SecureTextField\n    t =     6.52s     Synthesize event\n    t =     6.81s     Wait for com.foodmap.FoodMapApp to idle\n    t =     7.10s Find the \"login.password\" SecureTextField\n    t =     7.13s Type '<redacted>' into \"login.password\" SecureTextField\n    t =     7.13s     Wait for com.foodmap.FoodMapApp to idle\n    t =     7.13s     Find the \"login.password\" SecureTextField\n    t =     7.15s     Check for interrupting elements affecting \"login.password\" SecureTextField\n    t =     7.17s     Synthesize event\n    t =     7.41s     Wait for com.foodmap.FoodMapApp to idle\n    t =     7.62s Type 'Fm@5f5ff1db50b32c7...' into \"login.password\" SecureTextField\n    t =     7.62s     Wait for com.foodmap.FoodMapApp to idle\n    t =     7.63s     Find the \"login.password\" SecureTextField\n    t =     7.65s     Check for interrupting elements affecting \"login.password\" SecureTextField\n    t =     7.68s     Synthesize event\n    t =     8.33s     Wait for com.foodmap.FoodMapApp to idle\n    t =     8.33s Tap \"login.baseURL\" TextField\n    t =     8.33s     Wait for com.foodmap.FoodMapApp to idle\n    t =     8.34s     Find the \"login.baseURL\" TextField\n    t =     8.36s     Check for interrupting elements affecting \"login.baseURL\" TextField\n    t =     8.38s     Synthesize event\n    t =     8.68s     Wait for com.foodmap.FoodMapApp to idle\n    t =     8.98s Find the \"login.baseURL\" TextField\n    t =     9.01s Type '...' into \"login.baseURL\" TextField\n    t =     9.01s     Wait for com.foodmap.FoodMapApp to idle\n    t =     9.01s     Find the \"login.baseURL\" TextField\n    t =     9.03s     Check for interrupting elements affecting \"login.baseURL\" TextField\n    t =     9.05s     Synthesize event\n    t =     9.60s     Wait for com.foodmap.FoodMapApp to idle\n    t =     9.61s Type 'http://127.0.0.1:8...' into \"login.baseURL\" TextField\n    t =     9.61s     Wait for com.foodmap.FoodMapApp to idle\n    t =     9.61s     Find the \"login.baseURL\" TextField\n    t =     9.63s     Check for interrupting elements affecting \"login.baseURL\" TextField\n    t =     9.66s     Synthesize event\n    t =    10.21s     Wait for com.foodmap.FoodMapApp to idle\n    t =    10.21s Tap \"login.submit\" Button\n    t =    10.21s     Wait for com.foodmap.FoodMapApp to idle\n    t =    10.21s     Find the \"login.submit\" Button\n    t =    10.24s     Check for interrupting elements affecting \"login.submit\" Button\n    t =    10.26s     Synthesize event\n    t =    10.55s     Wait for com.foodmap.FoodMapApp to idle\n    t =    10.56s Waiting 30.0s for \"map.home\" Other to exist\n    t =    11.60s     Checking `Expect predicate `existsNoRetry == 1` for object \"map.home\" Other`\n    t =    11.60s         Checking existence of `\"map.home\" Other`\n    t =    11.63s Tear Down\nTest Case '-[FoodMapAppUITests.LoginFlowTests testLoginThroughGateway]' passed (11.912 seconds).\nTest Suite 'LoginFlowTests' passed at 2026-11-10 09:36:48.204.\n\t Executed 1 test, with 0 failures (0 unexpected) in 11.912 (11.913) seconds\nTest Suite 'FoodMapAppUITests.xctest' passed at 2026-11-10 09:36:48.205.\n\t Executed 1 test, with 0 failures (0 unexpected) in 11.912 (11.914) seconds\nTest Suite 'Selected tests' passed at 2026-11-10 09:36:48.206.\n\t Executed 1 test, with 0 failures (0 unexpected) in 11.912 (11.916) seconds\n\nTest session results, code coverage, and logs:\n\t/var/folders/zv/r9w_dmv54wj2q848lhxjt2340000gn/T/verify-xcresult-kkZVnK/run.xcresult\n\n** TEST SUCCEEDED **\n\nTesting started\n",
+        "stderr": "2026-11-10 09:36:37.381 xcodebuild[11570:40630662] [MT] IDELaunchParametersSnapshot: debugger version lookup failed for path '<nil>': noURL\n2026-11-10 09:36:37.381 xcodebuild[11570:40630662] [MT] IDELaunchParametersSnapshot: no debugger version\n2026-11-10 09:36:48.494 xcodebuild[11570:40630662] [MT] IDETestOperationsObserverDebug: 13.607 elapsed -- Testing started completed.\n2026-11-10 09:36:48.494 xcodebuild[11570:40630662] [MT] IDETestOperationsObserverDebug: 0.000 sec, +0.000 sec -- start\n2026-11-10 09:36:48.494 xcodebuild[11570:40630662] [MT] IDETestOperationsObserverDebug: 13.607 sec, +13.607 sec -- end\n",
+        "stdoutTail": "Command line invocation:\n    /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild test -project FoodMapApp.xcodeproj -scheme FoodMapApp -destination \"platform=iOS Simulator,id=A77A2428-9576-4533-8B62-0C267A395B29\" -derivedDataPath /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd CODE_SIGN_IDENTITY=- \"-only-testing:FoodMapAppUITests/LoginFlowTests/testLoginThroughGateway\" -resultBundlePath /var/folders/zv/r9w_dmv54wj2q848lhxjt2340000gn/T/verify-xcresult-kkZVnK/run.xcresult\n\nBuild settings from command line:\n    CODE_SIGN_IDENTITY = -\n\nWriting result bundle at path:\n\t/var/folders/zv/r9w_dmv54wj2q848lhxjt2340000gn/T/verify-xcresult-kkZVnK/run.xcresult\n\nnote: Using codesigning identity override: -\nComputePackagePrebuildTargetDependencyGraph\n\nPrepare packages\n\nCreateBuildRequest\n\nSendProjectDescription\n\nCreateBuildOperation\n\nComputeTargetDependencyGraph\nnote: Building targets in dependency order\nnote: Target dependency graph (2 targets)\n    Target 'FoodMapAppUITests' in project 'FoodMapApp'\n        ➜ Explicit dependency on target 'FoodMapApp' in project 'FoodMapApp'\n    Target 'FoodMapApp' in project 'FoodMapApp' (no dependencies)\n\nGatherProvisioningInputs\n\nCreateBuildDescription\n\nExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc --version\n\nExecuteExternalTool /Applications/Xcode.app/Contents/Developer/usr/bin/actool --print-asset-tag-combinations --output-format xml1 /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/FoodMapApp/Resources/Assets.xcassets\n\nExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -v -E -dM -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator27.2.sdk -x c -c /dev/null\n\nExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ld -version_details\n\nExecuteExternalTool /Applications/Xcode.app/Contents/Developer/usr/bin/actool --version --output-format xml1\n\nBuild description signature: f6a9412135eccc5a020c09f812fd6efc\nBuild description path: /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Intermediates.noindex/XCBuildData/f6a9412135eccc5a020c09f812fd6efc.xcbuilddata\nClangStatCache /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang-stat-cache /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator27.2.sdk /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/SDKStatCaches.noindex/iphonesimulator27.2-24B8118-cc78df9d8a9de6526dea716b1c70fd8e.sdkstatcache\n    cd /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/FoodMapApp.xcodeproj\n    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang-stat-cache /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator27.2.sdk -o /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/SDKStatCaches.noindex/iphonesimulator27.2-24B8118-cc78df9d8a9de6526dea716b1c70fd8e.sdkstatcache\n\nProcessInfoPlistFile /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Products/Debug-iphonesimulator/FoodMapApp.app/Info.plist /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/FoodMapApp/Resources/Info.plist (in target 'FoodMapApp' from project 'FoodMapApp')\n    cd /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp\n    builtin-infoPlistUtility /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/FoodMapApp/Resources/Info.plist -producttype com.apple.product-type.application -genpkginfo /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Products/Debug-iphonesimulator/FoodMapApp.app/PkgInfo -expandbuildsettings -format binary -platform iphonesimulator -additionalcontentfile /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Intermediates.noindex/FoodMapApp.build/Debug-iphonesimulator/FoodMapApp.build/assetcatalog_generated_info.plist -o /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Products/Debug-iphonesimulator/FoodMapApp.app/Info.plist\n\nCopySwiftLibs /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Products/Debug-iphonesimulator/FoodMapApp.app (in target 'FoodMapApp' from project 'FoodMapApp')\n    cd /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp\n    builtin-swiftStdLibTool --copy --verbose --sign - --scan-executable /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Products/Debug-iphonesimulator/FoodMapApp.app/FoodMapApp.debug.dylib --scan-folder /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Products/Debug-iphonesimulator/FoodMapApp.app/Frameworks --scan-folder /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Products/Debug-iphonesimulator/FoodMapApp.app/PlugIns --scan-folder /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Products/Debug-iphonesimulator/FoodMapApp.app/SystemExtensions --scan-folder /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Products/Debug-iphonesimulator/FoodMapApp.app/Extensions --platform iphonesimulator --toolchain /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain --destination /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Products/Debug-iphonesimulator/FoodMapApp.app/Frameworks --strip-bitcode --strip-bitcode-tool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/bitcode_strip --emit-dependency-info /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Intermediates.noindex/FoodMapApp.build/Debug-iphonesimulator/FoodMapApp.build/SwiftStdLibToolInputDependencies.dep --filter-for-swift-os\n\nProcessInfoPlistFile /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Products/Debug-iphonesimulator/FoodMapAppUITests-Runner.app/PlugIns/FoodMapAppUITests.xctest/Info.plist /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Intermediates.noindex/FoodMapApp.build/Debug-iphonesimulator/FoodMapAppUITests.build/empty-FoodMapAppUITests.plist (in target 'FoodMapAppUITests' from project 'FoodMapApp')\n    cd /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp\n    builtin-infoPlistUtility /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Intermediates.noindex/FoodMapApp.build/Debug-iphonesimulator/FoodMapAppUITests.build/empty-FoodMapAppUITests.plist -producttype com.apple.product-type.bundle.ui-testing -expandbuildsettings -format binary -platform iphonesimulator -additionalcontentfile /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Intermediates.noindex/FoodMapApp.build/Debug-iphonesimulator/FoodMapAppUITests.build/ProductTypeInfoPlistAdditions.plist -o /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Products/Debug-iphonesimulator/FoodMapAppUITests-Runner.app/PlugIns/FoodMapAppUITests.xctest/Info.plist\n\nCopySwiftLibs /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Products/Debug-iphonesimulator/FoodMapAppUITests-Runner.app/PlugIns/FoodMapAppUITests.xctest (in target 'FoodMapAppUITests' from project 'FoodMapApp')\n    cd /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp\n    builtin-swiftStdLibTool --copy --verbose --sign - --scan-executable /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Products/Debug-iphonesimulator/FoodMapAppUITests-Runner.app/PlugIns/FoodMapAppUITests.xctest/FoodMapAppUITests --scan-folder /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Products/Debug-iphonesimulator/FoodMapAppUITests-Runner.app/PlugIns/FoodMapAppUITests.xctest/Frameworks --scan-folder /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Products/Debug-iphonesimulator/FoodMapAppUITests-Runner.app/PlugIns/FoodMapAppUITests.xctest/PlugIns --scan-folder /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Products/Debug-iphonesimulator/FoodMapAppUITests-Runner.app/PlugIns/FoodMapAppUITests.xctest/SystemExtensions --scan-folder /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Products/Debug-iphonesimulator/FoodMapAppUITests-Runner.app/PlugIns/FoodMapAppUITests.xctest/Extensions --platform iphonesimulator --toolchain /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain --destination /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Products/Debug-iphonesimulator/FoodMapAppUITests-Runner.app/PlugIns/FoodMapAppUITests.xctest/Frameworks --strip-bitcode --scan-executable /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/lib/libXCTestSwiftSupport.dylib --strip-bitcode-tool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/bitcode_strip --emit-dependency-info /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Intermediates.noindex/FoodMapApp.build/Debug-iphonesimulator/FoodMapAppUITests.build/SwiftStdLibToolInputDependencies.dep --filter-for-swift-os\n\nPruneExplicitPrecompiledModules /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules\n\nPruneExplicitPrecompiledModules /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/SDKExplicitPrecompiledModules\n\nPruneExplicitPrecompiledModules /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Intermediates.noindex/ExplicitPrecompiledModules\n\n2026-11-10 09:36:35.676551+0800 FoodMapAppUITests-Runner[11581:40630971] [Default] Running tests...\n    t =      nans Interface orientation changed to Portrait\nTest Suite 'Selected tests' started at 2026-11-10 09:36:36.290.\nTest Suite 'FoodMapAppUITests.xctest' started at 2026-11-10 09:36:36.291.\nTest Suite 'LoginFlowTests' started at 2026-11-10 09:36:36.291.\nTest Case '-[FoodMapAppUITests.LoginFlowTests testLoginThroughGateway]' started.\n    t =     0.00s Start Test at 2026-11-10 09:36:36.292\n    t =     0.02s Set Up\n    t =     0.02s Open com.foodmap.FoodMapApp\n    t =     0.02s     Launch com.foodmap.FoodMapApp\n    t =     0.02s         Terminate com.foodmap.FoodMapApp:11059\nobjc[11581]: Class UIAccessibilityLoaderWebShared is implemented in both /Library/Developer/CoreSimulator/Volumes/iOS_23F77/Library/Developer/CoreSimulator/Profiles/Runtimes/iOS 26.5.simruntime/Contents/Resources/RuntimeRoot/System/Library/AccessibilityBundles/WebCore.axbundle/WebCore (0x1068d4310) and /Library/Developer/CoreSimulator/Volumes/iOS_23F77/Library/Developer/CoreSimulator/Profiles/Runtimes/iOS 26.5.simruntime/Contents/Resources/RuntimeRoot/System/Library/AccessibilityBundles/WebKit.axbundle/WebKit (0x10696c398). This may cause spurious casting failures and mysterious crashes. One of the duplicates must be removed or renamed.\n    t =     1.50s         Setting up automation session\n    t =     2.25s         Wait for com.foodmap.FoodMapApp to idle\n    t =     3.61s Waiting 30.0s for \"login.identifier\" TextField to exist\n    t =     4.65s     Checking `Expect predicate `existsNoRetry == 1` for object \"login.identifier\" TextField`\n    t =     4.65s         Checking existence of `\"login.identifier\" TextField`\n    t =     4.73s Tap \"login.identifier\" TextField\n    t =     4.73s     Wait for com.foodmap.FoodMapApp to idle\n    t =     4.73s     Find the \"login.identifier\" TextField\n    t =     4.74s     Check for interrupting elements affecting \"login.identifier\" TextField\n    t =     4.76s     Synthesize event\n    t =     5.05s     Wait for com.foodmap.FoodMapApp to idle\n    t =     5.12s Find the \"login.identifier\" TextField\n    t =     5.16s Type '' into \"login.identifier\" TextField\n    t =     5.16s     Wait for com.foodmap.FoodMapApp to idle\n    t =     5.48s     Find the \"login.identifier\" TextField\n    t =     5.51s     Check for interrupting elements affecting \"login.identifier\" TextField\n    t =     5.54s     Synthesize event\n    t =     5.97s     Wait for com.foodmap.FoodMapApp to idle\n    t =     5.97s Type 'zxq_ui_093632' into \"login.identifier\" TextField\n    t =     5.97s     Wait for com.foodmap.FoodMapApp to idle\n    t =     5.97s     Find the \"login.identifier\" TextField\n    t =     6.01s     Check for interrupting elements affecting \"login.identifier\" TextField\n    t =     6.03s     Synthesize event\n    t =     6.45s     Wait for com.foodmap.FoodMapApp to idle\n    t =     6.46s Tap \"login.password\" SecureTextField\n    t =     6.46s     Wait for com.foodmap.FoodMapApp to idle\n    t =     6.47s     Find the \"login.password\" SecureTextField\n    t =     6.49s     Check for interrupting elements affecting \"login.password\" SecureTextField\n    t =     6.52s     Synthesize event\n    t =     6.81s     Wait for com.foodmap.FoodMapApp to idle\n    t =     7.10s Find the \"login.password\" SecureTextField\n    t =     7.13s Type '<redacted>' into \"login.password\" SecureTextField\n    t =     7.13s     Wait for com.foodmap.FoodMapApp to idle\n    t =     7.13s     Find the \"login.password\" SecureTextField\n    t =     7.15s     Check for interrupting elements affecting \"login.password\" SecureTextField\n    t =     7.17s     Synthesize event\n    t =     7.41s     Wait for com.foodmap.FoodMapApp to idle\n    t =     7.62s Type 'Fm@5f5ff1db50b32c7...' into \"login.password\" SecureTextField\n    t =     7.62s     Wait for com.foodmap.FoodMapApp to idle\n    t =     7.63s     Find the \"login.password\" SecureTextField\n    t =     7.65s     Check for interrupting elements affecting \"login.password\" SecureTextField\n    t =     7.68s     Synthesize event\n    t =     8.33s     Wait for com.foodmap.FoodMapApp to idle\n    t =     8.33s Tap \"login.baseURL\" TextField\n    t =     8.33s     Wait for com.foodmap.FoodMapApp to idle\n    t =     8.34s     Find the \"login.baseURL\" TextField\n    t =     8.36s     Check for interrupting elements affecting \"login.baseURL\" TextField\n    t =     8.38s     Synthesize event\n    t =     8.68s     Wait for com.foodmap.FoodMapApp to idle\n    t =     8.98s Find the \"login.baseURL\" TextField\n    t =     9.01s Type '...' into \"login.baseURL\" TextField\n    t =     9.01s     Wait for com.foodmap.FoodMapApp to idle\n    t =     9.01s     Find the \"login.baseURL\" TextField\n    t =     9.03s     Check for interrupting elements affecting \"login.baseURL\" TextField\n    t =     9.05s     Synthesize event\n    t =     9.60s     Wait for com.foodmap.FoodMapApp to idle\n    t =     9.61s Type 'http://127.0.0.1:8...' into \"login.baseURL\" TextField\n    t =     9.61s     Wait for com.foodmap.FoodMapApp to idle\n    t =     9.61s     Find the \"login.baseURL\" TextField\n    t =     9.63s     Check for interrupting elements affecting \"login.baseURL\" TextField\n    t =     9.66s     Synthesize event\n    t =    10.21s     Wait for com.foodmap.FoodMapApp to idle\n    t =    10.21s Tap \"login.submit\" Button\n    t =    10.21s     Wait for com.foodmap.FoodMapApp to idle\n    t =    10.21s     Find the \"login.submit\" Button\n    t =    10.24s     Check for interrupting elements affecting \"login.submit\" Button\n    t =    10.26s     Synthesize event\n    t =    10.55s     Wait for com.foodmap.FoodMapApp to idle\n    t =    10.56s Waiting 30.0s for \"map.home\" Other to exist\n    t =    11.60s     Checking `Expect predicate `existsNoRetry == 1` for object \"map.home\" Other`\n    t =    11.60s         Checking existence of `\"map.home\" Other`\n    t =    11.63s Tear Down\nTest Case '-[FoodMapAppUITests.LoginFlowTests testLoginThroughGateway]' passed (11.912 seconds).\nTest Suite 'LoginFlowTests' passed at 2026-11-10 09:36:48.204.\n\t Executed 1 test, with 0 failures (0 unexpected) in 11.912 (11.913) seconds\nTest Suite 'FoodMapAppUITests.xctest' passed at 2026-11-10 09:36:48.205.\n\t Executed 1 test, with 0 failures (0 unexpected) in 11.912 (11.914) seconds\nTest Suite 'Selected tests' passed at 2026-11-10 09:36:48.206.\n\t Executed 1 test, with 0 failures (0 unexpected) in 11.912 (11.916) seconds\n\nTest session results, code coverage, and logs:\n\t/var/folders/zv/r9w_dmv54wj2q848lhxjt2340000gn/T/verify-xcresult-kkZVnK/run.xcresult\n\n** TEST SUCCEEDED **\n\nTesting started\n",
+        "content": "Command line invocation:\n    /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild test -project FoodMapApp.xcodeproj -scheme FoodMapApp -destination \"platform=iOS Simulator,id=A77A2428-9576-4533-8B62-0C267A395B29\" -derivedDataPath /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd CODE_SIGN_IDENTITY=- \"-only-testing:FoodMapAppUITests/LoginFlowTests/testLoginThroughGateway\" -resultBundlePath /var/folders/zv/r9w_dmv54wj2q848lhxjt2340000gn/T/verify-xcresult-kkZVnK/run.xcresult\n\nBuild settings from command line:\n    CODE_SIGN_IDENTITY = -\n\nWriting result bundle at path:\n\t/var/folders/zv/r9w_dmv54wj2q848lhxjt2340000gn/T/verify-xcresult-kkZVnK/run.xcresult\n\nnote: Using codesigning identity override: -\nComputePackagePrebuildTargetDependencyGraph\n\nPrepare packages\n\nCreateBuildRequest\n\nSendProjectDescription\n\nCreateBuildOperation\n\nComputeTargetDependencyGraph\nnote: Building targets in dependency order\nnote: Target dependency graph (2 targets)\n    Target 'FoodMapAppUITests' in project 'FoodMapApp'\n        ➜ Explicit dependency on target 'FoodMapApp' in project 'FoodMapApp'\n    Target 'FoodMapApp' in project 'FoodMapApp' (no dependencies)\n\nGatherProvisioningInputs\n\nCreateBuildDescription\n\nExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc --version\n\nExecuteExternalTool /Applications/Xcode.app/Contents/Developer/usr/bin/actool --print-asset-tag-combinations --output-format xml1 /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/FoodMapApp/Resources/Assets.xcassets\n\nExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -v -E -dM -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator27.2.sdk -x c -c /dev/null\n\nExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ld -version_details\n\nExecuteExternalTool /Applications/Xcode.app/Contents/Developer/usr/bin/actool --version --output-format xml1\n\nBuild description signature: f6a9412135eccc5a020c09f812fd6efc\nBuild description path: /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Intermediates.noindex/XCBuildData/f6a9412135eccc5a020c09f812fd6efc.xcbuilddata\nClangStatCache /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang-stat-cache /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator27.2.sdk /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/SDKStatCaches.noindex/iphonesimulator27.2-24B8118-cc78df9d8a9de6526dea716b1c70fd8e.sdkstatcache\n    cd /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/FoodMapApp.xcodeproj\n    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang-stat-cache /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator27.2.sdk -o /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/SDKStatCaches.noindex/iphonesimulator27.2-24B8118-cc78df9d8a9de6526dea716b1c70fd8e.sdkstatcache\n\nProcessInfoPlistFile /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Products/Debug-iphonesimulator/FoodMapApp.app/Info.plist /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/FoodMapApp/Resources/Info.plist (in target 'FoodMapApp' from project 'FoodMapApp')\n    cd /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp\n    builtin-infoPlistUtility /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/FoodMapApp/Resources/Info.plist -producttype com.apple.product-type.application -genpkginfo /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Products/Debug-iphonesimulator/FoodMapApp.app/PkgInfo -expandbuildsettings -format binary -platform iphonesimulator -additionalcontentfile /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Intermediates.noindex/FoodMapApp.build/Debug-iphonesimulator/FoodMapApp.build/assetcatalog_generated_info.plist -o /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Products/Debug-iphonesimulator/FoodMapApp.app/Info.plist\n\nCopySwiftLibs /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Products/Debug-iphonesimulator/FoodMapApp.app (in target 'FoodMapApp' from project 'FoodMapApp')\n    cd /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp\n    builtin-swiftStdLibTool --copy --verbose --sign - --scan-executable /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Products/Debug-iphonesimulator/FoodMapApp.app/FoodMapApp.debug.dylib --scan-folder /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Products/Debug-iphonesimulator/FoodMapApp.app/Frameworks --scan-folder /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Products/Debug-iphonesimulator/FoodMapApp.app/PlugIns --scan-folder /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Products/Debug-iphonesimulator/FoodMapApp.app/SystemExtensions --scan-folder /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Products/Debug-iphonesimulator/FoodMapApp.app/Extensions --platform iphonesimulator --toolchain /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain --destination /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Products/Debug-iphonesimulator/FoodMapApp.app/Frameworks --strip-bitcode --strip-bitcode-tool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/bitcode_strip --emit-dependency-info /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Intermediates.noindex/FoodMapApp.build/Debug-iphonesimulator/FoodMapApp.build/SwiftStdLibToolInputDependencies.dep --filter-for-swift-os\n\nProcessInfoPlistFile /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Products/Debug-iphonesimulator/FoodMapAppUITests-Runner.app/PlugIns/FoodMapAppUITests.xctest/Info.plist /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Intermediates.noindex/FoodMapApp.build/Debug-iphonesimulator/FoodMapAppUITests.build/empty-FoodMapAppUITests.plist (in target 'FoodMapAppUITests' from project 'FoodMapApp')\n    cd /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp\n    builtin-infoPlistUtility /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Intermediates.noindex/FoodMapApp.build/Debug-iphonesimulator/FoodMapAppUITests.build/empty-FoodMapAppUITests.plist -producttype com.apple.product-type.bundle.ui-testing -expandbuildsettings -format binary -platform iphonesimulator -additionalcontentfile /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Intermediates.noindex/FoodMapApp.build/Debug-iphonesimulator/FoodMapAppUITests.build/ProductTypeInfoPlistAdditions.plist -o /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Products/Debug-iphonesimulator/FoodMapAppUITests-Runner.app/PlugIns/FoodMapAppUITests.xctest/Info.plist\n\nCopySwiftLibs /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Products/Debug-iphonesimulator/FoodMapAppUITests-Runner.app/PlugIns/FoodMapAppUITests.xctest (in target 'FoodMapAppUITests' from project 'FoodMapApp')\n    cd /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp\n    builtin-swiftStdLibTool --copy --verbose --sign - --scan-executable /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Products/Debug-iphonesimulator/FoodMapAppUITests-Runner.app/PlugIns/FoodMapAppUITests.xctest/FoodMapAppUITests --scan-folder /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Products/Debug-iphonesimulator/FoodMapAppUITests-Runner.app/PlugIns/FoodMapAppUITests.xctest/Frameworks --scan-folder /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Products/Debug-iphonesimulator/FoodMapAppUITests-Runner.app/PlugIns/FoodMapAppUITests.xctest/PlugIns --scan-folder /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Products/Debug-iphonesimulator/FoodMapAppUITests-Runner.app/PlugIns/FoodMapAppUITests.xctest/SystemExtensions --scan-folder /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Products/Debug-iphonesimulator/FoodMapAppUITests-Runner.app/PlugIns/FoodMapAppUITests.xctest/Extensions --platform iphonesimulator --toolchain /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain --destination /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Products/Debug-iphonesimulator/FoodMapAppUITests-Runner.app/PlugIns/FoodMapAppUITests.xctest/Frameworks --strip-bitcode --scan-executable /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/lib/libXCTestSwiftSupport.dylib --strip-bitcode-tool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/bitcode_strip --emit-dependency-info /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Intermediates.noindex/FoodMapApp.build/Debug-iphonesimulator/FoodMapAppUITests.build/SwiftStdLibToolInputDependencies.dep --filter-for-swift-os\n\nPruneExplicitPrecompiledModules /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules\n\nPruneExplicitPrecompiledModules /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/SDKExplicitPrecompiledModules\n\nPruneExplicitPrecompiledModules /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Intermediates.noindex/ExplicitPrecompiledModules\n\n2026-11-10 09:36:35.676551+0800 FoodMapAppUITests-Runner[11581:40630971] [Default] Running tests...\n    t =      nans Interface orientation changed to Portrait\nTest Suite 'Selected tests' started at 2026-11-10 09:36:36.290.\nTest Suite 'FoodMapAppUITests.xctest' started at 2026-11-10 09:36:36.291.\nTest Suite 'LoginFlowTests' started at 2026-11-10 09:36:36.291.\nTest Case '-[FoodMapAppUITests.LoginFlowTests testLoginThroughGateway]' started.\n    t =     0.00s Start Test at 2026-11-10 09:36:36.292\n    t =     0.02s Set Up\n    t =     0.02s Open com.foodmap.FoodMapApp\n    t =     0.02s     Launch com.foodmap.FoodMapApp\n    t =     0.02s         Terminate com.foodmap.FoodMapApp:11059\nobjc[11581]: Class UIAccessibilityLoaderWebShared is implemented in both /Library/Developer/CoreSimulator/Volumes/iOS_23F77/Library/Developer/CoreSimulator/Profiles/Runtimes/iOS 26.5.simruntime/Contents/Resources/RuntimeRoot/System/Library/AccessibilityBundles/WebCore.axbundle/WebCore (0x1068d4310) and /Library/Developer/CoreSimulator/Volumes/iOS_23F77/Library/Developer/CoreSimulator/Profiles/Runtimes/iOS 26.5.simruntime/Contents/Resources/RuntimeRoot/System/Library/AccessibilityBundles/WebKit.axbundle/WebKit (0x10696c398). This may cause spurious casting failures and mysterious crashes. One of the duplicates must be removed or renamed.\n    t =     1.50s         Setting up automation session\n    t =     2.25s         Wait for com.foodmap.FoodMapApp to idle\n    t =     3.61s Waiting 30.0s for \"login.identifier\" TextField to exist\n    t =     4.65s     Checking `Expect predicate `existsNoRetry == 1` for object \"login.identifier\" TextField`\n    t =     4.65s         Checking existence of `\"login.identifier\" TextField`\n    t =     4.73s Tap \"login.identifier\" TextField\n    t =     4.73s     Wait for com.foodmap.FoodMapApp to idle\n    t =     4.73s     Find the \"login.identifier\" TextField\n    t =     4.74s     Check for interrupting elements affecting \"login.identifier\" TextField\n    t =     4.76s     Synthesize event\n    t =     5.05s     Wait for com.foodmap.FoodMapApp to idle\n    t =     5.12s Find the \"login.identifier\" TextField\n    t =     5.16s Type '' into \"login.identifier\" TextField\n    t =     5.16s     Wait for com.foodmap.FoodMapApp to idle\n    t =     5.48s     Find the \"login.identifier\" TextField\n    t =     5.51s     Check for interrupting elements affecting \"login.identifier\" TextField\n    t =     5.54s     Synthesize event\n    t =     5.97s     Wait for com.foodmap.FoodMapApp to idle\n    t =     5.97s Type 'zxq_ui_093632' into \"login.identifier\" TextField\n    t =     5.97s     Wait for com.foodmap.FoodMapApp to idle\n    t =     5.97s     Find the \"login.identifier\" TextField\n    t =     6.01s     Check for interrupting elements affecting \"login.identifier\" TextField\n    t =     6.03s     Synthesize event\n    t =     6.45s     Wait for com.foodmap.FoodMapApp to idle\n    t =     6.46s Tap \"login.password\" SecureTextField\n    t =     6.46s     Wait for com.foodmap.FoodMapApp to idle\n    t =     6.47s     Find the \"login.password\" SecureTextField\n    t =     6.49s     Check for interrupting elements affecting \"login.password\" SecureTextField\n    t =     6.52s     Synthesize event\n    t =     6.81s     Wait for com.foodmap.FoodMapApp to idle\n    t =     7.10s Find the \"login.password\" SecureTextField\n    t =     7.13s Type '<redacted>' into \"login.password\" SecureTextField\n    t =     7.13s     Wait for com.foodmap.FoodMapApp to idle\n    t =     7.13s     Find the \"login.password\" SecureTextField\n    t =     7.15s     Check for interrupting elements affecting \"login.password\" SecureTextField\n    t =     7.17s     Synthesize event\n    t =     7.41s     Wait for com.foodmap.FoodMapApp to idle\n    t =     7.62s Type 'Fm@5f5ff1db50b32c7...' into \"login.password\" SecureTextField\n    t =     7.62s     Wait for com.foodmap.FoodMapApp to idle\n    t =     7.63s     Find the \"login.password\" SecureTextField\n    t =     7.65s     Check for interrupting elements affecting \"login.password\" SecureTextField\n    t =     7.68s     Synthesize event\n    t =     8.33s     Wait for com.foodmap.FoodMapApp to idle\n    t =     8.33s Tap \"login.baseURL\" TextField\n    t =     8.33s     Wait for com.foodmap.FoodMapApp to idle\n    t =     8.34s     Find the \"login.baseURL\" TextField\n    t =     8.36s     Check for interrupting elements affecting \"login.baseURL\" TextField\n    t =     8.38s     Synthesize event\n    t =     8.68s     Wait for com.foodmap.FoodMapApp to idle\n    t =     8.98s Find the \"login.baseURL\" TextField\n    t =     9.01s Type '...' into \"login.baseURL\" TextField\n    t =     9.01s     Wait for com.foodmap.FoodMapApp to idle\n    t =     9.01s     Find the \"login.baseURL\" TextField\n    t =     9.03s     Check for interrupting elements affecting \"login.baseURL\" TextField\n    t =     9.05s     Synthesize event\n    t =     9.60s     Wait for com.foodmap.FoodMapApp to idle\n    t =     9.61s Type 'http://127.0.0.1:8...' into \"login.baseURL\" TextField\n    t =     9.61s     Wait for com.foodmap.FoodMapApp to idle\n    t =     9.61s     Find the \"login.baseURL\" TextField\n    t =     9.63s     Check for interrupting elements affecting \"login.baseURL\" TextField\n    t =     9.66s     Synthesize event\n    t =    10.21s     Wait for com.foodmap.FoodMapApp to idle\n    t =    10.21s Tap \"login.submit\" Button\n    t =    10.21s     Wait for com.foodmap.FoodMapApp to idle\n    t =    10.21s     Find the \"login.submit\" Button\n    t =    10.24s     Check for interrupting elements affecting \"login.submit\" Button\n    t =    10.26s     Synthesize event\n    t =    10.55s     Wait for com.foodmap.FoodMapApp to idle\n    t =    10.56s Waiting 30.0s for \"map.home\" Other to exist\n    t =    11.60s     Checking `Expect predicate `existsNoRetry == 1` for object \"map.home\" Other`\n    t =    11.60s         Checking existence of `\"map.home\" Other`\n    t =    11.63s Tear Down\nTest Case '-[FoodMapAppUITests.LoginFlowTests testLoginThroughGateway]' passed (11.912 seconds).\nTest Suite 'LoginFlowTests' passed at 2026-11-10 09:36:48.204.\n\t Executed 1 test, with 0 failures (0 unexpected) in 11.912 (11.913) seconds\nTest Suite 'FoodMapAppUITests.xctest' passed at 2026-11-10 09:36:48.205.\n\t Executed 1 test, with 0 failures (0 unexpected) in 11.912 (11.914) seconds\nTest Suite 'Selected tests' passed at 2026-11-10 09:36:48.206.\n\t Executed 1 test, with 0 failures (0 unexpected) in 11.912 (11.916) seconds\n\nTest session results, code coverage, and logs:\n\t/var/folders/zv/r9w_dmv54wj2q848lhxjt2340000gn/T/verify-xcresult-kkZVnK/run.xcresult\n\n** TEST SUCCEEDED **\n\nTesting started\n\n2026-11-10 09:36:37.381 xcodebuild[11570:40630662] [MT] IDELaunchParametersSnapshot: debugger version lookup failed for path '<nil>': noURL\n2026-11-10 09:36:37.381 xcodebuild[11570:40630662] [MT] IDELaunchParametersSnapshot: no debugger version\n2026-11-10 09:36:48.494 xcodebuild[11570:40630662] [MT] IDETestOperationsObserverDebug: 13.607 elapsed -- Testing started completed.\n2026-11-10 09:36:48.494 xcodebuild[11570:40630662] [MT] IDETestOperationsObserverDebug: 0.000 sec, +0.000 sec -- start\n2026-11-10 09:36:48.494 xcodebuild[11570:40630662] [MT] IDETestOperationsObserverDebug: 13.607 sec, +13.607 sec -- end\n",
+        "value": 0,
+        "command": "xcodebuild test -project FoodMapApp.xcodeproj -scheme FoodMapApp -destination platform=iOS Simulator,id=A77A2428-9576-4533-8B62-0C267A395B29 -derivedDataPath /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd CODE_SIGN_IDENTITY=- -only-testing:FoodMapAppUITests/LoginFlowTests/testLoginThroughGateway -resultBundlePath /var/folders/zv/r9w_dmv54wj2q848lhxjt2340000gn/T/verify-xcresult-kkZVnK/run.xcresult",
+        "result": "Passed",
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0,
+        "tests": [
+          {
+            "name": "testLoginThroughGateway()",
+            "identifier": "LoginFlowTests/testLoginThroughGateway()",
+            "status": "Passed",
+            "durationMs": 11912,
+            "failure": ""
+          }
+        ],
+        "resultBundle": "/var/folders/zv/r9w_dmv54wj2q848lhxjt2340000gn/T/verify-xcresult-kkZVnK/run.xcresult"
+      },
+      "checks": [
+        {
+          "name": "equals",
+          "expected": 0,
+          "actual": 0,
+          "ok": true,
+          "error": "",
+          "message": ""
+        }
+      ],
+      "captures": [],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 16121,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 2,
+      "phase": "step",
+      "action": "command",
+      "display": "command docker exec foodmap-postgres psql -U foodmap -d foodmap_auth_db -tAc \"select count(*) from…",
+      "expected": {
+        "exitCode": 0
+      },
+      "actual": {
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "1\n",
+        "stderr": "",
+        "value": "1",
+        "content": "1\n",
+        "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+      },
+      "checks": [
+        {
+          "name": "exitCode",
+          "expected": 0,
+          "actual": 0,
+          "ok": true,
+          "error": "",
+          "message": ""
+        }
+      ],
+      "captures": [
+        "loginCount"
+      ],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 223,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 3,
+      "phase": "step",
+      "action": "command",
+      "display": "command [ 1 -ge 1 ]",
+      "expected": {
+        "exitCode": 0
+      },
+      "actual": {
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "",
+        "stderr": "",
+        "value": "",
+        "content": "",
+        "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+      },
+      "checks": [
+        {
+          "name": "exitCode",
+          "expected": 0,
+          "actual": 0,
+          "ok": true,
+          "error": "",
+          "message": ""
+        }
+      ],
+      "captures": [],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 5,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 4,
+      "phase": "step",
+      "action": "command",
+      "display": "command tail -n +$(( 5123 + 1 )) /tmp/verify-auth.log | grep -c 'path=/api/auth/login status=200'",
+      "expected": {
+        "exitCode": 0
+      },
+      "actual": {
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "1\n",
+        "stderr": "",
+        "value": "1",
+        "content": "1\n",
+        "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+      },
+      "checks": [
+        {
+          "name": "exitCode",
+          "expected": 0,
+          "actual": 0,
+          "ok": true,
+          "error": "",
+          "message": ""
+        }
+      ],
+      "captures": [],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 55,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 1,
+      "phase": "teardown",
+      "action": "command",
+      "display": "command docker exec foodmap-postgres sh -c 'uid=$(psql -U foodmap -d foodmap_auth_db -tAc \"select …",
+      "expected": null,
+      "actual": {
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "",
+        "stderr": "",
+        "value": "",
+        "content": "",
+        "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+      },
+      "checks": [],
+      "captures": [],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 694,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 2,
+      "phase": "teardown",
+      "action": "command",
+      "display": "command docker exec foodmap-postgres psql -U foodmap -d foodmap_auth_db -c \"delete from auth_sessi…",
+      "expected": null,
+      "actual": {
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "DELETE 1\n",
+        "stderr": "",
+        "value": "DELETE 1",
+        "content": "DELETE 1\n",
+        "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+      },
+      "checks": [],
+      "captures": [],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 208,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 3,
+      "phase": "teardown",
+      "action": "command",
+      "display": "command docker exec foodmap-postgres psql -U foodmap -d foodmap_auth_db -c \"delete from auth_ident…",
+      "expected": null,
+      "actual": {
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "DELETE 1\n",
+        "stderr": "",
+        "value": "DELETE 1",
+        "content": "DELETE 1\n",
+        "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+      },
+      "checks": [],
+      "captures": [],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 213,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 4,
+      "phase": "teardown",
+      "action": "command",
+      "display": "command docker exec foodmap-postgres psql -U foodmap -d foodmap_auth_db -c \"delete from login_logs…",
+      "expected": null,
+      "actual": {
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "DELETE 1\n",
+        "stderr": "",
+        "value": "DELETE 1",
+        "content": "DELETE 1\n",
+        "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+      },
+      "checks": [],
+      "captures": [],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 205,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 5,
+      "phase": "teardown",
+      "action": "command",
+      "display": "command docker exec foodmap-postgres psql -U foodmap -d foodmap_auth_db -c \"delete from refresh_to…",
+      "expected": null,
+      "actual": {
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "DELETE 1\n",
+        "stderr": "",
+        "value": "DELETE 1",
+        "content": "DELETE 1\n",
+        "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+      },
+      "checks": [],
+      "captures": [],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 208,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 6,
+      "phase": "teardown",
+      "action": "command",
+      "display": "command docker exec foodmap-postgres psql -U foodmap -d foodmap_auth_db -c \"delete from auth_crede…",
+      "expected": null,
+      "actual": {
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "DELETE 1\n",
+        "stderr": "",
+        "value": "DELETE 1",
+        "content": "DELETE 1\n",
+        "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+      },
+      "checks": [],
+      "captures": [],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 207,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 7,
+      "phase": "teardown",
+      "action": "command",
+      "display": "command docker exec foodmap-postgres psql -U foodmap -d foodmap_auth_db -c \"delete from auth_accou…",
+      "expected": null,
+      "actual": {
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "DELETE 1\n",
+        "stderr": "",
+        "value": "DELETE 1",
+        "content": "DELETE 1\n",
+        "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+      },
+      "checks": [],
+      "captures": [],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 195,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 8,
+      "phase": "teardown",
+      "action": "command",
+      "display": "command docker exec foodmap-postgres psql -U foodmap -d foodmap_auth_db -tAc \"select count(*) from…",
+      "expected": {
+        "equals": "0"
+      },
+      "actual": {
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "0\n",
+        "stderr": "",
+        "value": "0",
+        "content": "0\n",
+        "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+      },
+      "checks": [
+        {
+          "name": "equals",
+          "expected": "0",
+          "actual": "0",
+          "ok": true,
+          "error": "",
+          "message": ""
+        }
+      ],
+      "captures": [],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 196,
+      "error": "",
+      "hint": ""
+    }
+  ],
+  "evidence": {
+    "text": "/Users/zhangxuqian/myPrjDev/food-map/docs/integration/B1.5-orbstack-logging/evidence/2026-11-10T09-36-eaf79649-B1 iOS 登录 UI 全链路.txt",
+    "json": "/Users/zhangxuqian/myPrjDev/food-map/docs/integration/B1.5-orbstack-logging/evidence/2026-11-10T09-36-eaf79649-B1 iOS 登录 UI 全链路.json"
+  }
+}

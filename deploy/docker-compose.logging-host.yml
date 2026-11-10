@@ -1,0 +1,12 @@
+# Java 应用在宿主机 IDEA/Maven 运行时叠加此配置。
+# 同时给应用和 Compose 设置 FOODMAP_LOGGING_DIR 为同一个绝对路径。
+# Compose 按容器 target 合并 volumes，此挂载替代基础配置中的命名卷。
+services:
+  fluent-bit:
+    volumes:
+      - type: bind
+        source: ${FOODMAP_LOGGING_DIR:-${HOME}/.foodmap/logs}
+        target: /foodmap/logs
+        read_only: true
+        bind:
+          create_host_path: false

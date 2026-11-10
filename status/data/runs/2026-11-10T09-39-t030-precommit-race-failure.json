@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-10T09-39-t030-precommit-race-failure",
+  "at": "2026-11-10T09:39:52+08:00",
+  "kind": "integration",
+  "command": "VERIFY_REQUIRE_FULL=1 ./harness/scripts/verify.sh",
+  "env": "local",
+  "result": {
+    "total": 6,
+    "passed": 5,
+    "failed": 1,
+    "skipped": 0
+  },
+  "covers": [
+    "F-019",
+    "F-021"
+  ],
+  "evidence": [
+    "docs/integration/B1.5-orbstack-logging/evidence/2026-11-10T09-36-suite-81840d2d-973f-4968-b6e2-44a188977b99-harness_scenarios.json"
+  ],
+  "notes": "提交前复测发现日志探针异步等待条件缺陷：SQL 文档先于访问日志到达。保留失败证据，已修复并另行复测。"
+}

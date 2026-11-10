@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-10T09-39-t030-precommit-strict-pass",
+  "at": "2026-11-10T09:39:53+08:00",
+  "kind": "integration",
+  "command": "VERIFY_REQUIRE_FULL=1 ./harness/scripts/verify.sh",
+  "env": "local",
+  "result": {
+    "total": 6,
+    "passed": 6,
+    "failed": 0,
+    "skipped": 0
+  },
+  "covers": [
+    "F-019",
+    "F-021"
+  ],
+  "evidence": [
+    "docs/integration/B1.5-orbstack-logging/evidence/2026-11-10T09-38-suite-0e5f9658-f55c-410f-871a-058342f9760a-harness_scenarios.json"
+  ],
+  "notes": "修复异步等待后完整严格套件6通过0失败0跳过，XCUITest1用例通过；Java159测试全绿。历史total=0记录保留，本记录显式total=6。"
+}

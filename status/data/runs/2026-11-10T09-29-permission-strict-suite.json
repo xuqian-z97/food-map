@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-10T09-29-permission-strict-suite",
+  "at": "2026-11-10T09:29:08+08:00",
+  "kind": "integration",
+  "command": "VERIFY_REQUIRE_FULL=1 ./harness/scripts/verify.sh",
+  "env": "local",
+  "result": {
+    "total": 0,
+    "passed": 6,
+    "failed": 0,
+    "skipped": 0
+  },
+  "covers": [
+    "F-001",
+    "F-003",
+    "F-019",
+    "F-021"
+  ],
+  "evidence": [
+    "docs/integration/B1.5-orbstack-logging/evidence/2026-11-10T09-27-suite-6e5c3f7b-6322-4a33-bf61-244087105750-harness_scenarios.json"
+  ],
+  "notes": "权限调整后原严格全套 6 通过、0 失败、0 跳过；XCUITest 1 passed/0 failed，UI 登录 DB 与日志断言通过；历史失败记录保留。既有认证回归用 8080/8081/8082，最新日志闭环用18081/18089。"
+}

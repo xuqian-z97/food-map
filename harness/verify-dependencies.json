@@ -1,4 +1,19 @@
 {
+  "logging-auth": {"checks": [
+    {"type": "http", "url": "http://127.0.0.1:18081/internal/auth/health", "label": "日志验证用最新认证实例 18081 未启动"}
+  ]},
+  "logging-es": {"checks": [
+    {"type": "http", "url": "http://127.0.0.1:9200/_cluster/health", "label": "Elasticsearch 不可用"}
+  ]},
+  "logging-db": {"checks": [
+    {"type": "exec", "argv": ["docker", "exec", "foodmap-postgres", "psql", "-U", "foodmap", "-d", "foodmap_log_db", "-tAc", "select count(*) from api_access_log"], "label": "日志库迁移未完成或数据库不可用"}
+  ]},
+  "logging-files": {"checks": [
+    {"type": "file", "path": "/tmp/foodmap-orbstack-logs/foodmap-auth-service.log", "label": "日志验证目录无认证 JSON 日志"}
+  ]},
+  "logging-kafka": {"checks": [
+    {"type": "exec", "argv": ["docker", "exec", "foodmap-kafka", "/opt/kafka/bin/kafka-topics.sh", "--bootstrap-server", "localhost:9092", "--list"], "contains": "foodmap.logs.api-access", "label": "Kafka 未就绪或日志 topic 未初始化"}
+  ]},
   "network": {"checks": [
     {"type": "http", "url": "http://127.0.0.1:8080/internal/auth/health", "label": "认证网关不可达或权限受限"},
     {"type": "http", "url": "http://127.0.0.1:8080/internal/users/health", "label": "用户服务网关路由不可达或权限受限"}

@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 2,
+  "name": "B1 日志真实闭环",
+  "description": "备用端口最新认证服务真实请求，经文件、Fluent Bit、Kafka 到 ES 和独立日志库；检查时间字段与密码泄露",
+  "runId": "run-20261110T013620Z-dcdc3297",
+  "source": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios/b1-logging-closure.yml",
+  "ok": false,
+  "exitCode": 1,
+  "startedAt": "2026-11-10T01:36:20.721Z",
+  "finishedAt": "2026-11-10T01:36:32.129Z",
+  "durationMs": 11408,
+  "summary": {
+    "total": 1,
+    "passed": 0,
+    "failed": 1,
+    "skipped": 0,
+    "setupFailed": 0,
+    "teardownFailed": 0
+  },
+  "variableNames": [
+    "runId"
+  ],
+  "steps": [
+    {
+      "index": 1,
+      "phase": "step",
+      "action": "command",
+      "display": "command python3 logging-closure-check.py",
+      "expected": {
+        "exitCode": 0,
+        "stdoutContains": "\"result\": \"pass\""
+      },
+      "actual": {
+        "exitCode": 1,
+        "signal": null,
+        "stdout": "",
+        "stderr": "Traceback (most recent call last):\n  File \"/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios/logging-closure-check.py\", line 114, in <module>\n    results.extend([verify(register_rid, 200, 'POST', '/api/auth/register'),\n                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios/logging-closure-check.py\", line 62, in verify\n    source = next(h['_source'] for h in docs if h['_source'].get('logType') == 'api-access')\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nStopIteration\n",
+        "value": "",
+        "content": "",
+        "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+      },
+      "checks": [
+        {
+          "name": "exitCode",
+          "expected": 0,
+          "actual": 1,
+          "ok": false,
+          "error": "",
+          "message": "期望 0，实际 1"
+        },
+        {
+          "name": "stdoutContains",
+          "expected": "\"result\": \"pass\"",
+          "actual": "",
+          "ok": false,
+          "error": "",
+          "message": "期望 \"result\": \"pass\"，实际 (empty)"
+        }
+      ],
+      "captures": [],
+      "attempts": 1,
+      "ok": false,
+      "durationMs": 11407,
+      "error": "",
+      "hint": ""
+    }
+  ],
+  "evidence": {
+    "text": "/Users/zhangxuqian/myPrjDev/food-map/docs/integration/B1.5-orbstack-logging/evidence/2026-11-10T09-36-dcdc3297-B1 日志真实闭环.txt",
+    "json": "/Users/zhangxuqian/myPrjDev/food-map/docs/integration/B1.5-orbstack-logging/evidence/2026-11-10T09-36-dcdc3297-B1 日志真实闭环.json"
+  }
+}

@@ -1,0 +1,10 @@
+name: B1 日志真实闭环
+requires: [logging-auth, logging-es, logging-db, logging-files, logging-kafka]
+description: "备用端口最新认证服务真实请求，经文件、Fluent Bit、Kafka 到 ES 和独立日志库；检查时间字段与密码泄露"
+config:
+  commandTimeoutMs: 120000
+steps:
+  - command: "python3 logging-closure-check.py"
+    expect:
+      exitCode: 0
+      stdoutContains: '"result": "pass"'

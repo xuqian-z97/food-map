@@ -1,0 +1,21 @@
+验证场景: B1 退出登录链路（接口级）
+Run ID: run-20261110T013632Z-bc029d4b
+Scenario: /Users/zhangxuqian/myPrjDev/food-map/harness/scenarios/b1-logout.yml
+开始: 2026-11-10T01:36:32.130Z
+结束: 2026-11-10T01:36:32.536Z
+耗时: 405ms
+结果: PASS (12/12)
+
+#   结果  耗时     步骤
+1   ok    7ms      command date +%s
+2   ok    51ms     http POST /api/auth/register
+3   ok    33ms     http POST /api/auth/login
+4   ok    7ms      http GET /api/users/me
+5   ok    41ms     command docker exec foodmap-redis redis-cli --scan --pattern 'foodmap:auth:access-token-denylist:v…
+6   ok    13ms     http POST /api/auth/logout
+7   ok    36ms     command docker exec foodmap-redis redis-cli --scan --pattern 'foodmap:auth:access-token-denylist:v…
+8   ok    5ms      command [ 6 -eq $(( 5 + 1 )) ]
+9   ok    3ms      http GET /api/users/me
+10  ok    6ms      http POST /api/auth/refresh
+11  ok    199ms    command docker exec foodmap-postgres psql -U foodmap -d foodmap_auth_db -tAc "select count(*) from…
+12  ok    4ms      command [ 1 -eq 1 ]
