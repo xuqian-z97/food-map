@@ -1,0 +1,97 @@
+name: B1 登出后重启会话清理
+requires: [network, sql, device, test-password]
+description: "模拟器探针完成登录后再登出，然后重启 App 并再次触发登出动作：本轮新增日志里必须是 hasSession=false，证明 Keychain 已被清空、旧会话无法恢复"
+config:
+  baseUrl: http://127.0.0.1:8080
+  udid: A77A2428-9576-4533-8B62-0C267A395B29
+vars:
+  bundleId: com.foodmap.FoodMapApp
+  dbContainer: foodmap-postgres
+  userDbName: foodmap_user_db
+setup:
+  - http: GET ${baseUrl}/internal/auth/health
+    retry: { max: 30, intervalMs: 1000 }
+    expect: { status: 200 }
+
+  - command: "printf 'zxq_rt_%s' $(date +%H%M%S)"
+    capture: { account: stdout }
+    expect: { exitCode: 0 }
+
+  - http: POST ${baseUrl}/api/auth/register
+    json:
+      accountName: ${account}
+      password: ${env:FM_TEST_PW}
+      nickname: restart-probe
+      registeredChannel: IOS
+    expect: { status: 200 }
+    capture: { userId: data.userId }
+
+  - command: "docker exec ${dbContainer} psql -U foodmap -d foodmap_auth_db -tAc \"select account_id from auth_accounts where account_name='${account}'\""
+    capture: { accountId: value }
+    expect: { exitCode: 0 }
+
+steps:
+  - app: terminate ${udid} ${bundleId}
+
+  - app: launch ${udid} ${bundleId}
+    env:
+      FOODMAP_AUTOMATION: login-then-logout
+      FOODMAP_ACCOUNT: ${account}
+      FOODMAP_PASSWORD: ${env:FM_TEST_PW}
+      FOODMAP_BASE_URL: ${baseUrl}
+
+  - sleep: 12000
+
+  - app: readlog ${udid} ${bundleId} Documents/foodmap-automation.log
+    expect:
+      contains:
+        - "login.ok"
+        - "logout.begin hasSession=true"
+        - "logout.end sessionNil=true"
+
+  # 记录当前日志行数，重启后只看新增部分，避免用历史行判定成功
+  - command: "wc -l < $(xcrun simctl get_app_container ${udid} ${bundleId} data)/Documents/foodmap-automation.log"
+    capture: { logStart: value }
+    expect: { exitCode: 0 }
+
+  - app: terminate ${udid} ${bundleId}
+
+  - app: launch ${udid} ${bundleId}
+    env:
+      FOODMAP_AUTOMATION: logout
+      FOODMAP_BASE_URL: ${baseUrl}
+
+  - sleep: 8000
+
+  # 重启后本地已无会话：登出动作应当报告 hasSession=false
+  - command: "tail -n +$(( ${logStart} + 1 )) $(xcrun simctl get_app_container ${udid} ${bundleId} data)/Documents/foodmap-automation.log | grep -c 'logout.begin hasSession=false'"
+    expect: { equals: "1" }
+
+  # 不应出现新的登录成功记录，说明没有用旧凭据自动恢复会话
+  - command: "tail -n +$(( ${logStart} + 1 )) $(xcrun simctl get_app_container ${udid} ${bundleId} data)/Documents/foodmap-automation.log | grep -c 'login.ok'"
+    expect: { equals: "0" }
+
+teardown:
+  - command: "docker exec ${dbContainer} sh -c 'for t in user_settings user_profiles users; do psql -U foodmap -d ${userDbName} -c \"delete from $t where user_id=${userId}\" >/dev/null; done'"
+    expect: { exitCode: 0 }
+
+  - command: "docker exec ${dbContainer} psql -U foodmap -d foodmap_auth_db -c \"delete from auth_sessions where user_id=${userId}\""
+    expect: { exitCode: 0 }
+
+  - command: "docker exec ${dbContainer} psql -U foodmap -d foodmap_auth_db -c \"delete from auth_identity_bindings where user_id=${userId}\""
+    expect: { exitCode: 0 }
+
+  - command: "docker exec ${dbContainer} psql -U foodmap -d foodmap_auth_db -c \"delete from login_logs where account_id=${accountId}\""
+    expect: { exitCode: 0 }
+
+  - command: "docker exec ${dbContainer} psql -U foodmap -d foodmap_auth_db -c \"delete from refresh_tokens where account_id=${accountId}\""
+    expect: { exitCode: 0 }
+
+  - command: "docker exec ${dbContainer} psql -U foodmap -d foodmap_auth_db -c \"delete from auth_credentials where account_id=${accountId}\""
+    expect: { exitCode: 0 }
+
+  - command: "docker exec ${dbContainer} psql -U foodmap -d foodmap_auth_db -c \"delete from auth_accounts where account_id=${accountId}\""
+    expect: { exitCode: 0 }
+
+  - command: "docker exec ${dbContainer} psql -U foodmap -d foodmap_auth_db -tAc \"select (select count(*) from auth_accounts where account_id=${accountId}) + (select count(*) from auth_identity_bindings where user_id=${userId}) + (select count(*) from auth_sessions where user_id=${userId}) + (select count(*) from refresh_tokens where account_id=${accountId}) + (select count(*) from login_logs where account_id=${accountId}) + (select count(*) from auth_credentials where account_id=${accountId})\""
+    expect: { equals: "0" }

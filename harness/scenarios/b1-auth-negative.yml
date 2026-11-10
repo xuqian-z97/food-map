@@ -1,0 +1,140 @@
+name: B1 认证负向与刷新边界
+requires: [network, sql, test-password]
+description: "覆盖 B1 负向路径：错误密码、重复注册、短密码校验、无 Token、内部接口越界访问，以及有效 Refresh 换取可用 Access；全部请求经真实网关，数据只在本轮清理"
+config:
+  baseUrl: http://127.0.0.1:8080
+vars:
+  dbContainer: foodmap-postgres
+  userDbName: foodmap_user_db
+  shortPasswordMaxBytes: 8
+setup:
+  - http: GET ${baseUrl}/internal/auth/health
+    retry: { max: 30, intervalMs: 1000 }
+    expect: { status: 200 }
+
+  - command: "date +%s"
+    capture: { stamp: value }
+    expect: { exitCode: 0 }
+
+  - http: POST ${baseUrl}/api/auth/register
+    json:
+      accountName: zxq_neg_${stamp}
+      password: ${env:FM_TEST_PW}
+      nickname: negative-probe
+      registeredChannel: IOS
+    expect: { status: 200 }
+    capture: { userId: data.userId }
+
+  - command: "docker exec ${dbContainer} psql -U foodmap -d foodmap_auth_db -tAc \"select account_id from auth_accounts where account_name='zxq_neg_${stamp}'\""
+    capture: { accountId: value }
+    expect: { exitCode: 0 }
+
+steps:
+  # 1. 错误密码必须 401，并返回稳定业务码与可读文案
+  - http: POST ${baseUrl}/api/auth/login
+    json:
+      loginIdentifier: zxq_neg_${stamp}
+      password: wrong-password-value
+    expect:
+      status: 401
+      json: { code: UNAUTHORIZED }
+      contains: ["账号或密码错误"]
+
+  # 2. 同一账号名重复注册必须 409，不能覆盖已有账号
+  - http: POST ${baseUrl}/api/auth/register
+    json:
+      accountName: zxq_neg_${stamp}
+      password: ${env:FM_TEST_PW}
+      nickname: negative-probe
+      registeredChannel: IOS
+    expect:
+      status: 409
+      json: { code: CONFLICT }
+      contains: ["已被使用"]
+
+  # 3. 短密码由服务端拒绝（前端另外有提交前拦截，不在本场景断言）
+  - http: POST ${baseUrl}/api/auth/register
+    json:
+      accountName: zxq_neg_short_${stamp}
+      password: abc
+      nickname: negative-probe
+      registeredChannel: IOS
+    expect:
+      status: 400
+      json: { code: BAD_REQUEST }
+      contains: ["between 8 and 128"]
+
+  # 4. 无 Token 访问受保护接口必须 401，而不是 403 或 200
+  - http: GET ${baseUrl}/api/users/me
+    expect:
+      status: 401
+      json: { code: UNAUTHORIZED }
+      contains: ["缺少Access Token"]
+
+  # 5. 内部接口不允许经外部网关访问，必须 403
+  - http: POST ${baseUrl}/internal/users/bootstrap
+    json: { userId: 1 }
+    expect:
+      status: 403
+      json: { code: FORBIDDEN }
+
+  # 6. 正常登录后拿到双 Token
+  - http: POST ${baseUrl}/api/auth/login
+    json:
+      loginIdentifier: zxq_neg_${stamp}
+      password: ${env:FM_TEST_PW}
+    expect:
+      status: 200
+      json: { code: OK }
+    capture:
+      access: data.accessToken
+      refresh: data.refreshToken
+
+  # 7. 有效 Refresh 能换到新 Access（不对是否轮换做假设）
+  - http: POST ${baseUrl}/api/auth/refresh
+    json:
+      refreshToken: ${refresh}
+    expect:
+      status: 200
+      json: { code: OK }
+    capture:
+      refreshedAccess: data.accessToken
+
+  # 8. 刷新得到的 Access 必须真的可用
+  - http: GET ${baseUrl}/api/users/me
+    headers:
+      Authorization: Bearer ${refreshedAccess}
+    expect:
+      status: 200
+      json: { code: OK }
+
+  # 9. 重复注册不能改变原账号绑定数量（3 个标识各一条，注册重复不会新增）
+  - command: "docker exec ${dbContainer} psql -U foodmap -d foodmap_auth_db -tAc \"select count(*) from auth_identity_bindings where is_delete=0 and user_id=${userId}\""
+    capture: { bindings: value }
+    expect: { equals: "1" }
+
+# 只清理本轮账号，不按前缀批量删除。
+teardown:
+  - command: "docker exec ${dbContainer} sh -c 'for t in user_settings user_profiles users; do psql -U foodmap -d ${userDbName} -c \"delete from $t where user_id=${userId}\" >/dev/null; done'"
+    expect: { exitCode: 0 }
+
+  - command: "docker exec ${dbContainer} psql -U foodmap -d foodmap_auth_db -c \"delete from auth_sessions where user_id=${userId}\""
+    expect: { exitCode: 0 }
+
+  - command: "docker exec ${dbContainer} psql -U foodmap -d foodmap_auth_db -c \"delete from auth_identity_bindings where user_id=${userId}\""
+    expect: { exitCode: 0 }
+
+  - command: "docker exec ${dbContainer} psql -U foodmap -d foodmap_auth_db -c \"delete from login_logs where account_id=${accountId}\""
+    expect: { exitCode: 0 }
+
+  - command: "docker exec ${dbContainer} psql -U foodmap -d foodmap_auth_db -c \"delete from refresh_tokens where account_id=${accountId}\""
+    expect: { exitCode: 0 }
+
+  - command: "docker exec ${dbContainer} psql -U foodmap -d foodmap_auth_db -c \"delete from auth_credentials where account_id=${accountId}\""
+    expect: { exitCode: 0 }
+
+  - command: "docker exec ${dbContainer} psql -U foodmap -d foodmap_auth_db -c \"delete from auth_accounts where account_id=${accountId}\""
+    expect: { exitCode: 0 }
+
+  - command: "docker exec ${dbContainer} psql -U foodmap -d foodmap_auth_db -tAc \"select (select count(*) from auth_accounts where account_id=${accountId}) + (select count(*) from auth_identity_bindings where user_id=${userId}) + (select count(*) from auth_sessions where user_id=${userId}) + (select count(*) from refresh_tokens where account_id=${accountId}) + (select count(*) from login_logs where account_id=${accountId}) + (select count(*) from auth_credentials where account_id=${accountId})\""
+    expect: { equals: "0" }

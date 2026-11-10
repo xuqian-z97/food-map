@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-10T10-13-b1-negative-restart",
+  "at": "2026-11-10T10:13:40+08:00",
+  "kind": "integration",
+  "command": "FM_TEST_PW=<env> VERIFY_REQUIRE_FULL=1 ./harness/scripts/verify.sh",
+  "env": "local",
+  "result": {
+    "total": 8,
+    "passed": 8,
+    "failed": 0,
+    "skipped": 0
+  },
+  "covers": [
+    "F-001",
+    "F-003",
+    "F-021"
+  ],
+  "evidence": [
+    "harness/scenarios/b1-auth-negative.yml",
+    "harness/scenarios/b1-session-restart.yml"
+  ],
+  "notes": "新增负向与重启场景后严格全套 8/8 通过、146 步、0 跳过；覆盖错误密码401、重复注册409、短密码400、无Token401、内部接口403、Refresh后可用的Access、登出重启后 hasSession=false 且无新登录。"
+}
