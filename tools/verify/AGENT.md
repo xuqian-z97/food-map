@@ -21,7 +21,7 @@ node tools/verify/cli.mjs run harness/scenarios/ --json --evidence-dir /tmp/veri
 | 码 | 含义 | 你该做什么 |
 | --- | --- | --- |
 | `0` | 无运行失败（依赖感知模式可能部分跳过） | 检查 `ok`、`status` 和 `summary.skipped`，不能只看退出码 |
-| `1` | 至少一个步骤失败 | 看 `scenarios[i].steps[j].error` / `.hint` / `.checks`，判断是代码 bug 还是期望写错 |
+| `1` | 有失败步骤，或严格模式（`VERIFY_REQUIRE_FULL=1`/`--require-full`）下有跳过 | 看 `scenarios[i].steps[j].error` / `.hint` / `.checks`，判断是代码 bug 还是期望写错 |
 | `2` | 场景/配置/用法错误 | **不要改业务代码**，先修 scenario 或命令 |
 
 ## 3. 读结果

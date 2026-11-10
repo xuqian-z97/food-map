@@ -3,7 +3,7 @@
 name: 退出登录链路
 description: 演示 HTTP、Redis、SQL 适配器和 capture 变量
 config:
-  baseUrl: http://127.0.0.1:8080
+  baseUrl: http://127.0.0.1:9000
   redisPrefix: demo:auth
   redis:
     host: 127.0.0.1

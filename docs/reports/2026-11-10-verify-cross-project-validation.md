@@ -82,3 +82,21 @@ node tools/verify/cli.mjs run tools/verify/examples/minimal-project/scenarios \
 cp -R tools/verify /path/to/project/tools/verify
 rm -rf /path/to/project/tools/verify/evidence
 ```
+
+---
+
+## 补充：Codex 复测（afc6e44）后的修正
+
+Codex 以“第一次接触工具”的视角复测了本模板，结论「有条件可用」，无 P0。以下是本报告对应修正：
+
+| 编号 | 问题 | 修正 |
+| --- | --- | --- |
+| P1-1 | README §10 要求排除 `evidence/`，紧接着给的却是 `cp -R`，照抄会把历史运行产物带进新项目 | 改为带排除项的 `rsync` 命令，并说明 `cp -R` 的后果 |
+| P1-2 | 退出码表 `0 = 全部步骤通过` 与“部分执行也返回 0”冲突；`1 = 至少一个步骤失败` 与严格模式下“0 失败但跳过返回 1”冲突 | README §1 与 AGENT.md §2 明确：`0` 仅表示已执行部分无失败，验收必须同时看 `ok`、`status`、`summary.skipped` |
+| P2-1 | 整目录 `grep` 在 `examples/logout.yml:6` 命中 `:8080` | 示例端口改为中性 `9000`，副本整体扫描现在零命中（`evidence/` 除外，它是本机产物） |
+| P2-2 | 模板 `deps.json` 定义了 `python` 预检但没有任何场景需要它，容易误导 | 清单只保留场景真正依赖的 `network`；Python 作为示例服务的运行前提写进 README |
+| P2-3 | 外部目录布局与前提缺一段可照抄的命令 | 模板 README 增加完整 `rsync` + `cp` 命令、端口/日志相对路径说明、Node/Python 前提 |
+| P2-4 | 目录模式的证据路径层级没写清 | README §6 区分单场景 `result.evidence` 与目录模式 `scenarios[i].evidence` + 套件按 runId 查找 |
+
+复测修正后再次验证：`rsync` 复制到仓库外（排除 evidence）→ 运行 1/1 通过、退出码 0；
+副本整体扫描（排除 evidence）零命中；仓库单测 44/44 通过。

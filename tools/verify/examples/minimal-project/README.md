@@ -29,6 +29,25 @@ VERIFY_REQUIRE_FULL=1 node tools/verify/cli.mjs run tools/verify/examples/minima
   --dependencies tools/verify/examples/minimal-project/deps.json
 ```
 
+## 复制到新项目（完整命令）
+
+```sh
+# 1. 只复制工具本体，排除本机证据与运行日志
+rsync -a --exclude='evidence/' --exclude='examples/minimal-project/logs/*.log' \
+  tools/verify/ /path/to/other-project/tools/verify/
+
+# 2. 把模板的场景/清单/服务放到新项目根目录（按需改名）
+cp -R tools/verify/examples/minimal-project/{scenarios,deps.json,server.py} \
+  /path/to/other-project/
+```
+
+运行前提：
+
+- Node.js >= 20（工具本体运行需要）；示例服务需要 Python 3（仅本模板）。
+- 回环端口可绑定：示例固定 19100，换端口要同时改 `server.py --port`、`deps.json` 和 `scenarios/smoke.yml`。
+- `scenarios/smoke.yml` 里 `logRoot: ../logs` 是相对**场景文件目录**解析的，所以日志落在
+  `minimal-project/logs/access.log`；移动文件时记得同步改这个相对路径。
+
 ## 复制到新项目时要改什么
 
 只需要改这些，**不要改 `tools/verify/core` 和 `adapters`**：
@@ -36,7 +55,8 @@ VERIFY_REQUIRE_FULL=1 node tools/verify/cli.mjs run tools/verify/examples/minima
 1. `deps.json`：换成新项目的服务地址、命令、容器名或日志路径。
    注意：`http` 步骤会自动推断出 `network` 依赖，清单里必须配置同名条目，否则场景会被跳过（这是有意的保守行为）。
 2. `scenarios/*.yml`：`config.baseUrl`、变量、断言。
-3. 如果新项目用 iOS/Android，再参考仓库里 `harness/scenarios/` 的 `xcode` / `app` 用法。
+3. 如果新项目用 iOS/Android：iOS 参考 `xcode`（需自带 UI 测试 target 与 scheme）或 `app`（simctl），
+   Android 用 `app` 的 adb 分支；仓库里的 `harness/scenarios/` 不会随工具复制，需照 README 自己写。
 
 ## 它验证了什么
 

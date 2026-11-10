@@ -55,11 +55,13 @@ node tools/verify/cli.mjs run path/to/scenario.yml --json > result.json
 
 退出码：
 
-| 退出码 | 含义 |
+| 退出码 | 含义（仅看退出码不足以判断能否验收） |
 | --- | --- |
-| `0` | 全部步骤通过 |
-| `1` | 至少一个步骤失败（断言不匹配或适配器执行失败） |
+| `0` | 已执行的场景没有失败；**目录模式下可能有跳过**（此时 `ok=false`、`status=partial`、`skipped>0`） |
+| `1` | 有失败步骤；或严格模式（`VERIFY_REQUIRE_FULL=1` / `--require-full`）下存在跳过 |
 | `2` | scenario/配置/CLI 用法错误，或证据写入失败 |
+
+验收判断要同时看：`ok=true`、`summary.failed=0`、`summary.skipped=0`。
 
 默认证据目录是 **`tools/verify/evidence/`**（相对工具自身，不依赖调用时的工作目录）。
 可以用 `--evidence-dir` 改到 `/tmp`、CI artifact 目录等位置。
@@ -391,7 +393,11 @@ JSON 顶层包含 `name`、`runId`、`source`、`ok`、`exitCode`、`startedAt`�
 ```
 
 `--json` 时进度和错误写到 stderr，stdout 只有一份 JSON，便于 agent 用
-`JSON.parse`。证据路径写在 `result.evidence`。
+`JSON.parse`。证据路径位置分两种：
+
+- 单场景模式：`result.evidence` 指向该场景的 `.txt` / `.json`；
+- 目录模式：没有顶层 `result.evidence`，每个场景的路径在 `scenarios[i].evidence`，
+  套件证据在 `--evidence-dir` 下按本次 `runId` 查找（文件名含 `suite-`）。
 
 注意：`--json` 的 stdout、场景证据、套件证据使用同一套脱敏（Bearer / JWT / 手机号 / 密码字段），
 Token 会显示为 `[REDACTED]`。但响应体、stdout/stderr 和日志正文仍可能含业务数据，不要默认把证据提交到仓库；CI 应只作为短期 artifact
@@ -487,8 +493,12 @@ Android 同理：`adb` 能启动和读私有目录，但不能替代项目自己
 直接复制整个 `tools/verify/` 即可（**不要复制 `evidence/`**，那是本机每次运行生成的产物）：
 
 ```bash
-cp -R tools/verify /path/to/other-project/tools/verify
+# 用 rsync 显式排除本机产物：evidence/ 是历史运行结果，示例日志也是运行时生成
+rsync -a --exclude='evidence/' --exclude='examples/minimal-project/logs/*.log' \
+  tools/verify/ /path/to/other-project/tools/verify/
 ```
+
+> 直接 `cp -R tools/verify ...` 会把 `evidence/` 一起带过去，里面可能含上一批项目的运行数据。
 
 需要保证：
 
