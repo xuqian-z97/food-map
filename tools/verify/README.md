@@ -85,7 +85,8 @@ tools/verify/
 │   └── app.mjs
 ├── examples/
 │   ├── logout.yml
-│   └── ios-probe.yml
+│   ├── ios-probe.yml
+│   └── minimal-project/   # 跨项目复用模板（Python 服务 + 场景 + 依赖清单）
 └── test/
     ├── index.mjs      # 让 node --test test/ 在 Node 24 下可运行
     ├── package.json   # 仅为目录入口，不含依赖
@@ -99,7 +100,7 @@ tools/verify/
 name: 退出登录链路
 description: 可选说明
 config:                      # 可选；--config 会深度覆盖这里的值
-  baseUrl: http://127.0.0.1:8080
+  baseUrl: http://127.0.0.1:9000
   redisPrefix: demo:auth
 vars:                        # 可选；--var k=v 优先
   account: demo
@@ -168,7 +169,7 @@ steps:
 `--config` 文件也使用同一套受限 YAML 解析器，路径相对当前工作目录，例如：
 
 ```yaml
-baseUrl: http://127.0.0.1:8080
+baseUrl: http://127.0.0.1:9000
 redis:
   host: 127.0.0.1
   port: 16379
@@ -483,7 +484,7 @@ Android 同理：`adb` 能启动和读私有目录，但不能替代项目自己
 
 ## 10. 复制到其他项目
 
-直接复制整个 `tools/verify/` 即可：
+直接复制整个 `tools/verify/` 即可（**不要复制 `evidence/`**，那是本机每次运行生成的产物）：
 
 ```bash
 cp -R tools/verify /path/to/other-project/tools/verify

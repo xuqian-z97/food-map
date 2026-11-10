@@ -1,0 +1,12 @@
+{
+  "network": {
+    "checks": [
+      {"type": "http", "url": "http://127.0.0.1:19100/health", "status": 200, "timeoutMs": 2000, "label": "示例服务未启动（先运行 python3 server.py）"}
+    ]
+  },
+  "python": {
+    "checks": [
+      {"type": "exec", "argv": ["python3", "--version"], "timeoutMs": 3000, "label": "缺少 python3"}
+    ]
+  }
+}

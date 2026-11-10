@@ -147,7 +147,7 @@ function validateStep(step, index) {
 
   if (action === 'http') {
     if (typeof step.http !== 'string' || !/^[A-Za-z]+\s+\S/.test(step.http.trim())) {
-      throw new ScenarioError(`${where}.http 必须是 "METHOD path" 形式，实际是 ${JSON.stringify(step.http)}`, '例如 "POST /api/auth/login" 或 "GET http://127.0.0.1:8080/health"。');
+      throw new ScenarioError(`${where}.http 必须是 "METHOD path" 形式，实际是 ${JSON.stringify(step.http)}`, '例如 "POST /api/auth/login" 或 "GET http://127.0.0.1:9000/health"。');
     }
   } else if (action === 'sleep') {
     const value = step.sleep;

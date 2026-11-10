@@ -1,0 +1,34 @@
+name: 最小示例项目冒烟
+requires: [network]
+description: "只依赖 scenario 里的端口与路径：健康检查、创建条目、按 id 查询、404 负向，以及访问日志。证明工具本身不绑定任何具体项目"
+config:
+  baseUrl: http://127.0.0.1:19100
+  logRoot: ../logs
+setup:
+  - http: GET ${baseUrl}/health
+    retry: { max: 20, intervalMs: 250 }
+    expect: { status: 200, json: { status: ok } }
+
+steps:
+  - http: POST ${baseUrl}/items
+    json: { name: apple }
+    expect:
+      status: 201
+      json: { name: apple }
+    capture: { itemId: id }
+
+  - http: GET ${baseUrl}/items/${itemId}
+    expect:
+      status: 200
+      json: { name: apple }
+
+  # 负向：不存在的条目必须 404，而不是 200 或 500
+  - http: GET ${baseUrl}/items/999999
+    expect:
+      status: 404
+      json: { error: not_found }
+
+  # 文本断言：访问日志里确实出现了这次创建
+  - logfile: "access.log"
+    expect:
+      contains: ["POST /items -> 201", "GET /items/999999 -> 404"]
