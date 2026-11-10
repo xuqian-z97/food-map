@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-09T17-58-orbstack-regression-suite",
+  "at": "2026-11-09T17:58:13+08:00",
+  "kind": "integration",
+  "command": "./harness/scripts/verify.sh",
+  "env": "local",
+  "result": {
+    "total": 0,
+    "passed": 5,
+    "failed": 1,
+    "skipped": 0
+  },
+  "covers": [
+    "F-019",
+    "F-021"
+  ],
+  "evidence": [
+    "/tmp/verify-evidence/2026-11-09T17-53-suite-4c541f34-d516-4e94-ac33-897d2ab67e70-harness_scenarios.json"
+  ],
+  "notes": "6 场景：5 通过、1 失败、0 跳过；失败为 iOS UI 测试运行器 Pseudo Terminal 权限错误（exit65），日志闭环通过；原有 8080/8081/8082 供回归，最新认证 18081 供日志链路。"
+}

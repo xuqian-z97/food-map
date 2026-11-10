@@ -3,6 +3,8 @@ package com.foodmap.auth.domain;
 import com.foodmap.common.exception.CommonErrorCode;
 import com.foodmap.common.exception.FoodMapException;
 import com.foodmap.common.validation.Check;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKeyFactory;
@@ -16,6 +18,9 @@ import java.util.Base64;
  * PBKDF2 密码哈希服务，负责把明文密码转换为不可逆哈希并验证登录密码。
  *
  * <p>该类不打印密码和哈希内容。排查登录失败时应查看业务错误码和登录日志，不应输出敏感字段。</p>
+ *
+ * <p>pepper 只从配置 {@code foodmap.auth.password.pepper} 注入，本类不提供默认 pepper；生产环境必须通过
+ * 环境变量 {@code AUTH_PEPPER} 显式配置，避免所有环境共用同一个可猜测的 pepper。</p>
  */
 @Component
 public class Pbkdf2PasswordHashService {
@@ -28,18 +33,12 @@ public class Pbkdf2PasswordHashService {
     private final String pepper;
 
     /**
-     * 使用本地默认 pepper 创建服务实例，生产环境后续应改为从配置中心注入。
-     */
-    public Pbkdf2PasswordHashService() {
-        this("foodmap-local-pepper");
-    }
-
-    /**
-     * 使用指定 pepper 创建服务实例，测试可传入固定值以降低排查复杂度。
+     * 使用配置注入的 pepper 创建服务实例，pepper 缺失时启动阶段即失败。
      *
-     * @param pepper 密码哈希 pepper，生产环境应来自安全配置。
+     * @param pepper 密码哈希 pepper，来自 {@code foodmap.auth.password.pepper}，生产环境由 {@code AUTH_PEPPER} 注入。
      */
-    public Pbkdf2PasswordHashService(String pepper) {
+    @Autowired
+    public Pbkdf2PasswordHashService(@Value("${foodmap.auth.password.pepper}") String pepper) {
         this.pepper = Check.notBlank("pepper", pepper);
     }
 

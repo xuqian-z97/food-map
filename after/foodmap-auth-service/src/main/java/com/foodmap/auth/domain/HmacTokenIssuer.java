@@ -1,8 +1,10 @@
 package com.foodmap.auth.domain;
 
+import com.foodmap.auth.config.TokenSecretProperties;
 import com.foodmap.common.security.HmacTokenCodec;
 import com.foodmap.common.security.TokenClaims;
 import com.foodmap.common.validation.Check;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.time.OffsetDateTime;
@@ -12,16 +14,22 @@ import java.time.OffsetDateTime;
  *
  * <p>本类保留在认证领域层作为应用层依赖入口，底层编解码逻辑委托给 common 中的 HmacTokenCodec，
  * 确保认证服务签发逻辑和网关解析逻辑保持一致。</p>
+ *
+ * <p>签名密钥只来自 {@link TokenSecretProperties}，本类不提供任何默认密钥。排查 Token 签验不一致时，
+ * 应先确认认证服务和网关解析到的 {@code foodmap.security.token-secret} 是否为同一个值。</p>
  */
 @Component
 public class HmacTokenIssuer {
     private final HmacTokenCodec tokenCodec;
 
     /**
-     * 使用本地默认密钥创建签发器，生产环境后续必须从安全配置注入。
+     * 使用启动期校验过的密钥配置创建签发器，Spring 容器只使用本构造器，避免回退到测试用构造器。
+     *
+     * @param tokenSecretProperties 从 {@code foodmap.security} 绑定的 Token 密钥配置，缺失或过短时启动阶段即失败。
      */
-    public HmacTokenIssuer() {
-        this("foodmap-local-token-secret-please-change");
+    @Autowired
+    public HmacTokenIssuer(TokenSecretProperties tokenSecretProperties) {
+        this(tokenSecretProperties == null ? null : tokenSecretProperties.getTokenSecret());
     }
 
     /**

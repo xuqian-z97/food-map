@@ -1,0 +1,778 @@
+{
+  "schemaVersion": 2,
+  "name": "认证双写核验（身份绑定与会话）",
+  "description": "注册、登录、登出后检查 auth_identity_bindings 与 auth_sessions 是否被真实写入：绑定 3 条、哈希与脱敏正确、会话状态随登出变化",
+  "runId": "run-20261110T012721Z-25b115b8",
+  "source": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios/b1-identity-dual-write.yml",
+  "ok": true,
+  "exitCode": 0,
+  "startedAt": "2026-11-10T01:27:21.122Z",
+  "finishedAt": "2026-11-10T01:27:22.729Z",
+  "durationMs": 1608,
+  "summary": {
+    "total": 19,
+    "passed": 19,
+    "failed": 0,
+    "skipped": 0,
+    "setupFailed": 0,
+    "teardownFailed": 0
+  },
+  "variableNames": [
+    "access",
+    "accountNameHash",
+    "activeAfterLogout",
+    "activeSessions",
+    "bindings",
+    "dbContainer",
+    "emailMask",
+    "last4",
+    "password",
+    "phoneMask",
+    "refresh",
+    "revokedSessions",
+    "runId",
+    "suffix",
+    "userId"
+  ],
+  "steps": [
+    {
+      "index": 1,
+      "phase": "step",
+      "action": "command",
+      "display": "command date +%s | cut -c3-10",
+      "expected": {
+        "exitCode": 0
+      },
+      "actual": {
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "94274041\n",
+        "stderr": "",
+        "value": "94274041",
+        "content": "94274041\n",
+        "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+      },
+      "checks": [
+        {
+          "name": "exitCode",
+          "expected": 0,
+          "actual": 0,
+          "ok": true,
+          "error": "",
+          "message": ""
+        }
+      ],
+      "captures": [
+        "suffix"
+      ],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 12,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 2,
+      "phase": "step",
+      "action": "command",
+      "display": "command date +%s | cut -c7-10",
+      "expected": {
+        "exitCode": 0
+      },
+      "actual": {
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "4041\n",
+        "stderr": "",
+        "value": "4041",
+        "content": "4041\n",
+        "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+      },
+      "checks": [
+        {
+          "name": "exitCode",
+          "expected": 0,
+          "actual": 0,
+          "ok": true,
+          "error": "",
+          "message": ""
+        }
+      ],
+      "captures": [
+        "last4"
+      ],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 7,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 3,
+      "phase": "step",
+      "action": "http",
+      "display": "http POST /api/auth/register",
+      "expected": {
+        "status": 200,
+        "json": {
+          "code": "OK"
+        }
+      },
+      "actual": {
+        "method": "POST",
+        "url": "http://127.0.0.1:8080/api/auth/register",
+        "status": 200,
+        "statusText": "OK",
+        "headers": {
+          "content-type": "application/json",
+          "date": "Tue, 10 Nov 2026 01:27:21 GMT",
+          "transfer-encoding": "chunked",
+          "x-request-id": "bu676w0vm1gx57k1oh4wab36, bu676w0vm1gx57k1oh4wab36",
+          "x-span-id": "zf4j0pwnevais3bmj0vevrng, kaal6qzu1cmazu3ii6ua97cx",
+          "x-trace-id": "tvxg1dz00i3uswcu64011c2z, tvxg1dz00i3uswcu64011c2z"
+        },
+        "body": "{\"success\":true,\"status\":200,\"code\":\"OK\",\"message\":\"success\",\"data\":{\"accountId\":null,\"userId\":200192,\"accountStatus\":\"NORMAL\"}}",
+        "json": {
+          "success": true,
+          "status": 200,
+          "code": "OK",
+          "message": "success",
+          "data": {
+            "accountId": null,
+            "userId": 200192,
+            "accountStatus": "NORMAL"
+          }
+        },
+        "jsonParsed": true,
+        "jsonError": "",
+        "value": {
+          "success": true,
+          "status": 200,
+          "code": "OK",
+          "message": "success",
+          "data": {
+            "accountId": null,
+            "userId": 200192,
+            "accountStatus": "NORMAL"
+          }
+        },
+        "content": "{\"success\":true,\"status\":200,\"code\":\"OK\",\"message\":\"success\",\"data\":{\"accountId\":null,\"userId\":200192,\"accountStatus\":\"NORMAL\"}}",
+        "durationMs": 79
+      },
+      "checks": [
+        {
+          "name": "status",
+          "expected": 200,
+          "actual": 200,
+          "ok": true,
+          "error": "",
+          "message": ""
+        },
+        {
+          "name": "json",
+          "expected": {
+            "code": "OK"
+          },
+          "actual": {
+            "success": true,
+            "status": 200,
+            "code": "OK",
+            "message": "success",
+            "data": {
+              "accountId": null,
+              "userId": 200192,
+              "accountStatus": "NORMAL"
+            }
+          },
+          "ok": true,
+          "error": "",
+          "message": ""
+        }
+      ],
+      "captures": [
+        "userId"
+      ],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 80,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 4,
+      "phase": "step",
+      "action": "command",
+      "display": "command docker exec foodmap-postgres psql -U foodmap -d foodmap_auth_db -tAc \"select count(*) from…",
+      "expected": null,
+      "actual": {
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "3\n",
+        "stderr": "",
+        "value": "3",
+        "content": "3\n",
+        "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+      },
+      "checks": [],
+      "captures": [
+        "bindings"
+      ],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 195,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 5,
+      "phase": "step",
+      "action": "command",
+      "display": "command [ 3 -eq 3 ]",
+      "expected": {
+        "exitCode": 0
+      },
+      "actual": {
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "",
+        "stderr": "",
+        "value": "",
+        "content": "",
+        "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+      },
+      "checks": [
+        {
+          "name": "exitCode",
+          "expected": 0,
+          "actual": 0,
+          "ok": true,
+          "error": "",
+          "message": ""
+        }
+      ],
+      "captures": [],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 5,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 6,
+      "phase": "step",
+      "action": "command",
+      "display": "command docker exec foodmap-postgres psql -U foodmap -d foodmap_auth_db -tAc \"select count(*) from…",
+      "expected": null,
+      "actual": {
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "1\n",
+        "stderr": "",
+        "value": "1",
+        "content": "1\n",
+        "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+      },
+      "checks": [],
+      "captures": [
+        "accountNameHash"
+      ],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 202,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 7,
+      "phase": "step",
+      "action": "command",
+      "display": "command [ 1 -eq 1 ]",
+      "expected": {
+        "exitCode": 0
+      },
+      "actual": {
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "",
+        "stderr": "",
+        "value": "",
+        "content": "",
+        "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+      },
+      "checks": [
+        {
+          "name": "exitCode",
+          "expected": 0,
+          "actual": 0,
+          "ok": true,
+          "error": "",
+          "message": ""
+        }
+      ],
+      "captures": [],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 5,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 8,
+      "phase": "step",
+      "action": "command",
+      "display": "command docker exec foodmap-postgres psql -U foodmap -d foodmap_auth_db -tAc \"select display_maske…",
+      "expected": null,
+      "actual": {
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "139****4041\n",
+        "stderr": "",
+        "value": "139****4041",
+        "content": "139****4041\n",
+        "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+      },
+      "checks": [],
+      "captures": [
+        "phoneMask"
+      ],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 193,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 9,
+      "phase": "step",
+      "action": "command",
+      "display": "command [ '139****4041' = '139****4041' ]",
+      "expected": {
+        "exitCode": 0
+      },
+      "actual": {
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "",
+        "stderr": "",
+        "value": "",
+        "content": "",
+        "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+      },
+      "checks": [
+        {
+          "name": "exitCode",
+          "expected": 0,
+          "actual": 0,
+          "ok": true,
+          "error": "",
+          "message": ""
+        }
+      ],
+      "captures": [],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 5,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 10,
+      "phase": "step",
+      "action": "command",
+      "display": "command docker exec foodmap-postgres psql -U foodmap -d foodmap_auth_db -tAc \"select display_maske…",
+      "expected": null,
+      "actual": {
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "d***@example.com\n",
+        "stderr": "",
+        "value": "d***@example.com",
+        "content": "d***@example.com\n",
+        "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+      },
+      "checks": [],
+      "captures": [
+        "emailMask"
+      ],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 195,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 11,
+      "phase": "step",
+      "action": "command",
+      "display": "command [ 'd***@example.com' = 'd***@example.com' ]",
+      "expected": {
+        "exitCode": 0
+      },
+      "actual": {
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "",
+        "stderr": "",
+        "value": "",
+        "content": "",
+        "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+      },
+      "checks": [
+        {
+          "name": "exitCode",
+          "expected": 0,
+          "actual": 0,
+          "ok": true,
+          "error": "",
+          "message": ""
+        }
+      ],
+      "captures": [],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 6,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 12,
+      "phase": "step",
+      "action": "http",
+      "display": "http POST /api/auth/login",
+      "expected": {
+        "status": 200,
+        "json": {
+          "code": "OK"
+        }
+      },
+      "actual": {
+        "method": "POST",
+        "url": "http://127.0.0.1:8080/api/auth/login",
+        "status": 200,
+        "statusText": "OK",
+        "headers": {
+          "content-type": "application/json",
+          "date": "Tue, 10 Nov 2026 01:27:22 GMT",
+          "transfer-encoding": "chunked",
+          "x-request-id": "9jywd7cv3lug02yfjtwaery5, 9jywd7cv3lug02yfjtwaery5",
+          "x-span-id": "svrwdedd6twq2ofns04v1k77, eg4y5le6kyio7p373jed63cg",
+          "x-trace-id": "wppjls0vl2eyr4utjelefsqq, wppjls0vl2eyr4utjelefsqq"
+        },
+        "body": "{\"success\":true,\"status\":200,\"code\":\"OK\",\"message\":\"success\",\"data\":{\"accountId\":null,\"userId\":200192,\"accessToken\":\"[REDACTED]\",\"refreshToken\":\"[REDACTED]\",\"accessTokenExpiresTime\":\"2026-11-10T11:27:22.05428+08:00\",\"refreshTokenExpiresTime\":\"2026-12-10T09:27:22.05428+08:00\"}}",
+        "json": {
+          "success": true,
+          "status": 200,
+          "code": "OK",
+          "message": "success",
+          "data": {
+            "accountId": null,
+            "userId": 200192,
+            "accessToken": "[REDACTED]",
+            "refreshToken": "[REDACTED]",
+            "accessTokenExpiresTime": "[REDACTED]",
+            "refreshTokenExpiresTime": "[REDACTED]"
+          }
+        },
+        "jsonParsed": true,
+        "jsonError": "",
+        "value": {
+          "success": true,
+          "status": 200,
+          "code": "OK",
+          "message": "success",
+          "data": {
+            "accountId": null,
+            "userId": 200192,
+            "accessToken": "[REDACTED]",
+            "refreshToken": "[REDACTED]",
+            "accessTokenExpiresTime": "[REDACTED]",
+            "refreshTokenExpiresTime": "[REDACTED]"
+          }
+        },
+        "content": "{\"success\":true,\"status\":200,\"code\":\"OK\",\"message\":\"success\",\"data\":{\"accountId\":null,\"userId\":200192,\"accessToken\":\"[REDACTED]\",\"refreshToken\":\"[REDACTED]\",\"accessTokenExpiresTime\":\"2026-11-10T11:27:22.05428+08:00\",\"refreshTokenExpiresTime\":\"2026-12-10T09:27:22.05428+08:00\"}}",
+        "durationMs": 42
+      },
+      "checks": [
+        {
+          "name": "status",
+          "expected": 200,
+          "actual": 200,
+          "ok": true,
+          "error": "",
+          "message": ""
+        },
+        {
+          "name": "json",
+          "expected": {
+            "code": "OK"
+          },
+          "actual": {
+            "success": true,
+            "status": 200,
+            "code": "OK",
+            "message": "success",
+            "data": {
+              "accountId": null,
+              "userId": 200192,
+              "accessToken": "[REDACTED]",
+              "refreshToken": "[REDACTED]",
+              "accessTokenExpiresTime": "[REDACTED]",
+              "refreshTokenExpiresTime": "[REDACTED]"
+            }
+          },
+          "ok": true,
+          "error": "",
+          "message": ""
+        }
+      ],
+      "captures": [
+        "access",
+        "refresh"
+      ],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 42,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 13,
+      "phase": "step",
+      "action": "command",
+      "display": "command docker exec foodmap-postgres psql -U foodmap -d foodmap_auth_db -tAc \"select count(*) from…",
+      "expected": null,
+      "actual": {
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "1\n",
+        "stderr": "",
+        "value": "1",
+        "content": "1\n",
+        "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+      },
+      "checks": [],
+      "captures": [
+        "activeSessions"
+      ],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 208,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 14,
+      "phase": "step",
+      "action": "command",
+      "display": "command [ 1 -eq 1 ]",
+      "expected": {
+        "exitCode": 0
+      },
+      "actual": {
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "",
+        "stderr": "",
+        "value": "",
+        "content": "",
+        "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+      },
+      "checks": [
+        {
+          "name": "exitCode",
+          "expected": 0,
+          "actual": 0,
+          "ok": true,
+          "error": "",
+          "message": ""
+        }
+      ],
+      "captures": [],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 5,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 15,
+      "phase": "step",
+      "action": "http",
+      "display": "http POST /api/auth/logout",
+      "expected": {
+        "status": 200
+      },
+      "actual": {
+        "method": "POST",
+        "url": "http://127.0.0.1:8080/api/auth/logout",
+        "status": 200,
+        "statusText": "OK",
+        "headers": {
+          "content-type": "application/json",
+          "date": "Tue, 10 Nov 2026 01:27:22 GMT",
+          "transfer-encoding": "chunked",
+          "x-request-id": "g587jw36p1jz4o2igbvkzbl5, g587jw36p1jz4o2igbvkzbl5",
+          "x-span-id": "dq7o5fh7walmmtwemesm8bh7, 46s03bgaikqjfbjvukwsm4x0",
+          "x-trace-id": "x9jkhpt1za7thkqawsgteh5l, x9jkhpt1za7thkqawsgteh5l"
+        },
+        "body": "{\"success\":true,\"status\":200,\"code\":\"OK\",\"message\":\"success\",\"data\":null}",
+        "json": {
+          "success": true,
+          "status": 200,
+          "code": "OK",
+          "message": "success",
+          "data": null
+        },
+        "jsonParsed": true,
+        "jsonError": "",
+        "value": {
+          "success": true,
+          "status": 200,
+          "code": "OK",
+          "message": "success",
+          "data": null
+        },
+        "content": "{\"success\":true,\"status\":200,\"code\":\"OK\",\"message\":\"success\",\"data\":null}",
+        "durationMs": 17
+      },
+      "checks": [
+        {
+          "name": "status",
+          "expected": 200,
+          "actual": 200,
+          "ok": true,
+          "error": "",
+          "message": ""
+        }
+      ],
+      "captures": [],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 18,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 16,
+      "phase": "step",
+      "action": "command",
+      "display": "command docker exec foodmap-postgres psql -U foodmap -d foodmap_auth_db -tAc \"select count(*) from…",
+      "expected": null,
+      "actual": {
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "1\n",
+        "stderr": "",
+        "value": "1",
+        "content": "1\n",
+        "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+      },
+      "checks": [],
+      "captures": [
+        "revokedSessions"
+      ],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 211,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 17,
+      "phase": "step",
+      "action": "command",
+      "display": "command [ 1 -eq 1 ]",
+      "expected": {
+        "exitCode": 0
+      },
+      "actual": {
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "",
+        "stderr": "",
+        "value": "",
+        "content": "",
+        "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+      },
+      "checks": [
+        {
+          "name": "exitCode",
+          "expected": 0,
+          "actual": 0,
+          "ok": true,
+          "error": "",
+          "message": ""
+        }
+      ],
+      "captures": [],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 5,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 18,
+      "phase": "step",
+      "action": "command",
+      "display": "command docker exec foodmap-postgres psql -U foodmap -d foodmap_auth_db -tAc \"select count(*) from…",
+      "expected": null,
+      "actual": {
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "0\n",
+        "stderr": "",
+        "value": "0",
+        "content": "0\n",
+        "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+      },
+      "checks": [],
+      "captures": [
+        "activeAfterLogout"
+      ],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 207,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 19,
+      "phase": "step",
+      "action": "command",
+      "display": "command [ 0 -eq 0 ]",
+      "expected": {
+        "exitCode": 0
+      },
+      "actual": {
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "",
+        "stderr": "",
+        "value": "",
+        "content": "",
+        "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+      },
+      "checks": [
+        {
+          "name": "exitCode",
+          "expected": 0,
+          "actual": 0,
+          "ok": true,
+          "error": "",
+          "message": ""
+        }
+      ],
+      "captures": [],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 5,
+      "error": "",
+      "hint": ""
+    }
+  ],
+  "evidence": {
+    "text": "/Users/zhangxuqian/myPrjDev/food-map/docs/integration/B1.5-orbstack-logging/evidence/2026-11-10T09-27-25b115b8-认证双写核验（身份绑定与会话）.txt",
+    "json": "/Users/zhangxuqian/myPrjDev/food-map/docs/integration/B1.5-orbstack-logging/evidence/2026-11-10T09-27-25b115b8-认证双写核验（身份绑定与会话）.json"
+  }
+}

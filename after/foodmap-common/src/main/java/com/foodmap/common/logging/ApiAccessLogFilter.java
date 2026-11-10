@@ -14,7 +14,8 @@ import java.io.IOException;
  * API 访问摘要日志过滤器，记录每次接口调用的结构化摘要。
  *
  * <p>本过滤器只记录方法、路径、状态码、耗时和客户端地址等定位字段，不读取请求体，不输出 Token、密码或私密内容。
- * 慢请求和异常请求使用 WARN，普通请求使用 INFO，后续 B1.5-b 会将该摘要落入独立日志 PostgreSQL。</p>
+ * 慢请求和异常请求使用 WARN，普通请求使用 INFO；所有访问摘要都以
+ * {@link LogMdcKeys#LOG_TYPE_API_ACCESS} 作为 MDC 日志类型，供采集链路按字段路由，不依赖 message 文本。</p>
  */
 public class ApiAccessLogFilter extends OncePerRequestFilter {
     private static final Logger LOGGER = LoggerFactory.getLogger(ApiAccessLogFilter.class);
@@ -77,10 +78,10 @@ public class ApiAccessLogFilter extends OncePerRequestFilter {
                 LogField.of("clientIp", resolveClientIp(request))
         };
         if (failure != null || status >= 500 || durationMs >= slowThresholdMs) {
-            SafeLog.warn(LOGGER, "api.access.slow", fields);
+            SafeLog.warn(LOGGER, LogMdcKeys.LOG_TYPE_API_ACCESS, "api.access.slow", fields);
             return;
         }
-        SafeLog.info(LOGGER, "api.access.completed", fields);
+        SafeLog.info(LOGGER, LogMdcKeys.LOG_TYPE_API_ACCESS, "api.access.completed", fields);
     }
 
     /**

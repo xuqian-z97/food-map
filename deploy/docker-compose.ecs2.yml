@@ -23,6 +23,9 @@ services:
       NACOS_SERVER_ADDR: nacos:8848
     expose:
       - "8080"
+    # 应用服务把 logback JSON 文件写入共享日志卷，供 Fluent Bit 只读采集。
+    volumes:
+      - foodmap-app-logs:/foodmap/logs:rw
     depends_on:
       - nacos
     networks:
@@ -107,4 +110,5 @@ volumes:
   postgres-data:
   redis-data:
   rabbitmq-data:
+  foodmap-app-logs:
 

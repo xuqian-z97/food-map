@@ -3159,7 +3159,7 @@ flowchart LR
 
 关键技术和实现原理：
 
-- 本地 Compose 使用 `bitnami/kafka:3.7` 的 KRaft 单节点模式，不依赖 Zookeeper，降低本地依赖数量。
+- 本地 Compose 使用 Apache 官方 `apache/kafka:3.9.1` 的 KRaft 单节点模式，不依赖 Zookeeper，支持 Apple Silicon。原 `bitnami/kafka:3.7` 标签已无法拉取，不再作为默认镜像；官方镜像使用 `KAFKA_*` 参数及 `/opt/kafka/bin/kafka-topics.sh`，数据目录显式设为 `/var/lib/kafka/data`。
 - Kafka 服务放入 Docker Compose `logging` profile，默认基础环境不启动，避免拖慢非日志开发。
 - `kafka-init` 是一次性初始化容器，等待 Kafka 健康后用 `kafka-topics.sh --create --if-not-exists` 创建五类日志 topic。
 - 本地宿主机通过 `localhost:${KAFKA_EXTERNAL_PORT:-9094}` 访问 Kafka，Compose 网络内 collector 使用 `kafka:9092`。
@@ -3201,9 +3201,9 @@ flowchart LR
 关键技术和实现原理：
 
 - 本地 Compose 使用 `fluent/fluent-bit:3.1` 作为日志采集器，服务名为 `foodmap-fluent-bit`，同样放入 `logging` profile。
-- Fluent Bit 读取共享日志卷 `foodmap-app-logs` 中的 `/foodmap/logs/*.log`，状态数据库写入 `foodmap-fluent-bit-state`，避免重启后重复读取全部日志。
+- Fluent Bit 默认读取共享日志卷 `foodmap-app-logs` 中的 `/foodmap/logs/*.log`。Java 在 IDEA/Maven 本机启动时，叠加 `deploy/docker-compose.logging-host.yml`，将宿主机 `FOODMAP_LOGGING_DIR`（绝对路径，默认 `${HOME}/.foodmap/logs`）只读挂载到同一容器路径；应用侧必须使用相同目录。基础 Compose 保留命名卷，便于后续应用容器化。状态数据库写入 `foodmap-fluent-bit-state`，避免重启后重复读取全部日志。
 - `parser` filter 尝试解析 JSON 日志；普通文本日志保留原始 `log` 字段，保证当前阶段的控制台文本格式也能被转发。
-- `rewrite_tag` filter 按日志事件名前缀路由：`api.access.*` 进入接口访问 topic，`sql.execute.*` 进入 SQL topic，`audit.*` 和 `security.*` 分别进入审计和安全 topic，未匹配日志进入 application topic。
+- `rewrite_tag` filter 按 JSON 顶层 `logType` 精确路由：application、api-access、sql、audit、security 分别进入对应 topic，不依赖 message 文本。Kafka output 将采集时间写入 `collectorTimestamp`，保留业务 `timestamp` 字段；禁止向 Logstash 输入数字型 `@timestamp`，避免时间解析失败。
 - Kafka output 使用 `LOG_KAFKA_BROKERS` 配置，默认 `kafka:9092`，业务服务仍不依赖 Kafka SDK。
 
 运维和风险说明：
@@ -3277,7 +3277,8 @@ flowchart LR
 
 - 本地 Compose 使用 `docker.elastic.co/logstash/logstash:8.15.3`，服务名为 `foodmap-logstash`，仅在 `logging` profile 下启动。
 - Logstash `kafka` input 消费五类日志 topic，消费组默认为 `foodmap-logstash-elasticsearch-local`，本地 `auto_offset_reset=earliest` 便于从头验证日志流。
-- Logstash `filter` 根据 Kafka topic 写入稳定 `logType`，例如 `foodmap.logs.api-access` 对应 `api-access`，并从文本 `log` 字段提取事件名前缀作为 `eventName`。
+- Logstash `filter` 根据 Kafka topic 写入稳定 `logType`，例如 `foodmap.logs.api-access` 对应 `api-access`；优先从 JSON `message` 首 token 提取 `eventName`，旧文本载荷回退 `log`。Elasticsearch output 使用 `manage_template => false` 禁用插件模板管理。
+- `foodmap-log-service` 在归档导出或上传开关关闭（含缺省）时，分别注册 Noop 导出和上传适配器；仅显式开启对应开关才使用真实适配器，避免组件扫描阶段使用 `ConditionalOnMissingBean` 导致占位 Bean 自身被排除。清理和归档调度默认保持关闭。
 - 如果日志事件包含 `timestamp`，Logstash 会尝试解析为 `@timestamp`；解析失败时打上 `foodmap_timestamp_parse_failed` 标签，便于后续排查采集格式问题。
 - Logstash `elasticsearch` output 写入 `foodmap-logs-%{+YYYY.MM.dd}` 每日索引，关闭 Logstash 自带模板管理，使用 B1.5-b 已定义的 FoodMap 索引模板和 ILM 策略。
 

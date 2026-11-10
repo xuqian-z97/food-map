@@ -11,6 +11,16 @@
 | D（日志链） | [T-028](T-028-logback-json.md) → [T-029](T-029-log-volume-collector.md) → [T-030](T-030-logging-closure-scenario.md) | 严格串行 | 后一个依赖前一个的产物 |
 | C（内部信任链） | [T-031](T-031-disable-discovery-locator.md) → [T-032](T-032-internal-service-signature.md) → [T-033](T-033-admin-rbac-server-side.md) | 严格串行 | 同时改 gateway 与 common/security |
 
+## W0 任务单
+
+| 任务单 | 状态 |
+| --- | --- |
+| [T-025](T-025-token-secret-injection.md) Token 密钥统一注入与 fail-fast | 已派单完成，待提交 |
+| T-026 Access/Refresh Token 严格分段校验 | **任务单待补**，规格见方案文档 §6 |
+| T-027 登出必须写拒绝名单 | **任务单待补**，规格见方案文档 §6 |
+
+> T-026 / T-027 与 T-025 同属 F-024。T-027 与 T-025 都改 `GatewayAuthFilter.java`，必须串行。
+
 ## W3 / W4 任务单
 
 | 组 | 任务单 | 执行方式 | 说明 |

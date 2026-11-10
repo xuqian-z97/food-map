@@ -2,7 +2,10 @@ schemaVersion: 1
 id: T-030
 feature: F-019
 title: 日志闭环端到端 verify 场景
-status: todo
+status: done
 priority: P0
 owner: agent
+doneAt: 2026-11-10T09:40:32+08:00
+commit: 6120cee
 planRef: docs/superpowers/plans/2026-11-09-backend-hardening.md
+notes: "日志场景、OrbStack配置及启动缺陷修复完成；严格套件6/6无跳过、Java159测试通过；失败及复测证据均保留。"

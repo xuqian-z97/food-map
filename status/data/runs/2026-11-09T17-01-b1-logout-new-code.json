@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-09T17-01-b1-logout-new-code",
+  "at": "2026-11-09T17:01:37+08:00",
+  "kind": "integration",
+  "command": "node tools/verify/cli.mjs run harness/scenarios/b1-logout.yml --config /tmp/verify-cfg.yml（新代码栈 18080/18081）",
+  "env": "local",
+  "result": {
+    "total": 0,
+    "passed": 12,
+    "failed": 0,
+    "skipped": 0
+  },
+  "covers": [
+    "F-001",
+    "F-003"
+  ],
+  "evidence": [
+    "/tmp/verify-evidence"
+  ],
+  "notes": "真实网关+Redis+PostgreSQL 验证密钥注入、登出拒付名单与 Refresh 撤销"
+}

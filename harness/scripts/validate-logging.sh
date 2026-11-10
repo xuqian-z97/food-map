@@ -37,6 +37,70 @@ do
   fi
 done
 
+# 五类日志都必须由 JSON 字段 logType 显式路由；事件名调整后 message 文本会变化，不能再按文本正则判断类型。
+for log_type in application api-access sql audit security
+do
+  if ! grep -q "Rule.*\$logType.*${log_type}" "$FLUENT_BIT_CONF"; then
+    printf 'FAIL: %s must route logType=%s with a rewrite_tag rule.\n' "$FLUENT_BIT_CONF" "$log_type" >&2
+    exit 1
+  fi
+done
+
+if grep -E '^[[:space:]]*Rule' "$FLUENT_BIT_CONF" | grep -qE '\$log[[:space:]]|\.\*api|\.\*sql|\.\*audit|\.\*security'; then
+  printf 'FAIL: %s must not route by message text regex; rewrite_tag must use the logType field.\n' "$FLUENT_BIT_CONF" >&2
+  exit 1
+fi
+
+# 应用日志由 logback 输出 ISO_OFFSET_DATE_TIME（+08:00 或 Z）。Fluent Bit strptime 的 %z 不接受 +08:00，
+# 所以在 parser 里不配置时间解析，timestamp 作为普通字段透传，由 Logstash 的 date/ISO8601 还原 @timestamp。
+if grep -v '^[[:space:]]*#' "$PARSERS_CONF" | grep -qE 'Time_Format|%z'; then
+  printf 'FAIL: %s must not parse logback ISO_OFFSET_DATE_TIME with strptime offset formats.\n' "$PARSERS_CONF" >&2
+  exit 1
+fi
+
+if ! grep -q "ISO_OFFSET_DATE_TIME" "$PARSERS_CONF"; then
+  printf 'FAIL: %s must document the timestamp alignment with logback ISO_OFFSET_DATE_TIME.\n' "$PARSERS_CONF" >&2
+  exit 1
+fi
+
+if ! grep -q "ISO8601" "$LOGSTASH_PIPELINE" || ! grep -q "\[timestamp\]" "$LOGSTASH_PIPELINE"; then
+  printf 'FAIL: %s must restore @timestamp from the raw timestamp field with ISO8601.\n' "$LOGSTASH_PIPELINE" >&2
+  exit 1
+fi
+
+# Fluent Bit 只读挂载共享日志卷，应用服务必须读写挂载同一个卷。
+if ! grep -q "foodmap-app-logs:/foodmap/logs:ro" deploy/docker-compose.dev.yml; then
+  printf 'FAIL: deploy/docker-compose.dev.yml must mount foodmap-app-logs into Fluent Bit read-only.\n' >&2
+  exit 1
+fi
+
+for compose_file in deploy/docker-compose.dev.yml deploy/docker-compose.ecs2.yml
+do
+  missing_app_services=$(awk '
+    /^services:[[:space:]]*$/ { in_services = 1; next }
+    /^[^[:space:]]/ { in_services = 0 }
+    in_services && /^  [A-Za-z0-9_.-]+:[[:space:]]*$/ {
+      if (name != "" && app == 1 && mount == 0) print name
+      name = $0
+      sub(/^  /, "", name)
+      sub(/:[[:space:]]*$/, "", name)
+      app = 0
+      mount = 0
+      next
+    }
+    in_services && name != "" {
+      if ($0 ~ /image:[[:space:]]*foodmap\// || $0 ~ /SPRING_PROFILES_ACTIVE/) app = 1
+      if ($0 ~ /foodmap-app-logs:\/foodmap\/logs:rw/) mount = 1
+    }
+    END { if (name != "" && app == 1 && mount == 0) print name }
+  ' "$compose_file")
+  if [ -n "$missing_app_services" ]; then
+    printf 'FAIL: %s application services must mount foodmap-app-logs:/foodmap/logs:rw: %s\n' \
+      "$compose_file" "$(printf '%s' "$missing_app_services" | tr '\n' ' ')" >&2
+    exit 1
+  fi
+done
+
 if ! grep -q "foodmap-fluent-bit" deploy/docker-compose.dev.yml; then
   printf 'FAIL: deploy/docker-compose.dev.yml must define the foodmap-fluent-bit collector service.\n' >&2
   exit 1

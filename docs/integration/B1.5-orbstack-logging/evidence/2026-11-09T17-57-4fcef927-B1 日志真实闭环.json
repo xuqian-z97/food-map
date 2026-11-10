@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 2,
+  "name": "B1 日志真实闭环",
+  "description": "备用端口最新认证服务真实请求，经文件、Fluent Bit、Kafka 到 ES 和独立日志库；检查时间字段与密码泄露",
+  "runId": "run-20261109T095731Z-4fcef927",
+  "source": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios/b1-logging-closure.yml",
+  "ok": true,
+  "exitCode": 0,
+  "startedAt": "2026-11-09T09:57:31.570Z",
+  "finishedAt": "2026-11-09T09:57:43.144Z",
+  "durationMs": 11574,
+  "summary": {
+    "total": 1,
+    "passed": 1,
+    "failed": 0,
+    "skipped": 0,
+    "setupFailed": 0,
+    "teardownFailed": 0
+  },
+  "variableNames": [
+    "runId"
+  ],
+  "steps": [
+    {
+      "index": 1,
+      "phase": "step",
+      "action": "command",
+      "display": "command python3 logging-closure-check.py",
+      "expected": {
+        "exitCode": 0,
+        "stdoutContains": "\"result\": \"pass\""
+      },
+      "actual": {
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "{\"result\": \"pass\", \"checks\": [{\"requestId\": \"log-e2e-20261109175731-94a3f1-health\", \"status\": 200, \"path\": \"/internal/auth/health\", \"eventName\": \"api.access.completed\", \"durationMs\": 1, \"kafkaPartition\": 1, \"kafkaOffset\": 2, \"esHits\": 1, \"databaseRows\": 1}, {\"requestId\": \"log-e2e-20261109175731-94a3f1-login\", \"status\": 401, \"path\": \"/api/auth/login\", \"eventName\": \"api.access.completed\", \"durationMs\": 16, \"kafkaPartition\": 1, \"kafkaOffset\": 3, \"esHits\": 5, \"databaseRows\": 1}, {\"requestId\": \"log-e2e-20261109175731-94a3f1-register\", \"status\": 200, \"path\": \"/api/auth/register\", \"eventName\": \"api.access.completed\", \"durationMs\": 255, \"kafkaPartition\": 0, \"kafkaOffset\": 7, \"esHits\": 12, \"databaseRows\": 1}, {\"requestId\": \"log-e2e-20261109175731-94a3f1-success\", \"status\": 200, \"path\": \"/api/auth/login\", \"eventName\": \"api.access.completed\", \"durationMs\": 208, \"kafkaPartition\": 2, \"kafkaOffset\": 5, \"esHits\": 11, \"databaseRows\": 1}, {\"requestId\": \"log-e2e-20261109175731-94a3f1-logout\", \"status\": 200, \"path\": \"/api/auth/logout\", \"eventName\": \"api.access.completed\", \"durationMs\": 13, \"kafkaPartition\": 2, \"kafkaOffset\": 6, \"esHits\": 5, \"databaseRows\": 1}], \"passwordLeak\": false, \"tokenLeak\": false}\n",
+        "stderr": "",
+        "value": "{\"result\": \"pass\", \"checks\": [{\"requestId\": \"log-e2e-20261109175731-94a3f1-health\", \"status\": 200, \"path\": \"/internal/auth/health\", \"eventName\": \"api.access.completed\", \"durationMs\": 1, \"kafkaPartition\": 1, \"kafkaOffset\": 2, \"esHits\": 1, \"databaseRows\": 1}, {\"requestId\": \"log-e2e-20261109175731-94a3f1-login\", \"status\": 401, \"path\": \"/api/auth/login\", \"eventName\": \"api.access.completed\", \"durationMs\": 16, \"kafkaPartition\": 1, \"kafkaOffset\": 3, \"esHits\": 5, \"databaseRows\": 1}, {\"requestId\": \"log-e2e-20261109175731-94a3f1-register\", \"status\": 200, \"path\": \"/api/auth/register\", \"eventName\": \"api.access.completed\", \"durationMs\": 255, \"kafkaPartition\": 0, \"kafkaOffset\": 7, \"esHits\": 12, \"databaseRows\": 1}, {\"requestId\": \"log-e2e-20261109175731-94a3f1-success\", \"status\": 200, \"path\": \"/api/auth/login\", \"eventName\": \"api.access.completed\", \"durationMs\": 208, \"kafkaPartition\": 2, \"kafkaOffset\": 5, \"esHits\": 11, \"databaseRows\": 1}, {\"requestId\": \"log-e2e-20261109175731-94a3f1-logout\", \"status\": 200, \"path\": \"/api/auth/logout\", \"eventName\": \"api.access.completed\", \"durationMs\": 13, \"kafkaPartition\": 2, \"kafkaOffset\": 6, \"esHits\": 5, \"databaseRows\": 1}], \"passwordLeak\": false, \"tokenLeak\": false}",
+        "content": "{\"result\": \"pass\", \"checks\": [{\"requestId\": \"log-e2e-20261109175731-94a3f1-health\", \"status\": 200, \"path\": \"/internal/auth/health\", \"eventName\": \"api.access.completed\", \"durationMs\": 1, \"kafkaPartition\": 1, \"kafkaOffset\": 2, \"esHits\": 1, \"databaseRows\": 1}, {\"requestId\": \"log-e2e-20261109175731-94a3f1-login\", \"status\": 401, \"path\": \"/api/auth/login\", \"eventName\": \"api.access.completed\", \"durationMs\": 16, \"kafkaPartition\": 1, \"kafkaOffset\": 3, \"esHits\": 5, \"databaseRows\": 1}, {\"requestId\": \"log-e2e-20261109175731-94a3f1-register\", \"status\": 200, \"path\": \"/api/auth/register\", \"eventName\": \"api.access.completed\", \"durationMs\": 255, \"kafkaPartition\": 0, \"kafkaOffset\": 7, \"esHits\": 12, \"databaseRows\": 1}, {\"requestId\": \"log-e2e-20261109175731-94a3f1-success\", \"status\": 200, \"path\": \"/api/auth/login\", \"eventName\": \"api.access.completed\", \"durationMs\": 208, \"kafkaPartition\": 2, \"kafkaOffset\": 5, \"esHits\": 11, \"databaseRows\": 1}, {\"requestId\": \"log-e2e-20261109175731-94a3f1-logout\", \"status\": 200, \"path\": \"/api/auth/logout\", \"eventName\": \"api.access.completed\", \"durationMs\": 13, \"kafkaPartition\": 2, \"kafkaOffset\": 6, \"esHits\": 5, \"databaseRows\": 1}], \"passwordLeak\": false, \"tokenLeak\": false}\n",
+        "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+      },
+      "checks": [
+        {
+          "name": "exitCode",
+          "expected": 0,
+          "actual": 0,
+          "ok": true,
+          "error": "",
+          "message": ""
+        },
+        {
+          "name": "stdoutContains",
+          "expected": "\"result\": \"pass\"",
+          "actual": "{\"result\": \"pass\", \"checks\": [{\"requestId\": \"log-e2e-20261109175731-94a3f1-health\", \"status\": 200, \"path\": \"/internal/auth/health\", \"eventName\": \"api.access.completed\", \"durationMs\": 1, \"kafkaPartition\": 1, \"kafkaOffset\": 2, \"esHits\": 1, \"databaseRows\": 1}, {\"requestId\": \"log-e2e-20261109175731-94a3f1-login\", \"status\": 401, \"path\": \"/api/auth/login\", \"eventName\": \"api.access.completed\", \"durationMs\": 16, \"kafkaPartition\": 1, \"kafkaOffset\": 3, \"esHits\": 5, \"databaseRows\": 1}, {\"requestId\": \"log-e2e-20261109175731-94a3f1-register\", \"status\": 200, \"path\": \"/api/auth/register\", \"eventName\": \"api.access.completed\", \"durationMs\": 255, \"kafkaPartition\": 0, \"kafkaOffset\": 7, \"esHits\": 12, \"databaseRows\": 1}, {\"requestId\": \"log-e2e-20261109175731-94a3f1-success\", \"status\": 200, \"path\": \"/api/auth/login\", \"eventName\": \"api.access.completed\", \"durationMs\": 208, \"kafkaPartition\": 2, \"kafkaOffset\": 5, \"esHits\": 11, \"databaseRows\": 1}, {\"requestId\": \"log-e2e-20261109175731-94a3f1-logout\", \"status\": 200, \"path\": \"/api/auth/logout\", \"eventName\": \"api.access.completed\", \"durationMs\": 13, \"kafkaPartition\": 2, \"kafkaOffset\": 6, \"esHits\": 5, \"databaseRows\": 1}], \"passwordLeak\": false, \"tokenLeak\": false}\n",
+          "ok": true,
+          "error": "",
+          "message": ""
+        }
+      ],
+      "captures": [],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 11573,
+      "error": "",
+      "hint": ""
+    }
+  ],
+  "evidence": {
+    "text": "/Users/zhangxuqian/myPrjDev/food-map/docs/integration/B1.5-orbstack-logging/evidence/2026-11-09T17-57-4fcef927-B1 日志真实闭环.txt",
+    "json": "/Users/zhangxuqian/myPrjDev/food-map/docs/integration/B1.5-orbstack-logging/evidence/2026-11-09T17-57-4fcef927-B1 日志真实闭环.json"
+  }
+}

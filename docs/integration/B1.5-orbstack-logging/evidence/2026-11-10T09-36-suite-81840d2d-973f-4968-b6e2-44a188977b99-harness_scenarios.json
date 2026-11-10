@@ -1,0 +1,3401 @@
+{
+  "schemaVersion": 2,
+  "kind": "suite",
+  "name": "harness/scenarios",
+  "root": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios",
+  "runId": "suite-81840d2d-973f-4968-b6e2-44a188977b99",
+  "ok": false,
+  "status": "failed",
+  "exitCode": 1,
+  "requireFull": true,
+  "preflight": [
+    {
+      "name": "auth-log",
+      "ready": true,
+      "reasons": []
+    },
+    {
+      "name": "device",
+      "ready": true,
+      "reasons": []
+    },
+    {
+      "name": "logging-auth",
+      "ready": true,
+      "reasons": []
+    },
+    {
+      "name": "logging-db",
+      "ready": true,
+      "reasons": []
+    },
+    {
+      "name": "logging-es",
+      "ready": true,
+      "reasons": []
+    },
+    {
+      "name": "logging-files",
+      "ready": true,
+      "reasons": []
+    },
+    {
+      "name": "logging-kafka",
+      "ready": true,
+      "reasons": []
+    },
+    {
+      "name": "network",
+      "ready": true,
+      "reasons": []
+    },
+    {
+      "name": "redis",
+      "ready": true,
+      "reasons": []
+    },
+    {
+      "name": "sql",
+      "ready": true,
+      "reasons": []
+    },
+    {
+      "name": "test-password",
+      "ready": true,
+      "reasons": []
+    },
+    {
+      "name": "xcode",
+      "ready": true,
+      "reasons": []
+    }
+  ],
+  "startedAt": "2026-11-10T01:36:00.318Z",
+  "finishedAt": "2026-11-10T01:36:51.135Z",
+  "durationMs": 50817,
+  "summary": {
+    "scenarios": 6,
+    "passed": 5,
+    "failed": 1,
+    "skipped": 0,
+    "steps": 81
+  },
+  "scenarios": [
+    {
+      "schemaVersion": 2,
+      "name": "B1 身份模型一致性核验",
+      "description": "核对 auth_identity_bindings / auth_sessions 与旧表是否全局一致：绑定数等于账号标识数、无孤儿绑定与会话、会话状态与 Refresh Token 一致、缺会话的 Token 只能由账号缺失解释",
+      "runId": "run-20261110T013602Z-7d0725bc",
+      "source": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios/b1-identity-consistency.yml",
+      "ok": true,
+      "exitCode": 0,
+      "startedAt": "2026-11-10T01:36:02.628Z",
+      "finishedAt": "2026-11-10T01:36:04.291Z",
+      "durationMs": 1663,
+      "summary": {
+        "total": 15,
+        "passed": 15,
+        "failed": 0,
+        "skipped": 0,
+        "setupFailed": 0,
+        "teardownFailed": 0
+      },
+      "variableNames": [
+        "accountsWithMissingBindings",
+        "accountsWithoutBindings",
+        "dbContainer",
+        "emptyFields",
+        "orphanBindings",
+        "orphanSessions",
+        "runId",
+        "statusMismatch",
+        "totals",
+        "unexplained"
+      ],
+      "steps": [
+        {
+          "index": 1,
+          "phase": "step",
+          "action": "command",
+          "display": "command docker exec foodmap-postgres psql -U foodmap -d foodmap_auth_db -tAc \"select count(*) from…",
+          "expected": null,
+          "actual": {
+            "exitCode": 0,
+            "signal": null,
+            "stdout": "0\n",
+            "stderr": "",
+            "value": "0",
+            "content": "0\n",
+            "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+          },
+          "checks": [],
+          "captures": [
+            "accountsWithMissingBindings"
+          ],
+          "attempts": 1,
+          "ok": true,
+          "durationMs": 207,
+          "error": "",
+          "hint": ""
+        },
+        {
+          "index": 2,
+          "phase": "step",
+          "action": "command",
+          "display": "command [ 0 -eq 0 ]",
+          "expected": {
+            "exitCode": 0
+          },
+          "actual": {
+            "exitCode": 0,
+            "signal": null,
+            "stdout": "",
+            "stderr": "",
+            "value": "",
+            "content": "",
+            "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+          },
+          "checks": [
+            {
+              "name": "exitCode",
+              "expected": 0,
+              "actual": 0,
+              "ok": true,
+              "error": "",
+              "message": ""
+            }
+          ],
+          "captures": [],
+          "attempts": 1,
+          "ok": true,
+          "durationMs": 5,
+          "error": "",
+          "hint": ""
+        },
+        {
+          "index": 3,
+          "phase": "step",
+          "action": "command",
+          "display": "command docker exec foodmap-postgres psql -U foodmap -d foodmap_auth_db -tAc \"select count(*) from…",
+          "expected": null,
+          "actual": {
+            "exitCode": 0,
+            "signal": null,
+            "stdout": "0\n",
+            "stderr": "",
+            "value": "0",
+            "content": "0\n",
+            "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+          },
+          "checks": [],
+          "captures": [
+            "accountsWithoutBindings"
+          ],
+          "attempts": 1,
+          "ok": true,
+          "durationMs": 203,
+          "error": "",
+          "hint": ""
+        },
+        {
+          "index": 4,
+          "phase": "step",
+          "action": "command",
+          "display": "command [ 0 -eq 0 ]",
+          "expected": {
+            "exitCode": 0
+          },
+          "actual": {
+            "exitCode": 0,
+            "signal": null,
+            "stdout": "",
+            "stderr": "",
+            "value": "",
+            "content": "",
+            "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+          },
+          "checks": [
+            {
+              "name": "exitCode",
+              "expected": 0,
+              "actual": 0,
+              "ok": true,
+              "error": "",
+              "message": ""
+            }
+          ],
+          "captures": [],
+          "attempts": 1,
+          "ok": true,
+          "durationMs": 6,
+          "error": "",
+          "hint": ""
+        },
+        {
+          "index": 5,
+          "phase": "step",
+          "action": "command",
+          "display": "command docker exec foodmap-postgres psql -U foodmap -d foodmap_auth_db -tAc \"select count(*) from…",
+          "expected": null,
+          "actual": {
+            "exitCode": 0,
+            "signal": null,
+            "stdout": "0\n",
+            "stderr": "",
+            "value": "0",
+            "content": "0\n",
+            "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+          },
+          "checks": [],
+          "captures": [
+            "orphanBindings"
+          ],
+          "attempts": 1,
+          "ok": true,
+          "durationMs": 209,
+          "error": "",
+          "hint": ""
+        },
+        {
+          "index": 6,
+          "phase": "step",
+          "action": "command",
+          "display": "command [ 0 -eq 0 ]",
+          "expected": {
+            "exitCode": 0
+          },
+          "actual": {
+            "exitCode": 0,
+            "signal": null,
+            "stdout": "",
+            "stderr": "",
+            "value": "",
+            "content": "",
+            "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+          },
+          "checks": [
+            {
+              "name": "exitCode",
+              "expected": 0,
+              "actual": 0,
+              "ok": true,
+              "error": "",
+              "message": ""
+            }
+          ],
+          "captures": [],
+          "attempts": 1,
+          "ok": true,
+          "durationMs": 5,
+          "error": "",
+          "hint": ""
+        },
+        {
+          "index": 7,
+          "phase": "step",
+          "action": "command",
+          "display": "command docker exec foodmap-postgres psql -U foodmap -d foodmap_auth_db -tAc \"select count(*) from…",
+          "expected": null,
+          "actual": {
+            "exitCode": 0,
+            "signal": null,
+            "stdout": "0\n",
+            "stderr": "",
+            "value": "0",
+            "content": "0\n",
+            "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+          },
+          "checks": [],
+          "captures": [
+            "orphanSessions"
+          ],
+          "attempts": 1,
+          "ok": true,
+          "durationMs": 207,
+          "error": "",
+          "hint": ""
+        },
+        {
+          "index": 8,
+          "phase": "step",
+          "action": "command",
+          "display": "command [ 0 -eq 0 ]",
+          "expected": {
+            "exitCode": 0
+          },
+          "actual": {
+            "exitCode": 0,
+            "signal": null,
+            "stdout": "",
+            "stderr": "",
+            "value": "",
+            "content": "",
+            "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+          },
+          "checks": [
+            {
+              "name": "exitCode",
+              "expected": 0,
+              "actual": 0,
+              "ok": true,
+              "error": "",
+              "message": ""
+            }
+          ],
+          "captures": [],
+          "attempts": 1,
+          "ok": true,
+          "durationMs": 7,
+          "error": "",
+          "hint": ""
+        },
+        {
+          "index": 9,
+          "phase": "step",
+          "action": "command",
+          "display": "command docker exec foodmap-postgres psql -U foodmap -d foodmap_auth_db -tAc \"select count(*) from…",
+          "expected": null,
+          "actual": {
+            "exitCode": 0,
+            "signal": null,
+            "stdout": "0\n",
+            "stderr": "",
+            "value": "0",
+            "content": "0\n",
+            "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+          },
+          "checks": [],
+          "captures": [
+            "statusMismatch"
+          ],
+          "attempts": 1,
+          "ok": true,
+          "durationMs": 203,
+          "error": "",
+          "hint": ""
+        },
+        {
+          "index": 10,
+          "phase": "step",
+          "action": "command",
+          "display": "command [ 0 -eq 0 ]",
+          "expected": {
+            "exitCode": 0
+          },
+          "actual": {
+            "exitCode": 0,
+            "signal": null,
+            "stdout": "",
+            "stderr": "",
+            "value": "",
+            "content": "",
+            "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+          },
+          "checks": [
+            {
+              "name": "exitCode",
+              "expected": 0,
+              "actual": 0,
+              "ok": true,
+              "error": "",
+              "message": ""
+            }
+          ],
+          "captures": [],
+          "attempts": 1,
+          "ok": true,
+          "durationMs": 4,
+          "error": "",
+          "hint": ""
+        },
+        {
+          "index": 11,
+          "phase": "step",
+          "action": "command",
+          "display": "command docker exec foodmap-postgres psql -U foodmap -d foodmap_auth_db -tAc \"select (select count…",
+          "expected": null,
+          "actual": {
+            "exitCode": 0,
+            "signal": null,
+            "stdout": "0\n",
+            "stderr": "",
+            "value": "0",
+            "content": "0\n",
+            "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+          },
+          "checks": [],
+          "captures": [
+            "unexplained"
+          ],
+          "attempts": 1,
+          "ok": true,
+          "durationMs": 206,
+          "error": "",
+          "hint": ""
+        },
+        {
+          "index": 12,
+          "phase": "step",
+          "action": "command",
+          "display": "command [ 0 -eq 0 ]",
+          "expected": {
+            "exitCode": 0
+          },
+          "actual": {
+            "exitCode": 0,
+            "signal": null,
+            "stdout": "",
+            "stderr": "",
+            "value": "",
+            "content": "",
+            "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+          },
+          "checks": [
+            {
+              "name": "exitCode",
+              "expected": 0,
+              "actual": 0,
+              "ok": true,
+              "error": "",
+              "message": ""
+            }
+          ],
+          "captures": [],
+          "attempts": 1,
+          "ok": true,
+          "durationMs": 5,
+          "error": "",
+          "hint": ""
+        },
+        {
+          "index": 13,
+          "phase": "step",
+          "action": "command",
+          "display": "command docker exec foodmap-postgres psql -U foodmap -d foodmap_auth_db -tAc \"select count(*) from…",
+          "expected": null,
+          "actual": {
+            "exitCode": 0,
+            "signal": null,
+            "stdout": "0\n",
+            "stderr": "",
+            "value": "0",
+            "content": "0\n",
+            "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+          },
+          "checks": [],
+          "captures": [
+            "emptyFields"
+          ],
+          "attempts": 1,
+          "ok": true,
+          "durationMs": 189,
+          "error": "",
+          "hint": ""
+        },
+        {
+          "index": 14,
+          "phase": "step",
+          "action": "command",
+          "display": "command [ 0 -eq 0 ]",
+          "expected": {
+            "exitCode": 0
+          },
+          "actual": {
+            "exitCode": 0,
+            "signal": null,
+            "stdout": "",
+            "stderr": "",
+            "value": "",
+            "content": "",
+            "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+          },
+          "checks": [
+            {
+              "name": "exitCode",
+              "expected": 0,
+              "actual": 0,
+              "ok": true,
+              "error": "",
+              "message": ""
+            }
+          ],
+          "captures": [],
+          "attempts": 1,
+          "ok": true,
+          "durationMs": 5,
+          "error": "",
+          "hint": ""
+        },
+        {
+          "index": 15,
+          "phase": "step",
+          "action": "command",
+          "display": "command docker exec foodmap-postgres psql -U foodmap -d foodmap_auth_db -tAc \"select 'accounts=' |…",
+          "expected": null,
+          "actual": {
+            "exitCode": 0,
+            "signal": null,
+            "stdout": "accounts=55\nbindings=108\nrefresh_tokens=124\nsessions=53\n",
+            "stderr": "",
+            "value": "accounts=55\nbindings=108\nrefresh_tokens=124\nsessions=53",
+            "content": "accounts=55\nbindings=108\nrefresh_tokens=124\nsessions=53\n",
+            "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+          },
+          "checks": [],
+          "captures": [
+            "totals"
+          ],
+          "attempts": 1,
+          "ok": true,
+          "durationMs": 202,
+          "error": "",
+          "hint": ""
+        }
+      ],
+      "evidence": {
+        "text": "/Users/zhangxuqian/myPrjDev/food-map/docs/integration/B1.5-orbstack-logging/evidence/2026-11-10T09-36-7d0725bc-B1 身份模型一致性核验.txt",
+        "json": "/Users/zhangxuqian/myPrjDev/food-map/docs/integration/B1.5-orbstack-logging/evidence/2026-11-10T09-36-7d0725bc-B1 身份模型一致性核验.json"
+      }
+    },
+    {
+      "schemaVersion": 2,
+      "name": "认证双写核验（身份绑定与会话）",
+      "description": "注册、登录、登出后检查 auth_identity_bindings 与 auth_sessions 是否被真实写入：绑定 3 条、哈希与脱敏正确、会话状态随登出变化",
+      "runId": "run-20261110T013604Z-d08abd42",
+      "source": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios/b1-identity-dual-write.yml",
+      "ok": true,
+      "exitCode": 0,
+      "startedAt": "2026-11-10T01:36:04.292Z",
+      "finishedAt": "2026-11-10T01:36:05.870Z",
+      "durationMs": 1579,
+      "summary": {
+        "total": 19,
+        "passed": 19,
+        "failed": 0,
+        "skipped": 0,
+        "setupFailed": 0,
+        "teardownFailed": 0
+      },
+      "variableNames": [
+        "access",
+        "accountNameHash",
+        "activeAfterLogout",
+        "activeSessions",
+        "bindings",
+        "dbContainer",
+        "emailMask",
+        "last4",
+        "password",
+        "phoneMask",
+        "refresh",
+        "revokedSessions",
+        "runId",
+        "suffix",
+        "userId"
+      ],
+      "steps": [
+        {
+          "index": 1,
+          "phase": "step",
+          "action": "command",
+          "display": "command date +%s | cut -c3-10",
+          "expected": {
+            "exitCode": 0
+          },
+          "actual": {
+            "exitCode": 0,
+            "signal": null,
+            "stdout": "94274564\n",
+            "stderr": "",
+            "value": "94274564",
+            "content": "94274564\n",
+            "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+          },
+          "checks": [
+            {
+              "name": "exitCode",
+              "expected": 0,
+              "actual": 0,
+              "ok": true,
+              "error": "",
+              "message": ""
+            }
+          ],
+          "captures": [
+            "suffix"
+          ],
+          "attempts": 1,
+          "ok": true,
+          "durationMs": 8,
+          "error": "",
+          "hint": ""
+        },
+        {
+          "index": 2,
+          "phase": "step",
+          "action": "command",
+          "display": "command date +%s | cut -c7-10",
+          "expected": {
+            "exitCode": 0
+          },
+          "actual": {
+            "exitCode": 0,
+            "signal": null,
+            "stdout": "4564\n",
+            "stderr": "",
+            "value": "4564",
+            "content": "4564\n",
+            "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+          },
+          "checks": [
+            {
+              "name": "exitCode",
+              "expected": 0,
+              "actual": 0,
+              "ok": true,
+              "error": "",
+              "message": ""
+            }
+          ],
+          "captures": [
+            "last4"
+          ],
+          "attempts": 1,
+          "ok": true,
+          "durationMs": 8,
+          "error": "",
+          "hint": ""
+        },
+        {
+          "index": 3,
+          "phase": "step",
+          "action": "http",
+          "display": "http POST /api/auth/register",
+          "expected": {
+            "status": 200,
+            "json": {
+              "code": "OK"
+            }
+          },
+          "actual": {
+            "method": "POST",
+            "url": "http://127.0.0.1:8080/api/auth/register",
+            "status": 200,
+            "statusText": "OK",
+            "headers": {
+              "content-type": "application/json",
+              "date": "Tue, 10 Nov 2026 01:36:04 GMT",
+              "transfer-encoding": "chunked",
+              "x-request-id": "yvbsekhv14zuupyf94sq4aqn, yvbsekhv14zuupyf94sq4aqn",
+              "x-span-id": "4c80kqdd3zh5uejlb0icn4cs, fpdyyn928xbfcx9j7gmvpv7h",
+              "x-trace-id": "ors22mvc729j6q8vvm7dz3lk, ors22mvc729j6q8vvm7dz3lk"
+            },
+            "body": "{\"success\":true,\"status\":200,\"code\":\"OK\",\"message\":\"success\",\"data\":{\"accountId\":null,\"userId\":200197,\"accountStatus\":\"NORMAL\"}}",
+            "json": {
+              "success": true,
+              "status": 200,
+              "code": "OK",
+              "message": "success",
+              "data": {
+                "accountId": null,
+                "userId": 200197,
+                "accountStatus": "NORMAL"
+              }
+            },
+            "jsonParsed": true,
+            "jsonError": "",
+            "value": {
+              "success": true,
+              "status": 200,
+              "code": "OK",
+              "message": "success",
+              "data": {
+                "accountId": null,
+                "userId": 200197,
+                "accountStatus": "NORMAL"
+              }
+            },
+            "content": "{\"success\":true,\"status\":200,\"code\":\"OK\",\"message\":\"success\",\"data\":{\"accountId\":null,\"userId\":200197,\"accountStatus\":\"NORMAL\"}}",
+            "durationMs": 75
+          },
+          "checks": [
+            {
+              "name": "status",
+              "expected": 200,
+              "actual": 200,
+              "ok": true,
+              "error": "",
+              "message": ""
+            },
+            {
+              "name": "json",
+              "expected": {
+                "code": "OK"
+              },
+              "actual": {
+                "success": true,
+                "status": 200,
+                "code": "OK",
+                "message": "success",
+                "data": {
+                  "accountId": null,
+                  "userId": 200197,
+                  "accountStatus": "NORMAL"
+                }
+              },
+              "ok": true,
+              "error": "",
+              "message": ""
+            }
+          ],
+          "captures": [
+            "userId"
+          ],
+          "attempts": 1,
+          "ok": true,
+          "durationMs": 76,
+          "error": "",
+          "hint": ""
+        },
+        {
+          "index": 4,
+          "phase": "step",
+          "action": "command",
+          "display": "command docker exec foodmap-postgres psql -U foodmap -d foodmap_auth_db -tAc \"select count(*) from…",
+          "expected": null,
+          "actual": {
+            "exitCode": 0,
+            "signal": null,
+            "stdout": "3\n",
+            "stderr": "",
+            "value": "3",
+            "content": "3\n",
+            "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+          },
+          "checks": [],
+          "captures": [
+            "bindings"
+          ],
+          "attempts": 1,
+          "ok": true,
+          "durationMs": 191,
+          "error": "",
+          "hint": ""
+        },
+        {
+          "index": 5,
+          "phase": "step",
+          "action": "command",
+          "display": "command [ 3 -eq 3 ]",
+          "expected": {
+            "exitCode": 0
+          },
+          "actual": {
+            "exitCode": 0,
+            "signal": null,
+            "stdout": "",
+            "stderr": "",
+            "value": "",
+            "content": "",
+            "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+          },
+          "checks": [
+            {
+              "name": "exitCode",
+              "expected": 0,
+              "actual": 0,
+              "ok": true,
+              "error": "",
+              "message": ""
+            }
+          ],
+          "captures": [],
+          "attempts": 1,
+          "ok": true,
+          "durationMs": 5,
+          "error": "",
+          "hint": ""
+        },
+        {
+          "index": 6,
+          "phase": "step",
+          "action": "command",
+          "display": "command docker exec foodmap-postgres psql -U foodmap -d foodmap_auth_db -tAc \"select count(*) from…",
+          "expected": null,
+          "actual": {
+            "exitCode": 0,
+            "signal": null,
+            "stdout": "1\n",
+            "stderr": "",
+            "value": "1",
+            "content": "1\n",
+            "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+          },
+          "checks": [],
+          "captures": [
+            "accountNameHash"
+          ],
+          "attempts": 1,
+          "ok": true,
+          "durationMs": 208,
+          "error": "",
+          "hint": ""
+        },
+        {
+          "index": 7,
+          "phase": "step",
+          "action": "command",
+          "display": "command [ 1 -eq 1 ]",
+          "expected": {
+            "exitCode": 0
+          },
+          "actual": {
+            "exitCode": 0,
+            "signal": null,
+            "stdout": "",
+            "stderr": "",
+            "value": "",
+            "content": "",
+            "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+          },
+          "checks": [
+            {
+              "name": "exitCode",
+              "expected": 0,
+              "actual": 0,
+              "ok": true,
+              "error": "",
+              "message": ""
+            }
+          ],
+          "captures": [],
+          "attempts": 1,
+          "ok": true,
+          "durationMs": 5,
+          "error": "",
+          "hint": ""
+        },
+        {
+          "index": 8,
+          "phase": "step",
+          "action": "command",
+          "display": "command docker exec foodmap-postgres psql -U foodmap -d foodmap_auth_db -tAc \"select display_maske…",
+          "expected": null,
+          "actual": {
+            "exitCode": 0,
+            "signal": null,
+            "stdout": "139****4564\n",
+            "stderr": "",
+            "value": "139****4564",
+            "content": "139****4564\n",
+            "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+          },
+          "checks": [],
+          "captures": [
+            "phoneMask"
+          ],
+          "attempts": 1,
+          "ok": true,
+          "durationMs": 193,
+          "error": "",
+          "hint": ""
+        },
+        {
+          "index": 9,
+          "phase": "step",
+          "action": "command",
+          "display": "command [ '139****4564' = '139****4564' ]",
+          "expected": {
+            "exitCode": 0
+          },
+          "actual": {
+            "exitCode": 0,
+            "signal": null,
+            "stdout": "",
+            "stderr": "",
+            "value": "",
+            "content": "",
+            "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+          },
+          "checks": [
+            {
+              "name": "exitCode",
+              "expected": 0,
+              "actual": 0,
+              "ok": true,
+              "error": "",
+              "message": ""
+            }
+          ],
+          "captures": [],
+          "attempts": 1,
+          "ok": true,
+          "durationMs": 5,
+          "error": "",
+          "hint": ""
+        },
+        {
+          "index": 10,
+          "phase": "step",
+          "action": "command",
+          "display": "command docker exec foodmap-postgres psql -U foodmap -d foodmap_auth_db -tAc \"select display_maske…",
+          "expected": null,
+          "actual": {
+            "exitCode": 0,
+            "signal": null,
+            "stdout": "d***@example.com\n",
+            "stderr": "",
+            "value": "d***@example.com",
+            "content": "d***@example.com\n",
+            "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+          },
+          "checks": [],
+          "captures": [
+            "emailMask"
+          ],
+          "attempts": 1,
+          "ok": true,
+          "durationMs": 188,
+          "error": "",
+          "hint": ""
+        },
+        {
+          "index": 11,
+          "phase": "step",
+          "action": "command",
+          "display": "command [ 'd***@example.com' = 'd***@example.com' ]",
+          "expected": {
+            "exitCode": 0
+          },
+          "actual": {
+            "exitCode": 0,
+            "signal": null,
+            "stdout": "",
+            "stderr": "",
+            "value": "",
+            "content": "",
+            "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+          },
+          "checks": [
+            {
+              "name": "exitCode",
+              "expected": 0,
+              "actual": 0,
+              "ok": true,
+              "error": "",
+              "message": ""
+            }
+          ],
+          "captures": [],
+          "attempts": 1,
+          "ok": true,
+          "durationMs": 4,
+          "error": "",
+          "hint": ""
+        },
+        {
+          "index": 12,
+          "phase": "step",
+          "action": "http",
+          "display": "http POST /api/auth/login",
+          "expected": {
+            "status": 200,
+            "json": {
+              "code": "OK"
+            }
+          },
+          "actual": {
+            "method": "POST",
+            "url": "http://127.0.0.1:8080/api/auth/login",
+            "status": 200,
+            "statusText": "OK",
+            "headers": {
+              "content-type": "application/json",
+              "date": "Tue, 10 Nov 2026 01:36:05 GMT",
+              "transfer-encoding": "chunked",
+              "x-request-id": "dw2dr1cd5iskji4cdjiwdvzl, dw2dr1cd5iskji4cdjiwdvzl",
+              "x-span-id": "l2z5ar80sfwynpxidosuvri0, 7oeyikmx91rx6ap4uek62nom",
+              "x-trace-id": "uxds3hsp7jlu9js58v31bqk9, uxds3hsp7jlu9js58v31bqk9"
+            },
+            "body": "{\"success\":true,\"status\":200,\"code\":\"OK\",\"message\":\"success\",\"data\":{\"accountId\":null,\"userId\":200197,\"accessToken\":\"[REDACTED]\",\"refreshToken\":\"[REDACTED]\",\"accessTokenExpiresTime\":\"2026-11-10T11:36:05.211663+08:00\",\"refreshTokenExpiresTime\":\"2026-12-10T09:36:05.211663+08:00\"}}",
+            "json": {
+              "success": true,
+              "status": 200,
+              "code": "OK",
+              "message": "success",
+              "data": {
+                "accountId": null,
+                "userId": 200197,
+                "accessToken": "[REDACTED]",
+                "refreshToken": "[REDACTED]",
+                "accessTokenExpiresTime": "[REDACTED]",
+                "refreshTokenExpiresTime": "[REDACTED]"
+              }
+            },
+            "jsonParsed": true,
+            "jsonError": "",
+            "value": {
+              "success": true,
+              "status": 200,
+              "code": "OK",
+              "message": "success",
+              "data": {
+                "accountId": null,
+                "userId": 200197,
+                "accessToken": "[REDACTED]",
+                "refreshToken": "[REDACTED]",
+                "accessTokenExpiresTime": "[REDACTED]",
+                "refreshTokenExpiresTime": "[REDACTED]"
+              }
+            },
+            "content": "{\"success\":true,\"status\":200,\"code\":\"OK\",\"message\":\"success\",\"data\":{\"accountId\":null,\"userId\":200197,\"accessToken\":\"[REDACTED]\",\"refreshToken\":\"[REDACTED]\",\"accessTokenExpiresTime\":\"2026-11-10T11:36:05.211663+08:00\",\"refreshTokenExpiresTime\":\"2026-12-10T09:36:05.211663+08:00\"}}",
+            "durationMs": 42
+          },
+          "checks": [
+            {
+              "name": "status",
+              "expected": 200,
+              "actual": 200,
+              "ok": true,
+              "error": "",
+              "message": ""
+            },
+            {
+              "name": "json",
+              "expected": {
+                "code": "OK"
+              },
+              "actual": {
+                "success": true,
+                "status": 200,
+                "code": "OK",
+                "message": "success",
+                "data": {
+                  "accountId": null,
+                  "userId": 200197,
+                  "accessToken": "[REDACTED]",
+                  "refreshToken": "[REDACTED]",
+                  "accessTokenExpiresTime": "[REDACTED]",
+                  "refreshTokenExpiresTime": "[REDACTED]"
+                }
+              },
+              "ok": true,
+              "error": "",
+              "message": ""
+            }
+          ],
+          "captures": [
+            "access",
+            "refresh"
+          ],
+          "attempts": 1,
+          "ok": true,
+          "durationMs": 42,
+          "error": "",
+          "hint": ""
+        },
+        {
+          "index": 13,
+          "phase": "step",
+          "action": "command",
+          "display": "command docker exec foodmap-postgres psql -U foodmap -d foodmap_auth_db -tAc \"select count(*) from…",
+          "expected": null,
+          "actual": {
+            "exitCode": 0,
+            "signal": null,
+            "stdout": "1\n",
+            "stderr": "",
+            "value": "1",
+            "content": "1\n",
+            "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+          },
+          "checks": [],
+          "captures": [
+            "activeSessions"
+          ],
+          "attempts": 1,
+          "ok": true,
+          "durationMs": 207,
+          "error": "",
+          "hint": ""
+        },
+        {
+          "index": 14,
+          "phase": "step",
+          "action": "command",
+          "display": "command [ 1 -eq 1 ]",
+          "expected": {
+            "exitCode": 0
+          },
+          "actual": {
+            "exitCode": 0,
+            "signal": null,
+            "stdout": "",
+            "stderr": "",
+            "value": "",
+            "content": "",
+            "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+          },
+          "checks": [
+            {
+              "name": "exitCode",
+              "expected": 0,
+              "actual": 0,
+              "ok": true,
+              "error": "",
+              "message": ""
+            }
+          ],
+          "captures": [],
+          "attempts": 1,
+          "ok": true,
+          "durationMs": 5,
+          "error": "",
+          "hint": ""
+        },
+        {
+          "index": 15,
+          "phase": "step",
+          "action": "http",
+          "display": "http POST /api/auth/logout",
+          "expected": {
+            "status": 200
+          },
+          "actual": {
+            "method": "POST",
+            "url": "http://127.0.0.1:8080/api/auth/logout",
+            "status": 200,
+            "statusText": "OK",
+            "headers": {
+              "content-type": "application/json",
+              "date": "Tue, 10 Nov 2026 01:36:05 GMT",
+              "transfer-encoding": "chunked",
+              "x-request-id": "nn65bkrmqs6etrgmv547fehp, nn65bkrmqs6etrgmv547fehp",
+              "x-span-id": "vm7n46gbr4vdxrw82nkfuwmu, 2zy5om7dyje2tpm77gxhr420",
+              "x-trace-id": "n5rh8g9h1okxk03sd9snp981, n5rh8g9h1okxk03sd9snp981"
+            },
+            "body": "{\"success\":true,\"status\":200,\"code\":\"OK\",\"message\":\"success\",\"data\":null}",
+            "json": {
+              "success": true,
+              "status": 200,
+              "code": "OK",
+              "message": "success",
+              "data": null
+            },
+            "jsonParsed": true,
+            "jsonError": "",
+            "value": {
+              "success": true,
+              "status": 200,
+              "code": "OK",
+              "message": "success",
+              "data": null
+            },
+            "content": "{\"success\":true,\"status\":200,\"code\":\"OK\",\"message\":\"success\",\"data\":null}",
+            "durationMs": 18
+          },
+          "checks": [
+            {
+              "name": "status",
+              "expected": 200,
+              "actual": 200,
+              "ok": true,
+              "error": "",
+              "message": ""
+            }
+          ],
+          "captures": [],
+          "attempts": 1,
+          "ok": true,
+          "durationMs": 18,
+          "error": "",
+          "hint": ""
+        },
+        {
+          "index": 16,
+          "phase": "step",
+          "action": "command",
+          "display": "command docker exec foodmap-postgres psql -U foodmap -d foodmap_auth_db -tAc \"select count(*) from…",
+          "expected": null,
+          "actual": {
+            "exitCode": 0,
+            "signal": null,
+            "stdout": "1\n",
+            "stderr": "",
+            "value": "1",
+            "content": "1\n",
+            "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+          },
+          "checks": [],
+          "captures": [
+            "revokedSessions"
+          ],
+          "attempts": 1,
+          "ok": true,
+          "durationMs": 204,
+          "error": "",
+          "hint": ""
+        },
+        {
+          "index": 17,
+          "phase": "step",
+          "action": "command",
+          "display": "command [ 1 -eq 1 ]",
+          "expected": {
+            "exitCode": 0
+          },
+          "actual": {
+            "exitCode": 0,
+            "signal": null,
+            "stdout": "",
+            "stderr": "",
+            "value": "",
+            "content": "",
+            "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+          },
+          "checks": [
+            {
+              "name": "exitCode",
+              "expected": 0,
+              "actual": 0,
+              "ok": true,
+              "error": "",
+              "message": ""
+            }
+          ],
+          "captures": [],
+          "attempts": 1,
+          "ok": true,
+          "durationMs": 5,
+          "error": "",
+          "hint": ""
+        },
+        {
+          "index": 18,
+          "phase": "step",
+          "action": "command",
+          "display": "command docker exec foodmap-postgres psql -U foodmap -d foodmap_auth_db -tAc \"select count(*) from…",
+          "expected": null,
+          "actual": {
+            "exitCode": 0,
+            "signal": null,
+            "stdout": "0\n",
+            "stderr": "",
+            "value": "0",
+            "content": "0\n",
+            "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+          },
+          "checks": [],
+          "captures": [
+            "activeAfterLogout"
+          ],
+          "attempts": 1,
+          "ok": true,
+          "durationMs": 203,
+          "error": "",
+          "hint": ""
+        },
+        {
+          "index": 19,
+          "phase": "step",
+          "action": "command",
+          "display": "command [ 0 -eq 0 ]",
+          "expected": {
+            "exitCode": 0
+          },
+          "actual": {
+            "exitCode": 0,
+            "signal": null,
+            "stdout": "",
+            "stderr": "",
+            "value": "",
+            "content": "",
+            "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+          },
+          "checks": [
+            {
+              "name": "exitCode",
+              "expected": 0,
+              "actual": 0,
+              "ok": true,
+              "error": "",
+              "message": ""
+            }
+          ],
+          "captures": [],
+          "attempts": 1,
+          "ok": true,
+          "durationMs": 4,
+          "error": "",
+          "hint": ""
+        }
+      ],
+      "evidence": {
+        "text": "/Users/zhangxuqian/myPrjDev/food-map/docs/integration/B1.5-orbstack-logging/evidence/2026-11-10T09-36-d08abd42-认证双写核验（身份绑定与会话）.txt",
+        "json": "/Users/zhangxuqian/myPrjDev/food-map/docs/integration/B1.5-orbstack-logging/evidence/2026-11-10T09-36-d08abd42-认证双写核验（身份绑定与会话）.json"
+      }
+    },
+    {
+      "schemaVersion": 2,
+      "name": "B1 iOS 登录后登出链路",
+      "description": "模拟器启动 Debug 构建，用探针完成登录→登出→检查探针日志与数据库 token 状态；Release 包不含探针",
+      "runId": "run-20261110T013605Z-b5fd6b0a",
+      "source": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios/b1-ios-logout.yml",
+      "ok": true,
+      "exitCode": 0,
+      "startedAt": "2026-11-10T01:36:05.872Z",
+      "finishedAt": "2026-11-10T01:36:20.721Z",
+      "durationMs": 14848,
+      "summary": {
+        "total": 18,
+        "passed": 18,
+        "failed": 0,
+        "skipped": 0,
+        "setupFailed": 0,
+        "teardownFailed": 0
+      },
+      "variableNames": [
+        "account",
+        "bundleId",
+        "dbContainer",
+        "logStart",
+        "password",
+        "revoked",
+        "runId",
+        "userId"
+      ],
+      "steps": [
+        {
+          "index": 1,
+          "phase": "setup",
+          "action": "http",
+          "display": "http GET http://127.0.0.1:8080/internal/auth/health",
+          "expected": {
+            "status": 200
+          },
+          "actual": {
+            "method": "GET",
+            "url": "http://127.0.0.1:8080/internal/auth/health",
+            "status": 200,
+            "statusText": "OK",
+            "headers": {
+              "content-type": "application/json",
+              "date": "Tue, 10 Nov 2026 01:36:05 GMT",
+              "transfer-encoding": "chunked",
+              "x-request-id": "ikhh9tjda9cnmbuztzetptny, ikhh9tjda9cnmbuztzetptny",
+              "x-span-id": "69o4g6ko65lrcqve1qb2pwym, 9u96lvop5hrwedhlckac2y62",
+              "x-trace-id": "r4na2o2ts2t10ir66e74a8lb, r4na2o2ts2t10ir66e74a8lb"
+            },
+            "body": "{\"success\":true,\"status\":200,\"code\":\"OK\",\"message\":\"success\",\"data\":{\"serviceName\":\"foodmap-auth-service\",\"status\":\"UP\",\"checkedAt\":\"2026-11-10T01:36:05.875736Z\"}}",
+            "json": {
+              "success": true,
+              "status": 200,
+              "code": "OK",
+              "message": "success",
+              "data": {
+                "serviceName": "foodmap-auth-service",
+                "status": "UP",
+                "checkedAt": "2026-11-10T01:36:05.875736Z"
+              }
+            },
+            "jsonParsed": true,
+            "jsonError": "",
+            "value": {
+              "success": true,
+              "status": 200,
+              "code": "OK",
+              "message": "success",
+              "data": {
+                "serviceName": "foodmap-auth-service",
+                "status": "UP",
+                "checkedAt": "2026-11-10T01:36:05.875736Z"
+              }
+            },
+            "content": "{\"success\":true,\"status\":200,\"code\":\"OK\",\"message\":\"success\",\"data\":{\"serviceName\":\"foodmap-auth-service\",\"status\":\"UP\",\"checkedAt\":\"2026-11-10T01:36:05.875736Z\"}}",
+            "durationMs": 5
+          },
+          "checks": [
+            {
+              "name": "status",
+              "expected": 200,
+              "actual": 200,
+              "ok": true,
+              "error": "",
+              "message": ""
+            }
+          ],
+          "captures": [],
+          "attempts": 1,
+          "ok": true,
+          "durationMs": 4,
+          "error": "",
+          "hint": ""
+        },
+        {
+          "index": 2,
+          "phase": "setup",
+          "action": "command",
+          "display": "command printf 'zxq_ios_%s' $(date +%H%M%S)",
+          "expected": null,
+          "actual": {
+            "exitCode": 0,
+            "signal": null,
+            "stdout": "zxq_ios_093605",
+            "stderr": "",
+            "value": "zxq_ios_093605",
+            "content": "zxq_ios_093605",
+            "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+          },
+          "checks": [],
+          "captures": [
+            "account"
+          ],
+          "attempts": 1,
+          "ok": true,
+          "durationMs": 8,
+          "error": "",
+          "hint": ""
+        },
+        {
+          "index": 3,
+          "phase": "setup",
+          "action": "http",
+          "display": "http POST http://127.0.0.1:8080/api/auth/register",
+          "expected": {
+            "status": 200
+          },
+          "actual": {
+            "method": "POST",
+            "url": "http://127.0.0.1:8080/api/auth/register",
+            "status": 200,
+            "statusText": "OK",
+            "headers": {
+              "content-type": "application/json",
+              "date": "Tue, 10 Nov 2026 01:36:05 GMT",
+              "transfer-encoding": "chunked",
+              "x-request-id": "xtrbt0z2ekw3jycl36uuavft, xtrbt0z2ekw3jycl36uuavft",
+              "x-span-id": "ujf4ukly27oiywc3ae7pb7b3, mk9t0cuvv2c4kzdud7jytdbh",
+              "x-trace-id": "yohxrjz74omaitflrv47azo3, yohxrjz74omaitflrv47azo3"
+            },
+            "body": "{\"success\":true,\"status\":200,\"code\":\"OK\",\"message\":\"success\",\"data\":{\"accountId\":null,\"userId\":200198,\"accountStatus\":\"NORMAL\"}}",
+            "json": {
+              "success": true,
+              "status": 200,
+              "code": "OK",
+              "message": "success",
+              "data": {
+                "accountId": null,
+                "userId": 200198,
+                "accountStatus": "NORMAL"
+              }
+            },
+            "jsonParsed": true,
+            "jsonError": "",
+            "value": {
+              "success": true,
+              "status": 200,
+              "code": "OK",
+              "message": "success",
+              "data": {
+                "accountId": null,
+                "userId": 200198,
+                "accountStatus": "NORMAL"
+              }
+            },
+            "content": "{\"success\":true,\"status\":200,\"code\":\"OK\",\"message\":\"success\",\"data\":{\"accountId\":null,\"userId\":200198,\"accountStatus\":\"NORMAL\"}}",
+            "durationMs": 50
+          },
+          "checks": [
+            {
+              "name": "status",
+              "expected": 200,
+              "actual": 200,
+              "ok": true,
+              "error": "",
+              "message": ""
+            }
+          ],
+          "captures": [
+            "userId"
+          ],
+          "attempts": 1,
+          "ok": true,
+          "durationMs": 50,
+          "error": "",
+          "hint": ""
+        },
+        {
+          "index": 4,
+          "phase": "setup",
+          "action": "command",
+          "display": "command wc -l < /tmp/verify-auth.log",
+          "expected": null,
+          "actual": {
+            "exitCode": 0,
+            "signal": null,
+            "stdout": "    5076\n",
+            "stderr": "",
+            "value": "5076",
+            "content": "    5076\n",
+            "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+          },
+          "checks": [],
+          "captures": [
+            "logStart"
+          ],
+          "attempts": 1,
+          "ok": true,
+          "durationMs": 11,
+          "error": "",
+          "hint": ""
+        },
+        {
+          "index": 1,
+          "phase": "step",
+          "action": "app",
+          "display": "app terminate A77A2428-9576-4533-8B62-0C267A395B29 com.foodmap.FoodMapApp",
+          "expected": null,
+          "actual": {
+            "exitCode": 3,
+            "stdout": "",
+            "stderr": "An error was encountered processing the command (domain=NSPOSIXErrorDomain, code=3):\nSimulator device failed to terminate com.foodmap.FoodMapApp.\nfound nothing to terminate\nUnderlying error (domain=NSPOSIXErrorDomain, code=3):\n\tThe request to terminate \"com.foodmap.FoodMapApp\" failed. found nothing to terminate\n\tfound nothing to terminate\n",
+            "value": "",
+            "udid": "A77A2428-9576-4533-8B62-0C267A395B29",
+            "bundleId": "com.foodmap.FoodMapApp",
+            "platform": "ios"
+          },
+          "checks": [],
+          "captures": [],
+          "attempts": 1,
+          "ok": true,
+          "durationMs": 129,
+          "error": "",
+          "hint": ""
+        },
+        {
+          "index": 2,
+          "phase": "step",
+          "action": "app",
+          "display": "app launch A77A2428-9576-4533-8B62-0C267A395B29 com.foodmap.FoodMapApp",
+          "expected": null,
+          "actual": {
+            "exitCode": 0,
+            "stdout": "com.foodmap.FoodMapApp: 11059\n",
+            "stderr": "",
+            "value": "com.foodmap.FoodMapApp: 11059",
+            "udid": "A77A2428-9576-4533-8B62-0C267A395B29",
+            "bundleId": "com.foodmap.FoodMapApp",
+            "platform": "ios"
+          },
+          "checks": [],
+          "captures": [],
+          "attempts": 1,
+          "ok": true,
+          "durationMs": 221,
+          "error": "",
+          "hint": ""
+        },
+        {
+          "index": 3,
+          "phase": "step",
+          "action": "sleep",
+          "display": "sleep 12000ms",
+          "expected": null,
+          "actual": {
+            "value": 12000,
+            "durationMs": 12000
+          },
+          "checks": [],
+          "captures": [],
+          "attempts": 1,
+          "ok": true,
+          "durationMs": 12001,
+          "error": "",
+          "hint": ""
+        },
+        {
+          "index": 4,
+          "phase": "step",
+          "action": "app",
+          "display": "app readlog A77A2428-9576-4533-8B62-0C267A395B29 com.foodmap.FoodMapApp Documents/foodmap-automation.log",
+          "expected": {
+            "contains": [
+              "login.ok",
+              "logout.begin hasSession=true",
+              "logout.end sessionNil=true"
+            ]
+          },
+          "actual": {
+            "platform": "ios",
+            "udid": "A77A2428-9576-4533-8B62-0C267A395B29",
+            "bundleId": "com.foodmap.FoodMapApp",
+            "container": "/Users/zhangxuqian/Library/Developer/CoreSimulator/Devices/A77A2428-9576-4533-8B62-0C267A395B29/data/Containers/Data/Application/4C84E088-C906-4C7B-A2B3-1EE570A03691",
+            "files": [
+              "/Users/zhangxuqian/Library/Developer/CoreSimulator/Devices/A77A2428-9576-4533-8B62-0C267A395B29/data/Containers/Data/Application/4C84E088-C906-4C7B-A2B3-1EE570A03691/Documents/foodmap-automation.log"
+            ],
+            "content": "2026-11-05T07:35:18Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-05T07:35:18Z login.ok userId=200024\n2026-11-05T07:35:18Z logout.begin hasSession=true\n2026-11-05T07:35:18Z logout.end sessionNil=true message=none\n2026-11-05T07:36:31Z app.start automation=logout foodmapKeys=[\"FOODMAP_AUTOMATION\"]\n2026-11-05T07:36:31Z logout.begin hasSession=false\n2026-11-05T07:36:31Z logout.end sessionNil=true message=none\n2026-11-05T07:45:57Z app.start automation=error-states foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-05T07:45:57Z bad-password status=401 code=UNAUTHORIZED clearAuth=true message=账号或密码错误\n2026-11-05T07:45:57Z gateway-down status=-1 code=none clearAuth=false message=无法连接后端服务，请确认 Gateway 已启动\n2026-11-05T07:46:15Z app.start automation=keep-token foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-05T07:46:15Z retention.loginOk tokenPresent=true\n2026-11-05T07:46:15Z retention.tempCall status=-1 code=none clearAuth=false message=无法连接后端服务，请确认 Gateway 已启动\n2026-11-05T07:46:15Z retention.afterTempCall tokenPresent=true\n2026-11-05T07:46:15Z retention.afterRestoreDead tokenPresent=true sessionNil=true message=无法连接后端服务，请确认 Gateway 已启动\n2026-11-05T07:46:15Z retention.afterRecovery tokenPresent=true userId=200024\n2026-11-05T07:46:15Z retention.cleanup tokenPresent=false sessionNil=true\n2026-11-05T07:54:12Z app.start automation=login-disabled foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-05T07:54:12Z disabled.login status=403 code=FORBIDDEN clearAuth=true message=账号状态不允许登录 tokenPresent=false\n2026-11-05T07:56:38Z app.start automation=session-expired foodmapKeys=[\"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_SEED_ACCESS_TOKEN\", \"FOODMAP_SEED_REFRESH_TOKEN\"]\n2026-11-05T07:56:38Z expired.seeded tokenPresent=true\n2026-11-05T07:56:38Z expired.restore sessionNil=true tokenPresent=false message=Access Token已过期\n2026-11-05T08:05:58Z app.start automation=register-checks foodmapKeys=[\"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_NEW_ACCOUNT\"]\n2026-11-05T08:05:58Z register.shortPassword status=400 code=BAD_REQUEST clearAuth=false message=password 个数必须在8和128之间\n2026-11-05T08:05:58Z register.valid userId=200027 accountStatus=NORMAL\n2026-11-05T08:12:53Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-05T08:12:54Z login.ok userId=200024\n2026-11-05T08:12:54Z logout.begin hasSession=true\n2026-11-05T08:12:54Z logout.end sessionNil=true message=none\n2026-11-05T08:27:12Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_PASSWORD\"]\n2026-11-05T08:27:12Z login.ok userId=200024\n2026-11-05T08:27:12Z logout.begin hasSession=true\n2026-11-05T08:27:12Z logout.end sessionNil=true message=none\n2026-11-05T08:27:32Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-05T08:27:32Z login.ok userId=200024\n2026-11-05T08:27:32Z logout.begin hasSession=true\n2026-11-05T08:27:32Z logout.end sessionNil=true message=none\n2026-11-06T05:32:37Z app.start automation=none foodmapKeys=[]\n2026-11-06T05:32:42Z app.start automation=none foodmapKeys=[]\n2026-11-06T05:32:49Z app.start automation=none foodmapKeys=[]\n2026-11-06T05:40:19Z app.start automation=none foodmapKeys=[]\n2026-11-06T05:50:20Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-06T05:50:20Z login.ok userId=200024\n2026-11-06T05:50:20Z logout.begin hasSession=true\n2026-11-06T05:50:20Z logout.end sessionNil=true message=none\n2026-11-06T05:50:39Z app.start automation=none foodmapKeys=[]\n2026-11-06T05:52:27Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-06T05:52:27Z login.ok userId=200024\n2026-11-06T05:52:27Z logout.begin hasSession=true\n2026-11-06T05:52:27Z logout.end sessionNil=true message=none\n2026-11-06T05:52:46Z app.start automation=none foodmapKeys=[]\n2026-11-06T06:06:40Z app.start automation=none foodmapKeys=[]\n2026-11-06T06:07:14Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-06T06:07:14Z login.ok userId=200024\n2026-11-06T06:07:14Z logout.begin hasSession=true\n2026-11-06T06:07:14Z logout.end sessionNil=true message=none\n2026-11-06T06:07:32Z app.start automation=none foodmapKeys=[]\n2026-11-06T06:08:15Z app.start automation=none foodmapKeys=[]\n2026-11-06T06:11:09Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-06T06:11:09Z login.ok userId=200024\n2026-11-06T06:11:09Z logout.begin hasSession=true\n2026-11-06T06:11:09Z logout.end sessionNil=true message=none\n2026-11-06T06:11:28Z app.start automation=none foodmapKeys=[]\n2026-11-06T09:47:53Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-06T09:47:53Z login.ok userId=200052\n2026-11-06T09:47:53Z logout.begin hasSession=true\n2026-11-06T09:47:54Z logout.end sessionNil=true message=none\n2026-11-06T09:48:23Z app.start automation=none foodmapKeys=[]\n2026-11-06T09:49:13Z app.start automation=none foodmapKeys=[]\n2026-11-06T09:49:26Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-06T09:49:26Z login.ok userId=200056\n2026-11-06T09:49:26Z logout.begin hasSession=true\n2026-11-06T09:49:26Z logout.end sessionNil=true message=none\n2026-11-06T09:49:50Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-06T09:49:50Z login.ok userId=200058\n2026-11-06T09:49:50Z logout.begin hasSession=true\n2026-11-06T09:49:50Z logout.end sessionNil=true message=none\n2026-11-06T09:50:13Z app.start automation=none foodmapKeys=[]\n2026-11-06T09:50:58Z app.start automation=none foodmapKeys=[]\n2026-11-06T09:51:21Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-06T09:51:21Z login.failed error=server(status: 401, code: \"UNAUTHORIZED\", message: \"账号或密码错误\")\n2026-11-06T09:51:39Z app.start automation=none foodmapKeys=[]\n2026-11-07T06:49:06Z app.start automation=none foodmapKeys=[]\n2026-11-07T06:49:23Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-07T06:49:24Z login.failed error=server(status: 401, code: \"UNAUTHORIZED\", message: \"账号或密码错误\")\n2026-11-07T06:49:41Z app.start automation=none foodmapKeys=[]\n2026-11-07T06:49:57Z app.start automation=none foodmapKeys=[]\n2026-11-07T07:15:39Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-07T07:15:39Z login.ok userId=200071\n2026-11-07T07:15:39Z logout.begin hasSession=true\n2026-11-07T07:15:39Z logout.end sessionNil=true message=none\n2026-11-07T07:16:01Z app.start automation=none foodmapKeys=[]\n2026-11-07T07:35:24Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-07T07:35:24Z login.ok userId=200074\n2026-11-07T07:35:24Z logout.begin hasSession=true\n2026-11-07T07:35:24Z logout.end sessionNil=true message=none\n2026-11-07T07:35:46Z app.start automation=none foodmapKeys=[]\n2026-11-07T07:39:28Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-07T07:39:28Z login.ok userId=200078\n2026-11-07T07:39:28Z logout.begin hasSession=true\n2026-11-07T07:39:28Z logout.end sessionNil=true message=none\n2026-11-07T07:39:49Z app.start automation=none foodmapKeys=[]\n2026-11-07T08:05:50Z app.start automation=none foodmapKeys=[]\n2026-11-07T08:06:06Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-07T08:06:06Z login.ok userId=200084\n2026-11-07T08:06:06Z logout.begin hasSession=true\n2026-11-07T08:06:06Z logout.end sessionNil=true message=none\n2026-11-07T08:06:25Z app.start automation=none foodmapKeys=[]\n2026-11-07T08:06:41Z app.start automation=none foodmapKeys=[]\n2026-11-07T08:12:15Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-07T08:12:15Z login.ok userId=200089\n2026-11-07T08:12:15Z logout.begin hasSession=true\n2026-11-07T08:12:15Z logout.end sessionNil=true message=none\n2026-11-07T08:12:36Z app.start automation=none foodmapKeys=[]\n2026-11-07T08:39:50Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-07T08:39:50Z login.ok userId=200093\n2026-11-07T08:39:50Z logout.begin hasSession=true\n2026-11-07T08:39:50Z logout.end sessionNil=true message=none\n2026-11-07T08:40:12Z app.start automation=none foodmapKeys=[]\n2026-11-07T08:43:06Z app.start automation=none foodmapKeys=[]\n2026-11-07T08:43:22Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-07T08:43:22Z login.ok userId=200099\n2026-11-07T08:43:22Z logout.begin hasSession=true\n2026-11-07T08:43:22Z logout.end sessionNil=true message=none\n2026-11-07T08:43:41Z app.start automation=none foodmapKeys=[]\n2026-11-07T08:43:57Z app.start automation=none foodmapKeys=[]\n2026-11-07T08:49:00Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-07T08:49:00Z login.ok userId=200103\n2026-11-07T08:49:00Z logout.begin hasSession=true\n2026-11-07T08:49:00Z logout.end sessionNil=true message=none\n2026-11-07T08:49:52Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-07T08:49:52Z login.ok userId=200105\n2026-11-07T08:49:52Z logout.begin hasSession=true\n2026-11-07T08:49:52Z logout.end sessionNil=true message=none\n2026-11-07T08:50:13Z app.start automation=none foodmapKeys=[]\n2026-11-07T08:50:42Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-07T08:50:42Z login.ok userId=200109\n2026-11-07T08:50:42Z logout.begin hasSession=true\n2026-11-07T08:50:42Z logout.end sessionNil=true message=none\n2026-11-07T08:51:02Z app.start automation=none foodmapKeys=[]\n2026-11-07T08:54:05Z app.start automation=none foodmapKeys=[]\n2026-11-07T08:54:21Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-07T08:54:21Z login.ok userId=200115\n2026-11-07T08:54:21Z logout.begin hasSession=true\n2026-11-07T08:54:21Z logout.end sessionNil=true message=none\n2026-11-07T08:54:40Z app.start automation=none foodmapKeys=[]\n2026-11-07T08:54:56Z app.start automation=none foodmapKeys=[]\n2026-11-09T04:05:13Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-09T04:05:13Z login.ok userId=200120\n2026-11-09T04:05:13Z logout.begin hasSession=true\n2026-11-09T04:05:14Z logout.end sessionNil=true message=none\n2026-11-09T04:07:11Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-09T04:07:11Z login.ok userId=200124\n2026-11-09T04:07:11Z logout.begin hasSession=true\n2026-11-09T04:07:11Z logout.end sessionNil=true message=none\n2026-11-09T04:07:38Z app.start automation=none foodmapKeys=[]\n2026-11-09T04:09:26Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-09T04:09:26Z login.ok userId=200128\n2026-11-09T04:09:26Z logout.begin hasSession=true\n2026-11-09T04:09:26Z logout.end sessionNil=true message=none\n2026-11-09T04:11:19Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-09T04:11:19Z login.ok userId=200132\n2026-11-09T04:11:19Z logout.begin hasSession=true\n2026-11-09T04:11:20Z logout.end sessionNil=true message=none\n2026-11-09T04:11:40Z app.start automation=none foodmapKeys=[]\n2026-11-09T06:31:22Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-09T06:31:23Z login.ok userId=200140\n2026-11-09T06:31:23Z logout.begin hasSession=true\n2026-11-09T06:31:23Z logout.end sessionNil=true message=none\n2026-11-09T06:31:51Z app.start automation=none foodmapKeys=[]\n2026-11-09T06:37:24Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-09T06:37:24Z login.ok userId=200150\n2026-11-09T06:37:24Z logout.begin hasSession=true\n2026-11-09T06:37:25Z logout.end sessionNil=true message=none\n2026-11-09T06:37:47Z app.start automation=none foodmapKeys=[]\n2026-11-09T06:47:09Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-09T06:47:10Z login.ok userId=200154\n2026-11-09T06:47:10Z logout.begin hasSession=true\n2026-11-09T06:47:10Z logout.end sessionNil=true message=none\n2026-11-09T06:47:31Z app.start automation=none foodmapKeys=[]\n2026-11-09T06:51:24Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-09T06:51:24Z login.ok userId=200158\n2026-11-09T06:51:24Z logout.begin hasSession=true\n2026-11-09T06:51:24Z logout.end sessionNil=true message=none\n2026-11-09T06:51:45Z app.start automation=none foodmapKeys=[]\n2026-11-09T08:36:39Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-09T08:36:39Z login.ok userId=200170\n2026-11-09T08:36:39Z logout.begin hasSession=true\n2026-11-09T08:36:40Z logout.end sessionNil=true message=none\n2026-11-09T08:37:19Z app.start automation=none foodmapKeys=[]\n2026-11-09T08:37:40Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-09T08:37:40Z login.ok userId=200174\n2026-11-09T08:37:40Z logout.begin hasSession=true\n2026-11-09T08:37:40Z logout.end sessionNil=true message=none\n2026-11-09T08:38:03Z app.start automation=none foodmapKeys=[]\n2026-11-09T08:38:22Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-09T08:38:22Z login.ok userId=200178\n2026-11-09T08:38:22Z logout.begin hasSession=true\n2026-11-09T08:38:22Z logout.end sessionNil=true message=none\n2026-11-09T08:38:45Z app.start automation=none foodmapKeys=[]\n2026-11-09T09:53:37Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-09T09:53:38Z login.ok userId=200184\n2026-11-09T09:53:38Z logout.begin hasSession=true\n2026-11-09T09:53:38Z logout.end sessionNil=true message=none\n2026-11-10T01:26:32Z app.start automation=none foodmapKeys=[]\n2026-11-10T01:27:23Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-10T01:27:23Z login.ok userId=200193\n2026-11-10T01:27:23Z logout.begin hasSession=true\n2026-11-10T01:27:23Z logout.end sessionNil=true message=none\n2026-11-10T01:27:56Z app.start automation=none foodmapKeys=[]\n2026-11-10T01:36:06Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-10T01:36:06Z login.ok userId=200198\n2026-11-10T01:36:06Z logout.begin hasSession=true\n2026-11-10T01:36:06Z logout.end sessionNil=true message=none\n",
+            "value": "2026-11-05T07:35:18Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-05T07:35:18Z login.ok userId=200024\n2026-11-05T07:35:18Z logout.begin hasSession=true\n2026-11-05T07:35:18Z logout.end sessionNil=true message=none\n2026-11-05T07:36:31Z app.start automation=logout foodmapKeys=[\"FOODMAP_AUTOMATION\"]\n2026-11-05T07:36:31Z logout.begin hasSession=false\n2026-11-05T07:36:31Z logout.end sessionNil=true message=none\n2026-11-05T07:45:57Z app.start automation=error-states foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-05T07:45:57Z bad-password status=401 code=UNAUTHORIZED clearAuth=true message=账号或密码错误\n2026-11-05T07:45:57Z gateway-down status=-1 code=none clearAuth=false message=无法连接后端服务，请确认 Gateway 已启动\n2026-11-05T07:46:15Z app.start automation=keep-token foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-05T07:46:15Z retention.loginOk tokenPresent=true\n2026-11-05T07:46:15Z retention.tempCall status=-1 code=none clearAuth=false message=无法连接后端服务，请确认 Gateway 已启动\n2026-11-05T07:46:15Z retention.afterTempCall tokenPresent=true\n2026-11-05T07:46:15Z retention.afterRestoreDead tokenPresent=true sessionNil=true message=无法连接后端服务，请确认 Gateway 已启动\n2026-11-05T07:46:15Z retention.afterRecovery tokenPresent=true userId=200024\n2026-11-05T07:46:15Z retention.cleanup tokenPresent=false sessionNil=true\n2026-11-05T07:54:12Z app.start automation=login-disabled foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-05T07:54:12Z disabled.login status=403 code=FORBIDDEN clearAuth=true message=账号状态不允许登录 tokenPresent=false\n2026-11-05T07:56:38Z app.start automation=session-expired foodmapKeys=[\"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_SEED_ACCESS_TOKEN\", \"FOODMAP_SEED_REFRESH_TOKEN\"]\n2026-11-05T07:56:38Z expired.seeded tokenPresent=true\n2026-11-05T07:56:38Z expired.restore sessionNil=true tokenPresent=false message=Access Token已过期\n2026-11-05T08:05:58Z app.start automation=register-checks foodmapKeys=[\"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_NEW_ACCOUNT\"]\n2026-11-05T08:05:58Z register.shortPassword status=400 code=BAD_REQUEST clearAuth=false message=password 个数必须在8和128之间\n2026-11-05T08:05:58Z register.valid userId=200027 accountStatus=NORMAL\n2026-11-05T08:12:53Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-05T08:12:54Z login.ok userId=200024\n2026-11-05T08:12:54Z logout.begin hasSession=true\n2026-11-05T08:12:54Z logout.end sessionNil=true message=none\n2026-11-05T08:27:12Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_PASSWORD\"]\n2026-11-05T08:27:12Z login.ok userId=200024\n2026-11-05T08:27:12Z logout.begin hasSession=true\n2026-11-05T08:27:12Z logout.end sessionNil=true message=none\n2026-11-05T08:27:32Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-05T08:27:32Z login.ok userId=200024\n2026-11-05T08:27:32Z logout.begin hasSession=true\n2026-11-05T08:27:32Z logout.end sessionNil=true message=none\n2026-11-06T05:32:37Z app.start automation=none foodmapKeys=[]\n2026-11-06T05:32:42Z app.start automation=none foodmapKeys=[]\n2026-11-06T05:32:49Z app.start automation=none foodmapKeys=[]\n2026-11-06T05:40:19Z app.start automation=none foodmapKeys=[]\n2026-11-06T05:50:20Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-06T05:50:20Z login.ok userId=200024\n2026-11-06T05:50:20Z logout.begin hasSession=true\n2026-11-06T05:50:20Z logout.end sessionNil=true message=none\n2026-11-06T05:50:39Z app.start automation=none foodmapKeys=[]\n2026-11-06T05:52:27Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-06T05:52:27Z login.ok userId=200024\n2026-11-06T05:52:27Z logout.begin hasSession=true\n2026-11-06T05:52:27Z logout.end sessionNil=true message=none\n2026-11-06T05:52:46Z app.start automation=none foodmapKeys=[]\n2026-11-06T06:06:40Z app.start automation=none foodmapKeys=[]\n2026-11-06T06:07:14Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-06T06:07:14Z login.ok userId=200024\n2026-11-06T06:07:14Z logout.begin hasSession=true\n2026-11-06T06:07:14Z logout.end sessionNil=true message=none\n2026-11-06T06:07:32Z app.start automation=none foodmapKeys=[]\n2026-11-06T06:08:15Z app.start automation=none foodmapKeys=[]\n2026-11-06T06:11:09Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-06T06:11:09Z login.ok userId=200024\n2026-11-06T06:11:09Z logout.begin hasSession=true\n2026-11-06T06:11:09Z logout.end sessionNil=true message=none\n2026-11-06T06:11:28Z app.start automation=none foodmapKeys=[]\n2026-11-06T09:47:53Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-06T09:47:53Z login.ok userId=200052\n2026-11-06T09:47:53Z logout.begin hasSession=true\n2026-11-06T09:47:54Z logout.end sessionNil=true message=none\n2026-11-06T09:48:23Z app.start automation=none foodmapKeys=[]\n2026-11-06T09:49:13Z app.start automation=none foodmapKeys=[]\n2026-11-06T09:49:26Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-06T09:49:26Z login.ok userId=200056\n2026-11-06T09:49:26Z logout.begin hasSession=true\n2026-11-06T09:49:26Z logout.end sessionNil=true message=none\n2026-11-06T09:49:50Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-06T09:49:50Z login.ok userId=200058\n2026-11-06T09:49:50Z logout.begin hasSession=true\n2026-11-06T09:49:50Z logout.end sessionNil=true message=none\n2026-11-06T09:50:13Z app.start automation=none foodmapKeys=[]\n2026-11-06T09:50:58Z app.start automation=none foodmapKeys=[]\n2026-11-06T09:51:21Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-06T09:51:21Z login.failed error=server(status: 401, code: \"UNAUTHORIZED\", message: \"账号或密码错误\")\n2026-11-06T09:51:39Z app.start automation=none foodmapKeys=[]\n2026-11-07T06:49:06Z app.start automation=none foodmapKeys=[]\n2026-11-07T06:49:23Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-07T06:49:24Z login.failed error=server(status: 401, code: \"UNAUTHORIZED\", message: \"账号或密码错误\")\n2026-11-07T06:49:41Z app.start automation=none foodmapKeys=[]\n2026-11-07T06:49:57Z app.start automation=none foodmapKeys=[]\n2026-11-07T07:15:39Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-07T07:15:39Z login.ok userId=200071\n2026-11-07T07:15:39Z logout.begin hasSession=true\n2026-11-07T07:15:39Z logout.end sessionNil=true message=none\n2026-11-07T07:16:01Z app.start automation=none foodmapKeys=[]\n2026-11-07T07:35:24Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-07T07:35:24Z login.ok userId=200074\n2026-11-07T07:35:24Z logout.begin hasSession=true\n2026-11-07T07:35:24Z logout.end sessionNil=true message=none\n2026-11-07T07:35:46Z app.start automation=none foodmapKeys=[]\n2026-11-07T07:39:28Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-07T07:39:28Z login.ok userId=200078\n2026-11-07T07:39:28Z logout.begin hasSession=true\n2026-11-07T07:39:28Z logout.end sessionNil=true message=none\n2026-11-07T07:39:49Z app.start automation=none foodmapKeys=[]\n2026-11-07T08:05:50Z app.start automation=none foodmapKeys=[]\n2026-11-07T08:06:06Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-07T08:06:06Z login.ok userId=200084\n2026-11-07T08:06:06Z logout.begin hasSession=true\n2026-11-07T08:06:06Z logout.end sessionNil=true message=none\n2026-11-07T08:06:25Z app.start automation=none foodmapKeys=[]\n2026-11-07T08:06:41Z app.start automation=none foodmapKeys=[]\n2026-11-07T08:12:15Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-07T08:12:15Z login.ok userId=200089\n2026-11-07T08:12:15Z logout.begin hasSession=true\n2026-11-07T08:12:15Z logout.end sessionNil=true message=none\n2026-11-07T08:12:36Z app.start automation=none foodmapKeys=[]\n2026-11-07T08:39:50Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-07T08:39:50Z login.ok userId=200093\n2026-11-07T08:39:50Z logout.begin hasSession=true\n2026-11-07T08:39:50Z logout.end sessionNil=true message=none\n2026-11-07T08:40:12Z app.start automation=none foodmapKeys=[]\n2026-11-07T08:43:06Z app.start automation=none foodmapKeys=[]\n2026-11-07T08:43:22Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-07T08:43:22Z login.ok userId=200099\n2026-11-07T08:43:22Z logout.begin hasSession=true\n2026-11-07T08:43:22Z logout.end sessionNil=true message=none\n2026-11-07T08:43:41Z app.start automation=none foodmapKeys=[]\n2026-11-07T08:43:57Z app.start automation=none foodmapKeys=[]\n2026-11-07T08:49:00Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-07T08:49:00Z login.ok userId=200103\n2026-11-07T08:49:00Z logout.begin hasSession=true\n2026-11-07T08:49:00Z logout.end sessionNil=true message=none\n2026-11-07T08:49:52Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-07T08:49:52Z login.ok userId=200105\n2026-11-07T08:49:52Z logout.begin hasSession=true\n2026-11-07T08:49:52Z logout.end sessionNil=true message=none\n2026-11-07T08:50:13Z app.start automation=none foodmapKeys=[]\n2026-11-07T08:50:42Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-07T08:50:42Z login.ok userId=200109\n2026-11-07T08:50:42Z logout.begin hasSession=true\n2026-11-07T08:50:42Z logout.end sessionNil=true message=none\n2026-11-07T08:51:02Z app.start automation=none foodmapKeys=[]\n2026-11-07T08:54:05Z app.start automation=none foodmapKeys=[]\n2026-11-07T08:54:21Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-07T08:54:21Z login.ok userId=200115\n2026-11-07T08:54:21Z logout.begin hasSession=true\n2026-11-07T08:54:21Z logout.end sessionNil=true message=none\n2026-11-07T08:54:40Z app.start automation=none foodmapKeys=[]\n2026-11-07T08:54:56Z app.start automation=none foodmapKeys=[]\n2026-11-09T04:05:13Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-09T04:05:13Z login.ok userId=200120\n2026-11-09T04:05:13Z logout.begin hasSession=true\n2026-11-09T04:05:14Z logout.end sessionNil=true message=none\n2026-11-09T04:07:11Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-09T04:07:11Z login.ok userId=200124\n2026-11-09T04:07:11Z logout.begin hasSession=true\n2026-11-09T04:07:11Z logout.end sessionNil=true message=none\n2026-11-09T04:07:38Z app.start automation=none foodmapKeys=[]\n2026-11-09T04:09:26Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-09T04:09:26Z login.ok userId=200128\n2026-11-09T04:09:26Z logout.begin hasSession=true\n2026-11-09T04:09:26Z logout.end sessionNil=true message=none\n2026-11-09T04:11:19Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-09T04:11:19Z login.ok userId=200132\n2026-11-09T04:11:19Z logout.begin hasSession=true\n2026-11-09T04:11:20Z logout.end sessionNil=true message=none\n2026-11-09T04:11:40Z app.start automation=none foodmapKeys=[]\n2026-11-09T06:31:22Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-09T06:31:23Z login.ok userId=200140\n2026-11-09T06:31:23Z logout.begin hasSession=true\n2026-11-09T06:31:23Z logout.end sessionNil=true message=none\n2026-11-09T06:31:51Z app.start automation=none foodmapKeys=[]\n2026-11-09T06:37:24Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-09T06:37:24Z login.ok userId=200150\n2026-11-09T06:37:24Z logout.begin hasSession=true\n2026-11-09T06:37:25Z logout.end sessionNil=true message=none\n2026-11-09T06:37:47Z app.start automation=none foodmapKeys=[]\n2026-11-09T06:47:09Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-09T06:47:10Z login.ok userId=200154\n2026-11-09T06:47:10Z logout.begin hasSession=true\n2026-11-09T06:47:10Z logout.end sessionNil=true message=none\n2026-11-09T06:47:31Z app.start automation=none foodmapKeys=[]\n2026-11-09T06:51:24Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-09T06:51:24Z login.ok userId=200158\n2026-11-09T06:51:24Z logout.begin hasSession=true\n2026-11-09T06:51:24Z logout.end sessionNil=true message=none\n2026-11-09T06:51:45Z app.start automation=none foodmapKeys=[]\n2026-11-09T08:36:39Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-09T08:36:39Z login.ok userId=200170\n2026-11-09T08:36:39Z logout.begin hasSession=true\n2026-11-09T08:36:40Z logout.end sessionNil=true message=none\n2026-11-09T08:37:19Z app.start automation=none foodmapKeys=[]\n2026-11-09T08:37:40Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-09T08:37:40Z login.ok userId=200174\n2026-11-09T08:37:40Z logout.begin hasSession=true\n2026-11-09T08:37:40Z logout.end sessionNil=true message=none\n2026-11-09T08:38:03Z app.start automation=none foodmapKeys=[]\n2026-11-09T08:38:22Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-09T08:38:22Z login.ok userId=200178\n2026-11-09T08:38:22Z logout.begin hasSession=true\n2026-11-09T08:38:22Z logout.end sessionNil=true message=none\n2026-11-09T08:38:45Z app.start automation=none foodmapKeys=[]\n2026-11-09T09:53:37Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-09T09:53:38Z login.ok userId=200184\n2026-11-09T09:53:38Z logout.begin hasSession=true\n2026-11-09T09:53:38Z logout.end sessionNil=true message=none\n2026-11-10T01:26:32Z app.start automation=none foodmapKeys=[]\n2026-11-10T01:27:23Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-10T01:27:23Z login.ok userId=200193\n2026-11-10T01:27:23Z logout.begin hasSession=true\n2026-11-10T01:27:23Z logout.end sessionNil=true message=none\n2026-11-10T01:27:56Z app.start automation=none foodmapKeys=[]\n2026-11-10T01:36:06Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-10T01:36:06Z login.ok userId=200198\n2026-11-10T01:36:06Z logout.begin hasSession=true\n2026-11-10T01:36:06Z logout.end sessionNil=true message=none\n",
+            "bytes": 16674
+          },
+          "checks": [
+            {
+              "name": "contains",
+              "expected": [
+                "login.ok",
+                "logout.begin hasSession=true",
+                "logout.end sessionNil=true"
+              ],
+              "actual": "2026-11-05T07:35:18Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-05T07:35:18Z login.ok userId=200024\n2026-11-05T07:35:18Z logout.begin hasSession=true\n2026-11-05T07:35:18Z logout.end sessionNil=true message=none\n2026-11-05T07:36:31Z app.start automation=logout foodmapKeys=[\"FOODMAP_AUTOMATION\"]\n2026-11-05T07:36:31Z logout.begin hasSession=false\n2026-11-05T07:36:31Z logout.end sessionNil=true message=none\n2026-11-05T07:45:57Z app.start automation=error-states foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-05T07:45:57Z bad-password status=401 code=UNAUTHORIZED clearAuth=true message=账号或密码错误\n2026-11-05T07:45:57Z gateway-down status=-1 code=none clearAuth=false message=无法连接后端服务，请确认 Gateway 已启动\n2026-11-05T07:46:15Z app.start automation=keep-token foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-05T07:46:15Z retention.loginOk tokenPresent=true\n2026-11-05T07:46:15Z retention.tempCall status=-1 code=none clearAuth=false message=无法连接后端服务，请确认 Gateway 已启动\n2026-11-05T07:46:15Z retention.afterTempCall tokenPresent=true\n2026-11-05T07:46:15Z retention.afterRestoreDead tokenPresent=true sessionNil=true message=无法连接后端服务，请确认 Gateway 已启动\n2026-11-05T07:46:15Z retention.afterRecovery tokenPresent=true userId=200024\n2026-11-05T07:46:15Z retention.cleanup tokenPresent=false sessionNil=true\n2026-11-05T07:54:12Z app.start automation=login-disabled foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-05T07:54:12Z disabled.login status=403 code=FORBIDDEN clearAuth=true message=账号状态不允许登录 tokenPresent=false\n2026-11-05T07:56:38Z app.start automation=session-expired foodmapKeys=[\"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_SEED_ACCESS_TOKEN\", \"FOODMAP_SEED_REFRESH_TOKEN\"]\n2026-11-05T07:56:38Z expired.seeded tokenPresent=true\n2026-11-05T07:56:38Z expired.restore sessionNil=true tokenPresent=false message=Access Token已过期\n2026-11-05T08:05:58Z app.start automation=register-checks foodmapKeys=[\"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_NEW_ACCOUNT\"]\n2026-11-05T08:05:58Z register.shortPassword status=400 code=BAD_REQUEST clearAuth=false message=password 个数必须在8和128之间\n2026-11-05T08:05:58Z register.valid userId=200027 accountStatus=NORMAL\n2026-11-05T08:12:53Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-05T08:12:54Z login.ok userId=200024\n2026-11-05T08:12:54Z logout.begin hasSession=true\n2026-11-05T08:12:54Z logout.end sessionNil=true message=none\n2026-11-05T08:27:12Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_PASSWORD\"]\n2026-11-05T08:27:12Z login.ok userId=200024\n2026-11-05T08:27:12Z logout.begin hasSession=true\n2026-11-05T08:27:12Z logout.end sessionNil=true message=none\n2026-11-05T08:27:32Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-05T08:27:32Z login.ok userId=200024\n2026-11-05T08:27:32Z logout.begin hasSession=true\n2026-11-05T08:27:32Z logout.end sessionNil=true message=none\n2026-11-06T05:32:37Z app.start automation=none foodmapKeys=[]\n2026-11-06T05:32:42Z app.start automation=none foodmapKeys=[]\n2026-11-06T05:32:49Z app.start automation=none foodmapKeys=[]\n2026-11-06T05:40:19Z app.start automation=none foodmapKeys=[]\n2026-11-06T05:50:20Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-06T05:50:20Z login.ok userId=200024\n2026-11-06T05:50:20Z logout.begin hasSession=true\n2026-11-06T05:50:20Z logout.end sessionNil=true message=none\n2026-11-06T05:50:39Z app.start automation=none foodmapKeys=[]\n2026-11-06T05:52:27Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-06T05:52:27Z login.ok userId=200024\n2026-11-06T05:52:27Z logout.begin hasSession=true\n2026-11-06T05:52:27Z logout.end sessionNil=true message=none\n2026-11-06T05:52:46Z app.start automation=none foodmapKeys=[]\n2026-11-06T06:06:40Z app.start automation=none foodmapKeys=[]\n2026-11-06T06:07:14Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-06T06:07:14Z login.ok userId=200024\n2026-11-06T06:07:14Z logout.begin hasSession=true\n2026-11-06T06:07:14Z logout.end sessionNil=true message=none\n2026-11-06T06:07:32Z app.start automation=none foodmapKeys=[]\n2026-11-06T06:08:15Z app.start automation=none foodmapKeys=[]\n2026-11-06T06:11:09Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-06T06:11:09Z login.ok userId=200024\n2026-11-06T06:11:09Z logout.begin hasSession=true\n2026-11-06T06:11:09Z logout.end sessionNil=true message=none\n2026-11-06T06:11:28Z app.start automation=none foodmapKeys=[]\n2026-11-06T09:47:53Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-06T09:47:53Z login.ok userId=200052\n2026-11-06T09:47:53Z logout.begin hasSession=true\n2026-11-06T09:47:54Z logout.end sessionNil=true message=none\n2026-11-06T09:48:23Z app.start automation=none foodmapKeys=[]\n2026-11-06T09:49:13Z app.start automation=none foodmapKeys=[]\n2026-11-06T09:49:26Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-06T09:49:26Z login.ok userId=200056\n2026-11-06T09:49:26Z logout.begin hasSession=true\n2026-11-06T09:49:26Z logout.end sessionNil=true message=none\n2026-11-06T09:49:50Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-06T09:49:50Z login.ok userId=200058\n2026-11-06T09:49:50Z logout.begin hasSession=true\n2026-11-06T09:49:50Z logout.end sessionNil=true message=none\n2026-11-06T09:50:13Z app.start automation=none foodmapKeys=[]\n2026-11-06T09:50:58Z app.start automation=none foodmapKeys=[]\n2026-11-06T09:51:21Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-06T09:51:21Z login.failed error=server(status: 401, code: \"UNAUTHORIZED\", message: \"账号或密码错误\")\n2026-11-06T09:51:39Z app.start automation=none foodmapKeys=[]\n2026-11-07T06:49:06Z app.start automation=none foodmapKeys=[]\n2026-11-07T06:49:23Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-07T06:49:24Z login.failed error=server(status: 401, code: \"UNAUTHORIZED\", message: \"账号或密码错误\")\n2026-11-07T06:49:41Z app.start automation=none foodmapKeys=[]\n2026-11-07T06:49:57Z app.start automation=none foodmapKeys=[]\n2026-11-07T07:15:39Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-07T07:15:39Z login.ok userId=200071\n2026-11-07T07:15:39Z logout.begin hasSession=true\n2026-11-07T07:15:39Z logout.end sessionNil=true message=none\n2026-11-07T07:16:01Z app.start automation=none foodmapKeys=[]\n2026-11-07T07:35:24Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-07T07:35:24Z login.ok userId=200074\n2026-11-07T07:35:24Z logout.begin hasSession=true\n2026-11-07T07:35:24Z logout.end sessionNil=true message=none\n2026-11-07T07:35:46Z app.start automation=none foodmapKeys=[]\n2026-11-07T07:39:28Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-07T07:39:28Z login.ok userId=200078\n2026-11-07T07:39:28Z logout.begin hasSession=true\n2026-11-07T07:39:28Z logout.end sessionNil=true message=none\n2026-11-07T07:39:49Z app.start automation=none foodmapKeys=[]\n2026-11-07T08:05:50Z app.start automation=none foodmapKeys=[]\n2026-11-07T08:06:06Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-07T08:06:06Z login.ok userId=200084\n2026-11-07T08:06:06Z logout.begin hasSession=true\n2026-11-07T08:06:06Z logout.end sessionNil=true message=none\n2026-11-07T08:06:25Z app.start automation=none foodmapKeys=[]\n2026-11-07T08:06:41Z app.start automation=none foodmapKeys=[]\n2026-11-07T08:12:15Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-07T08:12:15Z login.ok userId=200089\n2026-11-07T08:12:15Z logout.begin hasSession=true\n2026-11-07T08:12:15Z logout.end sessionNil=true message=none\n2026-11-07T08:12:36Z app.start automation=none foodmapKeys=[]\n2026-11-07T08:39:50Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-07T08:39:50Z login.ok userId=200093\n2026-11-07T08:39:50Z logout.begin hasSession=true\n2026-11-07T08:39:50Z logout.end sessionNil=true message=none\n2026-11-07T08:40:12Z app.start automation=none foodmapKeys=[]\n2026-11-07T08:43:06Z app.start automation=none foodmapKeys=[]\n2026-11-07T08:43:22Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-07T08:43:22Z login.ok userId=200099\n2026-11-07T08:43:22Z logout.begin hasSession=true\n2026-11-07T08:43:22Z logout.end sessionNil=true message=none\n2026-11-07T08:43:41Z app.start automation=none foodmapKeys=[]\n2026-11-07T08:43:57Z app.start automation=none foodmapKeys=[]\n2026-11-07T08:49:00Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-07T08:49:00Z login.ok userId=200103\n2026-11-07T08:49:00Z logout.begin hasSession=true\n2026-11-07T08:49:00Z logout.end sessionNil=true message=none\n2026-11-07T08:49:52Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-07T08:49:52Z login.ok userId=200105\n2026-11-07T08:49:52Z logout.begin hasSession=true\n2026-11-07T08:49:52Z logout.end sessionNil=true message=none\n2026-11-07T08:50:13Z app.start automation=none foodmapKeys=[]\n2026-11-07T08:50:42Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-07T08:50:42Z login.ok userId=200109\n2026-11-07T08:50:42Z logout.begin hasSession=true\n2026-11-07T08:50:42Z logout.end sessionNil=true message=none\n2026-11-07T08:51:02Z app.start automation=none foodmapKeys=[]\n2026-11-07T08:54:05Z app.start automation=none foodmapKeys=[]\n2026-11-07T08:54:21Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-07T08:54:21Z login.ok userId=200115\n2026-11-07T08:54:21Z logout.begin hasSession=true\n2026-11-07T08:54:21Z logout.end sessionNil=true message=none\n2026-11-07T08:54:40Z app.start automation=none foodmapKeys=[]\n2026-11-07T08:54:56Z app.start automation=none foodmapKeys=[]\n2026-11-09T04:05:13Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-09T04:05:13Z login.ok userId=200120\n2026-11-09T04:05:13Z logout.begin hasSession=true\n2026-11-09T04:05:14Z logout.end sessionNil=true message=none\n2026-11-09T04:07:11Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-09T04:07:11Z login.ok userId=200124\n2026-11-09T04:07:11Z logout.begin hasSession=true\n2026-11-09T04:07:11Z logout.end sessionNil=true message=none\n2026-11-09T04:07:38Z app.start automation=none foodmapKeys=[]\n2026-11-09T04:09:26Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-09T04:09:26Z login.ok userId=200128\n2026-11-09T04:09:26Z logout.begin hasSession=true\n2026-11-09T04:09:26Z logout.end sessionNil=true message=none\n2026-11-09T04:11:19Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-09T04:11:19Z login.ok userId=200132\n2026-11-09T04:11:19Z logout.begin hasSession=true\n2026-11-09T04:11:20Z logout.end sessionNil=true message=none\n2026-11-09T04:11:40Z app.start automation=none foodmapKeys=[]\n2026-11-09T06:31:22Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-09T06:31:23Z login.ok userId=200140\n2026-11-09T06:31:23Z logout.begin hasSession=true\n2026-11-09T06:31:23Z logout.end sessionNil=true message=none\n2026-11-09T06:31:51Z app.start automation=none foodmapKeys=[]\n2026-11-09T06:37:24Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-09T06:37:24Z login.ok userId=200150\n2026-11-09T06:37:24Z logout.begin hasSession=true\n2026-11-09T06:37:25Z logout.end sessionNil=true message=none\n2026-11-09T06:37:47Z app.start automation=none foodmapKeys=[]\n2026-11-09T06:47:09Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-09T06:47:10Z login.ok userId=200154\n2026-11-09T06:47:10Z logout.begin hasSession=true\n2026-11-09T06:47:10Z logout.end sessionNil=true message=none\n2026-11-09T06:47:31Z app.start automation=none foodmapKeys=[]\n2026-11-09T06:51:24Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-09T06:51:24Z login.ok userId=200158\n2026-11-09T06:51:24Z logout.begin hasSession=true\n2026-11-09T06:51:24Z logout.end sessionNil=true message=none\n2026-11-09T06:51:45Z app.start automation=none foodmapKeys=[]\n2026-11-09T08:36:39Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-09T08:36:39Z login.ok userId=200170\n2026-11-09T08:36:39Z logout.begin hasSession=true\n2026-11-09T08:36:40Z logout.end sessionNil=true message=none\n2026-11-09T08:37:19Z app.start automation=none foodmapKeys=[]\n2026-11-09T08:37:40Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-09T08:37:40Z login.ok userId=200174\n2026-11-09T08:37:40Z logout.begin hasSession=true\n2026-11-09T08:37:40Z logout.end sessionNil=true message=none\n2026-11-09T08:38:03Z app.start automation=none foodmapKeys=[]\n2026-11-09T08:38:22Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-09T08:38:22Z login.ok userId=200178\n2026-11-09T08:38:22Z logout.begin hasSession=true\n2026-11-09T08:38:22Z logout.end sessionNil=true message=none\n2026-11-09T08:38:45Z app.start automation=none foodmapKeys=[]\n2026-11-09T09:53:37Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-09T09:53:38Z login.ok userId=200184\n2026-11-09T09:53:38Z logout.begin hasSession=true\n2026-11-09T09:53:38Z logout.end sessionNil=true message=none\n2026-11-10T01:26:32Z app.start automation=none foodmapKeys=[]\n2026-11-10T01:27:23Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-10T01:27:23Z login.ok userId=200193\n2026-11-10T01:27:23Z logout.begin hasSession=true\n2026-11-10T01:27:23Z logout.end sessionNil=true message=none\n2026-11-10T01:27:56Z app.start automation=none foodmapKeys=[]\n2026-11-10T01:36:06Z app.start automation=login-then-logout foodmapKeys=[\"FOODMAP_ACCOUNT\", \"FOODMAP_AUTOMATION\", \"FOODMAP_BASE_URL\", \"FOODMAP_PASSWORD\"]\n2026-11-10T01:36:06Z login.ok userId=200198\n2026-11-10T01:36:06Z logout.begin hasSession=true\n2026-11-10T01:36:06Z logout.end sessionNil=true message=none\n",
+              "ok": true,
+              "error": "",
+              "message": ""
+            }
+          ],
+          "captures": [],
+          "attempts": 1,
+          "ok": true,
+          "durationMs": 138,
+          "error": "",
+          "hint": ""
+        },
+        {
+          "index": 5,
+          "phase": "step",
+          "action": "command",
+          "display": "command docker exec foodmap-postgres psql -U foodmap -d foodmap_auth_db -tAc \"select count(*) from…",
+          "expected": {
+            "exitCode": 0
+          },
+          "actual": {
+            "exitCode": 0,
+            "signal": null,
+            "stdout": "1\n",
+            "stderr": "",
+            "value": "1",
+            "content": "1\n",
+            "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+          },
+          "checks": [
+            {
+              "name": "exitCode",
+              "expected": 0,
+              "actual": 0,
+              "ok": true,
+              "error": "",
+              "message": ""
+            }
+          ],
+          "captures": [
+            "revoked"
+          ],
+          "attempts": 1,
+          "ok": true,
+          "durationMs": 206,
+          "error": "",
+          "hint": ""
+        },
+        {
+          "index": 6,
+          "phase": "step",
+          "action": "command",
+          "display": "command [ 1 -ge 1 ]",
+          "expected": {
+            "exitCode": 0
+          },
+          "actual": {
+            "exitCode": 0,
+            "signal": null,
+            "stdout": "",
+            "stderr": "",
+            "value": "",
+            "content": "",
+            "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+          },
+          "checks": [
+            {
+              "name": "exitCode",
+              "expected": 0,
+              "actual": 0,
+              "ok": true,
+              "error": "",
+              "message": ""
+            }
+          ],
+          "captures": [],
+          "attempts": 1,
+          "ok": true,
+          "durationMs": 4,
+          "error": "",
+          "hint": ""
+        },
+        {
+          "index": 1,
+          "phase": "teardown",
+          "action": "command",
+          "display": "command docker exec foodmap-postgres sh -c 'uid=$(psql -U foodmap -d foodmap_auth_db -tAc \"select …",
+          "expected": {
+            "exitCode": 0
+          },
+          "actual": {
+            "exitCode": 0,
+            "signal": null,
+            "stdout": "",
+            "stderr": "",
+            "value": "",
+            "content": "",
+            "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+          },
+          "checks": [
+            {
+              "name": "exitCode",
+              "expected": 0,
+              "actual": 0,
+              "ok": true,
+              "error": "",
+              "message": ""
+            }
+          ],
+          "captures": [],
+          "attempts": 1,
+          "ok": true,
+          "durationMs": 667,
+          "error": "",
+          "hint": ""
+        },
+        {
+          "index": 2,
+          "phase": "teardown",
+          "action": "command",
+          "display": "command docker exec foodmap-postgres psql -U foodmap -d foodmap_auth_db -c \"delete from auth_sessi…",
+          "expected": {
+            "exitCode": 0
+          },
+          "actual": {
+            "exitCode": 0,
+            "signal": null,
+            "stdout": "DELETE 1\n",
+            "stderr": "",
+            "value": "DELETE 1",
+            "content": "DELETE 1\n",
+            "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+          },
+          "checks": [
+            {
+              "name": "exitCode",
+              "expected": 0,
+              "actual": 0,
+              "ok": true,
+              "error": "",
+              "message": ""
+            }
+          ],
+          "captures": [],
+          "attempts": 1,
+          "ok": true,
+          "durationMs": 210,
+          "error": "",
+          "hint": ""
+        },
+        {
+          "index": 3,
+          "phase": "teardown",
+          "action": "command",
+          "display": "command docker exec foodmap-postgres psql -U foodmap -d foodmap_auth_db -c \"delete from auth_ident…",
+          "expected": {
+            "exitCode": 0
+          },
+          "actual": {
+            "exitCode": 0,
+            "signal": null,
+            "stdout": "DELETE 1\n",
+            "stderr": "",
+            "value": "DELETE 1",
+            "content": "DELETE 1\n",
+            "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+          },
+          "checks": [
+            {
+              "name": "exitCode",
+              "expected": 0,
+              "actual": 0,
+              "ok": true,
+              "error": "",
+              "message": ""
+            }
+          ],
+          "captures": [],
+          "attempts": 1,
+          "ok": true,
+          "durationMs": 210,
+          "error": "",
+          "hint": ""
+        },
+        {
+          "index": 4,
+          "phase": "teardown",
+          "action": "command",
+          "display": "command docker exec foodmap-postgres psql -U foodmap -d foodmap_auth_db -c \"delete from login_logs…",
+          "expected": {
+            "exitCode": 0
+          },
+          "actual": {
+            "exitCode": 0,
+            "signal": null,
+            "stdout": "DELETE 1\n",
+            "stderr": "",
+            "value": "DELETE 1",
+            "content": "DELETE 1\n",
+            "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+          },
+          "checks": [
+            {
+              "name": "exitCode",
+              "expected": 0,
+              "actual": 0,
+              "ok": true,
+              "error": "",
+              "message": ""
+            }
+          ],
+          "captures": [],
+          "attempts": 1,
+          "ok": true,
+          "durationMs": 202,
+          "error": "",
+          "hint": ""
+        },
+        {
+          "index": 5,
+          "phase": "teardown",
+          "action": "command",
+          "display": "command docker exec foodmap-postgres psql -U foodmap -d foodmap_auth_db -c \"delete from refresh_to…",
+          "expected": {
+            "exitCode": 0
+          },
+          "actual": {
+            "exitCode": 0,
+            "signal": null,
+            "stdout": "DELETE 1\n",
+            "stderr": "",
+            "value": "DELETE 1",
+            "content": "DELETE 1\n",
+            "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+          },
+          "checks": [
+            {
+              "name": "exitCode",
+              "expected": 0,
+              "actual": 0,
+              "ok": true,
+              "error": "",
+              "message": ""
+            }
+          ],
+          "captures": [],
+          "attempts": 1,
+          "ok": true,
+          "durationMs": 201,
+          "error": "",
+          "hint": ""
+        },
+        {
+          "index": 6,
+          "phase": "teardown",
+          "action": "command",
+          "display": "command docker exec foodmap-postgres psql -U foodmap -d foodmap_auth_db -c \"delete from auth_crede…",
+          "expected": {
+            "exitCode": 0
+          },
+          "actual": {
+            "exitCode": 0,
+            "signal": null,
+            "stdout": "DELETE 1\n",
+            "stderr": "",
+            "value": "DELETE 1",
+            "content": "DELETE 1\n",
+            "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+          },
+          "checks": [
+            {
+              "name": "exitCode",
+              "expected": 0,
+              "actual": 0,
+              "ok": true,
+              "error": "",
+              "message": ""
+            }
+          ],
+          "captures": [],
+          "attempts": 1,
+          "ok": true,
+          "durationMs": 199,
+          "error": "",
+          "hint": ""
+        },
+        {
+          "index": 7,
+          "phase": "teardown",
+          "action": "command",
+          "display": "command docker exec foodmap-postgres psql -U foodmap -d foodmap_auth_db -c \"delete from auth_accou…",
+          "expected": {
+            "exitCode": 0
+          },
+          "actual": {
+            "exitCode": 0,
+            "signal": null,
+            "stdout": "DELETE 1\n",
+            "stderr": "",
+            "value": "DELETE 1",
+            "content": "DELETE 1\n",
+            "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+          },
+          "checks": [
+            {
+              "name": "exitCode",
+              "expected": 0,
+              "actual": 0,
+              "ok": true,
+              "error": "",
+              "message": ""
+            }
+          ],
+          "captures": [],
+          "attempts": 1,
+          "ok": true,
+          "durationMs": 194,
+          "error": "",
+          "hint": ""
+        },
+        {
+          "index": 8,
+          "phase": "teardown",
+          "action": "command",
+          "display": "command docker exec foodmap-postgres psql -U foodmap -d foodmap_auth_db -tAc \"select count(*) from…",
+          "expected": {
+            "equals": "0"
+          },
+          "actual": {
+            "exitCode": 0,
+            "signal": null,
+            "stdout": "0\n",
+            "stderr": "",
+            "value": "0",
+            "content": "0\n",
+            "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+          },
+          "checks": [
+            {
+              "name": "equals",
+              "expected": "0",
+              "actual": "0",
+              "ok": true,
+              "error": "",
+              "message": ""
+            }
+          ],
+          "captures": [],
+          "attempts": 1,
+          "ok": true,
+          "durationMs": 191,
+          "error": "",
+          "hint": ""
+        }
+      ],
+      "evidence": {
+        "text": "/Users/zhangxuqian/myPrjDev/food-map/docs/integration/B1.5-orbstack-logging/evidence/2026-11-10T09-36-b5fd6b0a-B1 iOS 登录后登出链路.txt",
+        "json": "/Users/zhangxuqian/myPrjDev/food-map/docs/integration/B1.5-orbstack-logging/evidence/2026-11-10T09-36-b5fd6b0a-B1 iOS 登录后登出链路.json"
+      }
+    },
+    {
+      "schemaVersion": 2,
+      "name": "B1 日志真实闭环",
+      "description": "备用端口最新认证服务真实请求，经文件、Fluent Bit、Kafka 到 ES 和独立日志库；检查时间字段与密码泄露",
+      "runId": "run-20261110T013620Z-dcdc3297",
+      "source": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios/b1-logging-closure.yml",
+      "ok": false,
+      "exitCode": 1,
+      "startedAt": "2026-11-10T01:36:20.721Z",
+      "finishedAt": "2026-11-10T01:36:32.129Z",
+      "durationMs": 11408,
+      "summary": {
+        "total": 1,
+        "passed": 0,
+        "failed": 1,
+        "skipped": 0,
+        "setupFailed": 0,
+        "teardownFailed": 0
+      },
+      "variableNames": [
+        "runId"
+      ],
+      "steps": [
+        {
+          "index": 1,
+          "phase": "step",
+          "action": "command",
+          "display": "command python3 logging-closure-check.py",
+          "expected": {
+            "exitCode": 0,
+            "stdoutContains": "\"result\": \"pass\""
+          },
+          "actual": {
+            "exitCode": 1,
+            "signal": null,
+            "stdout": "",
+            "stderr": "Traceback (most recent call last):\n  File \"/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios/logging-closure-check.py\", line 114, in <module>\n    results.extend([verify(register_rid, 200, 'POST', '/api/auth/register'),\n                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios/logging-closure-check.py\", line 62, in verify\n    source = next(h['_source'] for h in docs if h['_source'].get('logType') == 'api-access')\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nStopIteration\n",
+            "value": "",
+            "content": "",
+            "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+          },
+          "checks": [
+            {
+              "name": "exitCode",
+              "expected": 0,
+              "actual": 1,
+              "ok": false,
+              "error": "",
+              "message": "期望 0，实际 1"
+            },
+            {
+              "name": "stdoutContains",
+              "expected": "\"result\": \"pass\"",
+              "actual": "",
+              "ok": false,
+              "error": "",
+              "message": "期望 \"result\": \"pass\"，实际 (empty)"
+            }
+          ],
+          "captures": [],
+          "attempts": 1,
+          "ok": false,
+          "durationMs": 11407,
+          "error": "",
+          "hint": ""
+        }
+      ],
+      "evidence": {
+        "text": "/Users/zhangxuqian/myPrjDev/food-map/docs/integration/B1.5-orbstack-logging/evidence/2026-11-10T09-36-dcdc3297-B1 日志真实闭环.txt",
+        "json": "/Users/zhangxuqian/myPrjDev/food-map/docs/integration/B1.5-orbstack-logging/evidence/2026-11-10T09-36-dcdc3297-B1 日志真实闭环.json"
+      }
+    },
+    {
+      "schemaVersion": 2,
+      "name": "B1 退出登录链路（接口级）",
+      "description": "真实网关复跑 B1 登出链路：注册→登录→当前用户→登出→旧 Token 失效；Redis 与 PostgreSQL 走 docker exec，不落 Token",
+      "runId": "run-20261110T013632Z-bc029d4b",
+      "source": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios/b1-logout.yml",
+      "ok": true,
+      "exitCode": 0,
+      "startedAt": "2026-11-10T01:36:32.130Z",
+      "finishedAt": "2026-11-10T01:36:32.536Z",
+      "durationMs": 405,
+      "summary": {
+        "total": 12,
+        "passed": 12,
+        "failed": 0,
+        "skipped": 0,
+        "setupFailed": 0,
+        "teardownFailed": 0
+      },
+      "variableNames": [
+        "access",
+        "after",
+        "before",
+        "dbContainer",
+        "password",
+        "redisContainer",
+        "refresh",
+        "revoked",
+        "runId",
+        "stamp"
+      ],
+      "steps": [
+        {
+          "index": 1,
+          "phase": "step",
+          "action": "command",
+          "display": "command date +%s",
+          "expected": {
+            "exitCode": 0
+          },
+          "actual": {
+            "exitCode": 0,
+            "signal": null,
+            "stdout": "1794274592\n",
+            "stderr": "",
+            "value": "1794274592",
+            "content": "1794274592\n",
+            "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+          },
+          "checks": [
+            {
+              "name": "exitCode",
+              "expected": 0,
+              "actual": 0,
+              "ok": true,
+              "error": "",
+              "message": ""
+            }
+          ],
+          "captures": [
+            "stamp"
+          ],
+          "attempts": 1,
+          "ok": true,
+          "durationMs": 7,
+          "error": "",
+          "hint": ""
+        },
+        {
+          "index": 2,
+          "phase": "step",
+          "action": "http",
+          "display": "http POST /api/auth/register",
+          "expected": {
+            "status": 200,
+            "json": {
+              "code": "OK"
+            }
+          },
+          "actual": {
+            "method": "POST",
+            "url": "http://127.0.0.1:8080/api/auth/register",
+            "status": 200,
+            "statusText": "OK",
+            "headers": {
+              "content-type": "application/json",
+              "date": "Tue, 10 Nov 2026 01:36:32 GMT",
+              "transfer-encoding": "chunked",
+              "x-request-id": "unzwmmpfc6ja0y3biqn9ub90, unzwmmpfc6ja0y3biqn9ub90",
+              "x-span-id": "pr1v9ga73pqw1uuinx8lvpbh, mnx6b66fwob1z8byhtd2vqgo",
+              "x-trace-id": "v3yrvlfrfhljk4zxqybou7u1, v3yrvlfrfhljk4zxqybou7u1"
+            },
+            "body": "{\"success\":true,\"status\":200,\"code\":\"OK\",\"message\":\"success\",\"data\":{\"accountId\":null,\"userId\":200200,\"accountStatus\":\"NORMAL\"}}",
+            "json": {
+              "success": true,
+              "status": 200,
+              "code": "OK",
+              "message": "success",
+              "data": {
+                "accountId": null,
+                "userId": 200200,
+                "accountStatus": "NORMAL"
+              }
+            },
+            "jsonParsed": true,
+            "jsonError": "",
+            "value": {
+              "success": true,
+              "status": 200,
+              "code": "OK",
+              "message": "success",
+              "data": {
+                "accountId": null,
+                "userId": 200200,
+                "accountStatus": "NORMAL"
+              }
+            },
+            "content": "{\"success\":true,\"status\":200,\"code\":\"OK\",\"message\":\"success\",\"data\":{\"accountId\":null,\"userId\":200200,\"accountStatus\":\"NORMAL\"}}",
+            "durationMs": 51
+          },
+          "checks": [
+            {
+              "name": "status",
+              "expected": 200,
+              "actual": 200,
+              "ok": true,
+              "error": "",
+              "message": ""
+            },
+            {
+              "name": "json",
+              "expected": {
+                "code": "OK"
+              },
+              "actual": {
+                "success": true,
+                "status": 200,
+                "code": "OK",
+                "message": "success",
+                "data": {
+                  "accountId": null,
+                  "userId": 200200,
+                  "accountStatus": "NORMAL"
+                }
+              },
+              "ok": true,
+              "error": "",
+              "message": ""
+            }
+          ],
+          "captures": [],
+          "attempts": 1,
+          "ok": true,
+          "durationMs": 51,
+          "error": "",
+          "hint": ""
+        },
+        {
+          "index": 3,
+          "phase": "step",
+          "action": "http",
+          "display": "http POST /api/auth/login",
+          "expected": {
+            "status": 200,
+            "json": {
+              "code": "OK"
+            }
+          },
+          "actual": {
+            "method": "POST",
+            "url": "http://127.0.0.1:8080/api/auth/login",
+            "status": 200,
+            "statusText": "OK",
+            "headers": {
+              "content-type": "application/json",
+              "date": "Tue, 10 Nov 2026 01:36:32 GMT",
+              "transfer-encoding": "chunked",
+              "x-request-id": "qpo0s6wjlhmyjra02befqkqp, qpo0s6wjlhmyjra02befqkqp",
+              "x-span-id": "p6hfjvqzfatw71zagiuxe4ur, g2d0qv94lfq8iyilkgsm4ui3",
+              "x-trace-id": "zjv9dzzz6o3zymzcwj9bi2rf, zjv9dzzz6o3zymzcwj9bi2rf"
+            },
+            "body": "{\"success\":true,\"status\":200,\"code\":\"OK\",\"message\":\"success\",\"data\":{\"accountId\":null,\"userId\":200200,\"accessToken\":\"[REDACTED]\",\"refreshToken\":\"[REDACTED]\",\"accessTokenExpiresTime\":\"2026-11-10T11:36:32.209123+08:00\",\"refreshTokenExpiresTime\":\"2026-12-10T09:36:32.209123+08:00\"}}",
+            "json": {
+              "success": true,
+              "status": 200,
+              "code": "OK",
+              "message": "success",
+              "data": {
+                "accountId": null,
+                "userId": 200200,
+                "accessToken": "[REDACTED]",
+                "refreshToken": "[REDACTED]",
+                "accessTokenExpiresTime": "[REDACTED]",
+                "refreshTokenExpiresTime": "[REDACTED]"
+              }
+            },
+            "jsonParsed": true,
+            "jsonError": "",
+            "value": {
+              "success": true,
+              "status": 200,
+              "code": "OK",
+              "message": "success",
+              "data": {
+                "accountId": null,
+                "userId": 200200,
+                "accessToken": "[REDACTED]",
+                "refreshToken": "[REDACTED]",
+                "accessTokenExpiresTime": "[REDACTED]",
+                "refreshTokenExpiresTime": "[REDACTED]"
+              }
+            },
+            "content": "{\"success\":true,\"status\":200,\"code\":\"OK\",\"message\":\"success\",\"data\":{\"accountId\":null,\"userId\":200200,\"accessToken\":\"[REDACTED]\",\"refreshToken\":\"[REDACTED]\",\"accessTokenExpiresTime\":\"2026-11-10T11:36:32.209123+08:00\",\"refreshTokenExpiresTime\":\"2026-12-10T09:36:32.209123+08:00\"}}",
+            "durationMs": 32
+          },
+          "checks": [
+            {
+              "name": "status",
+              "expected": 200,
+              "actual": 200,
+              "ok": true,
+              "error": "",
+              "message": ""
+            },
+            {
+              "name": "json",
+              "expected": {
+                "code": "OK"
+              },
+              "actual": {
+                "success": true,
+                "status": 200,
+                "code": "OK",
+                "message": "success",
+                "data": {
+                  "accountId": null,
+                  "userId": 200200,
+                  "accessToken": "[REDACTED]",
+                  "refreshToken": "[REDACTED]",
+                  "accessTokenExpiresTime": "[REDACTED]",
+                  "refreshTokenExpiresTime": "[REDACTED]"
+                }
+              },
+              "ok": true,
+              "error": "",
+              "message": ""
+            }
+          ],
+          "captures": [
+            "access",
+            "refresh"
+          ],
+          "attempts": 1,
+          "ok": true,
+          "durationMs": 33,
+          "error": "",
+          "hint": ""
+        },
+        {
+          "index": 4,
+          "phase": "step",
+          "action": "http",
+          "display": "http GET /api/users/me",
+          "expected": {
+            "status": 200,
+            "json": {
+              "code": "OK"
+            }
+          },
+          "actual": {
+            "method": "GET",
+            "url": "http://127.0.0.1:8080/api/users/me",
+            "status": 200,
+            "statusText": "OK",
+            "headers": {
+              "content-type": "application/json",
+              "date": "Tue, 10 Nov 2026 01:36:32 GMT",
+              "transfer-encoding": "chunked",
+              "x-request-id": "bttj4sdwatx6jzu6js31htbg, bttj4sdwatx6jzu6js31htbg",
+              "x-span-id": "3hyqlqph9bzjiab19n86q24d, sfhpsnxf3w15xwh920u5bm07",
+              "x-trace-id": "q7ci4wor90f6z14vm856xpgv, q7ci4wor90f6z14vm856xpgv"
+            },
+            "body": "{\"success\":true,\"status\":200,\"code\":\"OK\",\"message\":\"success\",\"data\":{\"userId\":200200,\"accountId\":null,\"accountName\":null,\"nickname\":\"verify-kit\",\"avatarMediaId\":null,\"userStatus\":\"NORMAL\"}}",
+            "json": {
+              "success": true,
+              "status": 200,
+              "code": "OK",
+              "message": "success",
+              "data": {
+                "userId": 200200,
+                "accountId": null,
+                "accountName": null,
+                "nickname": "verify-kit",
+                "avatarMediaId": null,
+                "userStatus": "NORMAL"
+              }
+            },
+            "jsonParsed": true,
+            "jsonError": "",
+            "value": {
+              "success": true,
+              "status": 200,
+              "code": "OK",
+              "message": "success",
+              "data": {
+                "userId": 200200,
+                "accountId": null,
+                "accountName": null,
+                "nickname": "verify-kit",
+                "avatarMediaId": null,
+                "userStatus": "NORMAL"
+              }
+            },
+            "content": "{\"success\":true,\"status\":200,\"code\":\"OK\",\"message\":\"success\",\"data\":{\"userId\":200200,\"accountId\":null,\"accountName\":null,\"nickname\":\"verify-kit\",\"avatarMediaId\":null,\"userStatus\":\"NORMAL\"}}",
+            "durationMs": 6
+          },
+          "checks": [
+            {
+              "name": "status",
+              "expected": 200,
+              "actual": 200,
+              "ok": true,
+              "error": "",
+              "message": ""
+            },
+            {
+              "name": "json",
+              "expected": {
+                "code": "OK"
+              },
+              "actual": {
+                "success": true,
+                "status": 200,
+                "code": "OK",
+                "message": "success",
+                "data": {
+                  "userId": 200200,
+                  "accountId": null,
+                  "accountName": null,
+                  "nickname": "verify-kit",
+                  "avatarMediaId": null,
+                  "userStatus": "NORMAL"
+                }
+              },
+              "ok": true,
+              "error": "",
+              "message": ""
+            }
+          ],
+          "captures": [],
+          "attempts": 1,
+          "ok": true,
+          "durationMs": 7,
+          "error": "",
+          "hint": ""
+        },
+        {
+          "index": 5,
+          "phase": "step",
+          "action": "command",
+          "display": "command docker exec foodmap-redis redis-cli --scan --pattern 'foodmap:auth:access-token-denylist:v…",
+          "expected": {
+            "exitCode": 0
+          },
+          "actual": {
+            "exitCode": 0,
+            "signal": null,
+            "stdout": "       5\n",
+            "stderr": "",
+            "value": "5",
+            "content": "       5\n",
+            "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+          },
+          "checks": [
+            {
+              "name": "exitCode",
+              "expected": 0,
+              "actual": 0,
+              "ok": true,
+              "error": "",
+              "message": ""
+            }
+          ],
+          "captures": [
+            "before"
+          ],
+          "attempts": 1,
+          "ok": true,
+          "durationMs": 41,
+          "error": "",
+          "hint": ""
+        },
+        {
+          "index": 6,
+          "phase": "step",
+          "action": "http",
+          "display": "http POST /api/auth/logout",
+          "expected": {
+            "status": 200
+          },
+          "actual": {
+            "method": "POST",
+            "url": "http://127.0.0.1:8080/api/auth/logout",
+            "status": 200,
+            "statusText": "OK",
+            "headers": {
+              "content-type": "application/json",
+              "date": "Tue, 10 Nov 2026 01:36:32 GMT",
+              "transfer-encoding": "chunked",
+              "x-request-id": "4mjnz6f7ir8151802h5521jj, 4mjnz6f7ir8151802h5521jj",
+              "x-span-id": "2xii50lv0esvb2od0rfuecs1, u8qc766dt1yjxewwguw9rfqo",
+              "x-trace-id": "0qbwrqwzyx5gon1ulljecokh, 0qbwrqwzyx5gon1ulljecokh"
+            },
+            "body": "{\"success\":true,\"status\":200,\"code\":\"OK\",\"message\":\"success\",\"data\":null}",
+            "json": {
+              "success": true,
+              "status": 200,
+              "code": "OK",
+              "message": "success",
+              "data": null
+            },
+            "jsonParsed": true,
+            "jsonError": "",
+            "value": {
+              "success": true,
+              "status": 200,
+              "code": "OK",
+              "message": "success",
+              "data": null
+            },
+            "content": "{\"success\":true,\"status\":200,\"code\":\"OK\",\"message\":\"success\",\"data\":null}",
+            "durationMs": 12
+          },
+          "checks": [
+            {
+              "name": "status",
+              "expected": 200,
+              "actual": 200,
+              "ok": true,
+              "error": "",
+              "message": ""
+            }
+          ],
+          "captures": [],
+          "attempts": 1,
+          "ok": true,
+          "durationMs": 13,
+          "error": "",
+          "hint": ""
+        },
+        {
+          "index": 7,
+          "phase": "step",
+          "action": "command",
+          "display": "command docker exec foodmap-redis redis-cli --scan --pattern 'foodmap:auth:access-token-denylist:v…",
+          "expected": {
+            "exitCode": 0
+          },
+          "actual": {
+            "exitCode": 0,
+            "signal": null,
+            "stdout": "       6\n",
+            "stderr": "",
+            "value": "6",
+            "content": "       6\n",
+            "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+          },
+          "checks": [
+            {
+              "name": "exitCode",
+              "expected": 0,
+              "actual": 0,
+              "ok": true,
+              "error": "",
+              "message": ""
+            }
+          ],
+          "captures": [
+            "after"
+          ],
+          "attempts": 1,
+          "ok": true,
+          "durationMs": 36,
+          "error": "",
+          "hint": ""
+        },
+        {
+          "index": 8,
+          "phase": "step",
+          "action": "command",
+          "display": "command [ 6 -eq $(( 5 + 1 )) ]",
+          "expected": {
+            "exitCode": 0
+          },
+          "actual": {
+            "exitCode": 0,
+            "signal": null,
+            "stdout": "",
+            "stderr": "",
+            "value": "",
+            "content": "",
+            "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+          },
+          "checks": [
+            {
+              "name": "exitCode",
+              "expected": 0,
+              "actual": 0,
+              "ok": true,
+              "error": "",
+              "message": ""
+            }
+          ],
+          "captures": [],
+          "attempts": 1,
+          "ok": true,
+          "durationMs": 5,
+          "error": "",
+          "hint": ""
+        },
+        {
+          "index": 9,
+          "phase": "step",
+          "action": "http",
+          "display": "http GET /api/users/me",
+          "expected": {
+            "status": 401,
+            "json": {
+              "code": "UNAUTHORIZED"
+            }
+          },
+          "actual": {
+            "method": "GET",
+            "url": "http://127.0.0.1:8080/api/users/me",
+            "status": 401,
+            "statusText": "Unauthorized",
+            "headers": {
+              "content-length": "98",
+              "content-type": "application/json",
+              "x-request-id": "z9zzzbhu1pmszaf66yqhdy84",
+              "x-span-id": "qmlne9l22wkhmvcoxpzzdxm1",
+              "x-trace-id": "lmi6zpjplor5kwyp7lnk627k"
+            },
+            "body": "{\"success\":false,\"status\":401,\"code\":\"UNAUTHORIZED\",\"message\":\"Access Token已失效\",\"data\":null}",
+            "json": {
+              "success": false,
+              "status": 401,
+              "code": "UNAUTHORIZED",
+              "message": "Access Token已失效",
+              "data": null
+            },
+            "jsonParsed": true,
+            "jsonError": "",
+            "value": {
+              "success": false,
+              "status": 401,
+              "code": "UNAUTHORIZED",
+              "message": "Access Token已失效",
+              "data": null
+            },
+            "content": "{\"success\":false,\"status\":401,\"code\":\"UNAUTHORIZED\",\"message\":\"Access Token已失效\",\"data\":null}",
+            "durationMs": 3
+          },
+          "checks": [
+            {
+              "name": "status",
+              "expected": 401,
+              "actual": 401,
+              "ok": true,
+              "error": "",
+              "message": ""
+            },
+            {
+              "name": "json",
+              "expected": {
+                "code": "UNAUTHORIZED"
+              },
+              "actual": {
+                "success": false,
+                "status": 401,
+                "code": "UNAUTHORIZED",
+                "message": "Access Token已失效",
+                "data": null
+              },
+              "ok": true,
+              "error": "",
+              "message": ""
+            }
+          ],
+          "captures": [],
+          "attempts": 1,
+          "ok": true,
+          "durationMs": 3,
+          "error": "",
+          "hint": ""
+        },
+        {
+          "index": 10,
+          "phase": "step",
+          "action": "http",
+          "display": "http POST /api/auth/refresh",
+          "expected": {
+            "status": 401,
+            "json": {
+              "code": "UNAUTHORIZED"
+            }
+          },
+          "actual": {
+            "method": "POST",
+            "url": "http://127.0.0.1:8080/api/auth/refresh",
+            "status": 401,
+            "statusText": "Unauthorized",
+            "headers": {
+              "content-type": "application/json",
+              "date": "Tue, 10 Nov 2026 01:36:32 GMT",
+              "transfer-encoding": "chunked",
+              "x-request-id": "idffq5hde0jmrtaibhiril5x, idffq5hde0jmrtaibhiril5x",
+              "x-span-id": "gqmakxx2oizfasa5ujnb611u, d8zhguqemkyww28ozkybmp4t",
+              "x-trace-id": "y9z2lgs4h2sz5s4fmoy14eey, y9z2lgs4h2sz5s4fmoy14eey"
+            },
+            "body": "{\"success\":false,\"status\":401,\"code\":\"UNAUTHORIZED\",\"message\":\"Refresh Token已失效\",\"data\":null}",
+            "json": {
+              "success": false,
+              "status": 401,
+              "code": "UNAUTHORIZED",
+              "message": "Refresh Token已失效",
+              "data": null
+            },
+            "jsonParsed": true,
+            "jsonError": "",
+            "value": {
+              "success": false,
+              "status": 401,
+              "code": "UNAUTHORIZED",
+              "message": "Refresh Token已失效",
+              "data": null
+            },
+            "content": "{\"success\":false,\"status\":401,\"code\":\"UNAUTHORIZED\",\"message\":\"Refresh Token已失效\",\"data\":null}",
+            "durationMs": 6
+          },
+          "checks": [
+            {
+              "name": "status",
+              "expected": 401,
+              "actual": 401,
+              "ok": true,
+              "error": "",
+              "message": ""
+            },
+            {
+              "name": "json",
+              "expected": {
+                "code": "UNAUTHORIZED"
+              },
+              "actual": {
+                "success": false,
+                "status": 401,
+                "code": "UNAUTHORIZED",
+                "message": "Refresh Token已失效",
+                "data": null
+              },
+              "ok": true,
+              "error": "",
+              "message": ""
+            }
+          ],
+          "captures": [],
+          "attempts": 1,
+          "ok": true,
+          "durationMs": 6,
+          "error": "",
+          "hint": ""
+        },
+        {
+          "index": 11,
+          "phase": "step",
+          "action": "command",
+          "display": "command docker exec foodmap-postgres psql -U foodmap -d foodmap_auth_db -tAc \"select count(*) from…",
+          "expected": {
+            "exitCode": 0
+          },
+          "actual": {
+            "exitCode": 0,
+            "signal": null,
+            "stdout": "1\n",
+            "stderr": "",
+            "value": "1",
+            "content": "1\n",
+            "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+          },
+          "checks": [
+            {
+              "name": "exitCode",
+              "expected": 0,
+              "actual": 0,
+              "ok": true,
+              "error": "",
+              "message": ""
+            }
+          ],
+          "captures": [
+            "revoked"
+          ],
+          "attempts": 1,
+          "ok": true,
+          "durationMs": 199,
+          "error": "",
+          "hint": ""
+        },
+        {
+          "index": 12,
+          "phase": "step",
+          "action": "command",
+          "display": "command [ 1 -eq 1 ]",
+          "expected": {
+            "exitCode": 0
+          },
+          "actual": {
+            "exitCode": 0,
+            "signal": null,
+            "stdout": "",
+            "stderr": "",
+            "value": "",
+            "content": "",
+            "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+          },
+          "checks": [
+            {
+              "name": "exitCode",
+              "expected": 0,
+              "actual": 0,
+              "ok": true,
+              "error": "",
+              "message": ""
+            }
+          ],
+          "captures": [],
+          "attempts": 1,
+          "ok": true,
+          "durationMs": 4,
+          "error": "",
+          "hint": ""
+        }
+      ],
+      "evidence": {
+        "text": "/Users/zhangxuqian/myPrjDev/food-map/docs/integration/B1.5-orbstack-logging/evidence/2026-11-10T09-36-bc029d4b-B1 退出登录链路（接口级）.txt",
+        "json": "/Users/zhangxuqian/myPrjDev/food-map/docs/integration/B1.5-orbstack-logging/evidence/2026-11-10T09-36-bc029d4b-B1 退出登录链路（接口级）.json"
+      }
+    },
+    {
+      "schemaVersion": 2,
+      "name": "B1 iOS 登录 UI 全链路",
+      "description": "启动模拟器 Debug 构建，XCUITest 真实点击登录，再回到数据库和日志确认链路打通",
+      "runId": "run-20261110T013632Z-eaf79649",
+      "source": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios/b1-ui-login.yml",
+      "ok": true,
+      "exitCode": 0,
+      "startedAt": "2026-11-10T01:36:32.537Z",
+      "finishedAt": "2026-11-10T01:36:51.134Z",
+      "durationMs": 18597,
+      "summary": {
+        "total": 16,
+        "passed": 16,
+        "failed": 0,
+        "skipped": 0,
+        "setupFailed": 0,
+        "teardownFailed": 0
+      },
+      "variableNames": [
+        "account",
+        "dbContainer",
+        "logStart",
+        "loginCount",
+        "runId",
+        "userId"
+      ],
+      "steps": [
+        {
+          "index": 1,
+          "phase": "setup",
+          "action": "command",
+          "display": "command wc -l < /tmp/verify-auth.log",
+          "expected": null,
+          "actual": {
+            "exitCode": 0,
+            "signal": null,
+            "stdout": "    5123\n",
+            "stderr": "",
+            "value": "5123",
+            "content": "    5123\n",
+            "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+          },
+          "checks": [],
+          "captures": [
+            "logStart"
+          ],
+          "attempts": 1,
+          "ok": true,
+          "durationMs": 10,
+          "error": "",
+          "hint": ""
+        },
+        {
+          "index": 2,
+          "phase": "setup",
+          "action": "http",
+          "display": "http GET http://127.0.0.1:8080/internal/auth/health",
+          "expected": {
+            "status": 200
+          },
+          "actual": {
+            "method": "GET",
+            "url": "http://127.0.0.1:8080/internal/auth/health",
+            "status": 200,
+            "statusText": "OK",
+            "headers": {
+              "content-type": "application/json",
+              "date": "Tue, 10 Nov 2026 01:36:32 GMT",
+              "transfer-encoding": "chunked",
+              "x-request-id": "2wc2g00pje5aevg485genmyg, 2wc2g00pje5aevg485genmyg",
+              "x-span-id": "db7un2trzlpoxm36fsh2r16q, dbjovpan5uhk8v9xd2peb4kw",
+              "x-trace-id": "9tkuiia22gd3v4z7e88dgv60, 9tkuiia22gd3v4z7e88dgv60"
+            },
+            "body": "{\"success\":true,\"status\":200,\"code\":\"OK\",\"message\":\"success\",\"data\":{\"serviceName\":\"foodmap-auth-service\",\"status\":\"UP\",\"checkedAt\":\"2026-11-10T01:36:32.549980Z\"}}",
+            "json": {
+              "success": true,
+              "status": 200,
+              "code": "OK",
+              "message": "success",
+              "data": {
+                "serviceName": "foodmap-auth-service",
+                "status": "UP",
+                "checkedAt": "2026-11-10T01:36:32.549980Z"
+              }
+            },
+            "jsonParsed": true,
+            "jsonError": "",
+            "value": {
+              "success": true,
+              "status": 200,
+              "code": "OK",
+              "message": "success",
+              "data": {
+                "serviceName": "foodmap-auth-service",
+                "status": "UP",
+                "checkedAt": "2026-11-10T01:36:32.549980Z"
+              }
+            },
+            "content": "{\"success\":true,\"status\":200,\"code\":\"OK\",\"message\":\"success\",\"data\":{\"serviceName\":\"foodmap-auth-service\",\"status\":\"UP\",\"checkedAt\":\"2026-11-10T01:36:32.549980Z\"}}",
+            "durationMs": 3
+          },
+          "checks": [
+            {
+              "name": "status",
+              "expected": 200,
+              "actual": 200,
+              "ok": true,
+              "error": "",
+              "message": ""
+            }
+          ],
+          "captures": [],
+          "attempts": 1,
+          "ok": true,
+          "durationMs": 3,
+          "error": "",
+          "hint": ""
+        },
+        {
+          "index": 3,
+          "phase": "setup",
+          "action": "command",
+          "display": "command printf 'zxq_ui_%s' $(date +%H%M%S)",
+          "expected": null,
+          "actual": {
+            "exitCode": 0,
+            "signal": null,
+            "stdout": "zxq_ui_093632",
+            "stderr": "",
+            "value": "zxq_ui_093632",
+            "content": "zxq_ui_093632",
+            "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+          },
+          "checks": [],
+          "captures": [
+            "account"
+          ],
+          "attempts": 1,
+          "ok": true,
+          "durationMs": 8,
+          "error": "",
+          "hint": ""
+        },
+        {
+          "index": 4,
+          "phase": "setup",
+          "action": "http",
+          "display": "http POST http://127.0.0.1:8080/api/auth/register",
+          "expected": {
+            "status": 200
+          },
+          "actual": {
+            "method": "POST",
+            "url": "http://127.0.0.1:8080/api/auth/register",
+            "status": 200,
+            "statusText": "OK",
+            "headers": {
+              "content-type": "application/json",
+              "date": "Tue, 10 Nov 2026 01:36:32 GMT",
+              "transfer-encoding": "chunked",
+              "x-request-id": "hx3y8tur78kiq1oxodoxbh1a, hx3y8tur78kiq1oxodoxbh1a",
+              "x-span-id": "14hc684gwwjb7moe2pw79z65, wz06jrr0ccffla5941eaxyb7",
+              "x-trace-id": "fffcbgepwt0cld55uzglwpbv, fffcbgepwt0cld55uzglwpbv"
+            },
+            "body": "{\"success\":true,\"status\":200,\"code\":\"OK\",\"message\":\"success\",\"data\":{\"accountId\":null,\"userId\":200201,\"accountStatus\":\"NORMAL\"}}",
+            "json": {
+              "success": true,
+              "status": 200,
+              "code": "OK",
+              "message": "success",
+              "data": {
+                "accountId": null,
+                "userId": 200201,
+                "accountStatus": "NORMAL"
+              }
+            },
+            "jsonParsed": true,
+            "jsonError": "",
+            "value": {
+              "success": true,
+              "status": 200,
+              "code": "OK",
+              "message": "success",
+              "data": {
+                "accountId": null,
+                "userId": 200201,
+                "accountStatus": "NORMAL"
+              }
+            },
+            "content": "{\"success\":true,\"status\":200,\"code\":\"OK\",\"message\":\"success\",\"data\":{\"accountId\":null,\"userId\":200201,\"accountStatus\":\"NORMAL\"}}",
+            "durationMs": 44
+          },
+          "checks": [
+            {
+              "name": "status",
+              "expected": 200,
+              "actual": 200,
+              "ok": true,
+              "error": "",
+              "message": ""
+            }
+          ],
+          "captures": [
+            "userId"
+          ],
+          "attempts": 1,
+          "ok": true,
+          "durationMs": 45,
+          "error": "",
+          "hint": ""
+        },
+        {
+          "index": 1,
+          "phase": "step",
+          "action": "xcode",
+          "display": "xcode test (FoodMapApp)",
+          "expected": {
+            "equals": 0
+          },
+          "actual": {
+            "exitCode": 0,
+            "stdout": "pp to idle\n    t =     5.97s     Find the \"login.identifier\" TextField\n    t =     6.01s     Check for interrupting elements affecting \"login.identifier\" TextField\n    t =     6.03s     Synthesize event\n    t =     6.45s     Wait for com.foodmap.FoodMapApp to idle\n    t =     6.46s Tap \"login.password\" SecureTextField\n    t =     6.46s     Wait for com.foodmap.FoodMapApp to idle\n    t =     6.47s     Find the \"login.password\" SecureTextField\n    t =     6.49s     Check for interrupting elements affecting \"login.password\" SecureTextField\n    t =     6.52s     Synthesize event\n    t =     6.81s     Wait for com.foodmap.FoodMapApp to idle\n    t =     7.10s Find the \"login.password\" SecureTextField\n    t =     7.13s Type '<redacted>' into \"login.password\" SecureTextField\n    t =     7.13s     Wait for com.foodmap.FoodMapApp to idle\n    t =     7.13s     Find the \"login.password\" SecureTextField\n    t =     7.15s     Check for interrupting elements affecting \"login.password\" SecureTextField\n    t =     7.17s     Synthesize event\n    t =     7.41s     Wait for com.foodmap.FoodMapApp to idle\n    t =     7.62s Type 'Fm@5f5ff1db50b32c7...' into \"login.password\" SecureTextField\n    t =     7.62s     Wait for com.foodmap.FoodMapApp to idle\n    t =     7.63s     Find the \"login.password\" SecureTextField\n    t =     7.65s     Check for interrupting elements affecting \"login.password\" SecureTextField\n    t =     7.68s     Synthesize event\n    t =     8.33s     Wait for com.foodmap.FoodMapApp to idle\n    t =     8.33s Tap \"login.baseURL\" TextField\n    t =     8.33s     Wait for com.foodmap.FoodMapApp to idle\n    t =     8.34s     Find the \"login.baseURL\" TextField\n    t =     8.36s     Check for interrupting elements affecting \"login.baseURL\" TextField\n    t =     8.38s     Synthesize event\n    t =     8.68s     Wait for com.foodmap.FoodMapApp to idle\n    t =     8.98s Find the \"login.baseURL\" TextField\n    t =     9.01s Type '...' into \"login.baseURL\" TextField\n    t =     9.01s     Wait for com.foodmap.FoodMapApp to idle\n    t =     9.01s     Find the \"login.baseURL\" TextField\n    t =     9.03s     Check for interrupting elements affecting \"login.baseURL\" TextField\n    t =     9.05s     Synthesize event\n    t =     9.60s     Wait for com.foodmap.FoodMapApp to idle\n    t =     9.61s Type 'http://127.0.0.1:8...' into \"login.baseURL\" TextField\n    t =     9.61s     Wait for com.foodmap.FoodMapApp to idle\n    t =     9.61s     Find the \"login.baseURL\" TextField\n    t =     9.63s     Check for interrupting elements affecting \"login.baseURL\" TextField\n    t =     9.66s     Synthesize event\n    t =    10.21s     Wait for com.foodmap.FoodMapApp to idle\n    t =    10.21s Tap \"login.submit\" Button\n    t =    10.21s     Wait for com.foodmap.FoodMapApp to idle\n    t =    10.21s     Find the \"login.submit\" Button\n    t =    10.24s     Check for interrupting elements affecting \"login.submit\" Button\n    t =    10.26s     Synthesize event\n    t =    10.55s     Wait for com.foodmap.FoodMapApp to idle\n    t =    10.56s Waiting 30.0s for \"map.home\" Other to exist\n    t =    11.60s     Checking `Expect predicate `existsNoRetry == 1` for object \"map.home\" Other`\n    t =    11.60s         Checking existence of `\"map.home\" Other`\n    t =    11.63s Tear Down\nTest Case '-[FoodMapAppUITests.LoginFlowTests testLoginThroughGateway]' passed (11.912 seconds).\nTest Suite 'LoginFlowTests' passed at 2026-11-10 09:36:48.204.\n\t Executed 1 test, with 0 failures (0 unexpected) in 11.912 (11.913) seconds\nTest Suite 'FoodMapAppUITests.xctest' passed at 2026-11-10 09:36:48.205.\n\t Executed 1 test, with 0 failures (0 unexpected) in 11.912 (11.914) seconds\nTest Suite 'Selected tests' passed at 2026-11-10 09:36:48.206.\n\t Executed 1 test, with 0 failures (0 unexpected) in 11.912 (11.916) seconds\n\nTest session results, code coverage, and logs:\n\t/var/folders/zv/r9w_dmv54wj2q848lhxjt2340000gn/T/verify-xcresult-kkZVnK/run.xcresult\n\n** TEST SUCCEEDED **\n\nTesting started\n",
+            "stderr": "2026-11-10 09:36:37.381 xcodebuild[11570:40630662] [MT] IDELaunchParametersSnapshot: debugger version lookup failed for path '<nil>': noURL\n2026-11-10 09:36:37.381 xcodebuild[11570:40630662] [MT] IDELaunchParametersSnapshot: no debugger version\n2026-11-10 09:36:48.494 xcodebuild[11570:40630662] [MT] IDETestOperationsObserverDebug: 13.607 elapsed -- Testing started completed.\n2026-11-10 09:36:48.494 xcodebuild[11570:40630662] [MT] IDETestOperationsObserverDebug: 0.000 sec, +0.000 sec -- start\n2026-11-10 09:36:48.494 xcodebuild[11570:40630662] [MT] IDETestOperationsObserverDebug: 13.607 sec, +13.607 sec -- end\n",
+            "stdoutTail": "Command line invocation:\n    /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild test -project FoodMapApp.xcodeproj -scheme FoodMapApp -destination \"platform=iOS Simulator,id=A77A2428-9576-4533-8B62-0C267A395B29\" -derivedDataPath /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd CODE_SIGN_IDENTITY=- \"-only-testing:FoodMapAppUITests/LoginFlowTests/testLoginThroughGateway\" -resultBundlePath /var/folders/zv/r9w_dmv54wj2q848lhxjt2340000gn/T/verify-xcresult-kkZVnK/run.xcresult\n\nBuild settings from command line:\n    CODE_SIGN_IDENTITY = -\n\nWriting result bundle at path:\n\t/var/folders/zv/r9w_dmv54wj2q848lhxjt2340000gn/T/verify-xcresult-kkZVnK/run.xcresult\n\nnote: Using codesigning identity override: -\nComputePackagePrebuildTargetDependencyGraph\n\nPrepare packages\n\nCreateBuildRequest\n\nSendProjectDescription\n\nCreateBuildOperation\n\nComputeTargetDependencyGraph\nnote: Building targets in dependency order\nnote: Target dependency graph (2 targets)\n    Target 'FoodMapAppUITests' in project 'FoodMapApp'\n        ➜ Explicit dependency on target 'FoodMapApp' in project 'FoodMapApp'\n    Target 'FoodMapApp' in project 'FoodMapApp' (no dependencies)\n\nGatherProvisioningInputs\n\nCreateBuildDescription\n\nExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc --version\n\nExecuteExternalTool /Applications/Xcode.app/Contents/Developer/usr/bin/actool --print-asset-tag-combinations --output-format xml1 /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/FoodMapApp/Resources/Assets.xcassets\n\nExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -v -E -dM -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator27.2.sdk -x c -c /dev/null\n\nExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ld -version_details\n\nExecuteExternalTool /Applications/Xcode.app/Contents/Developer/usr/bin/actool --version --output-format xml1\n\nBuild description signature: f6a9412135eccc5a020c09f812fd6efc\nBuild description path: /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Intermediates.noindex/XCBuildData/f6a9412135eccc5a020c09f812fd6efc.xcbuilddata\nClangStatCache /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang-stat-cache /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator27.2.sdk /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/SDKStatCaches.noindex/iphonesimulator27.2-24B8118-cc78df9d8a9de6526dea716b1c70fd8e.sdkstatcache\n    cd /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/FoodMapApp.xcodeproj\n    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang-stat-cache /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator27.2.sdk -o /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/SDKStatCaches.noindex/iphonesimulator27.2-24B8118-cc78df9d8a9de6526dea716b1c70fd8e.sdkstatcache\n\nProcessInfoPlistFile /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Products/Debug-iphonesimulator/FoodMapApp.app/Info.plist /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/FoodMapApp/Resources/Info.plist (in target 'FoodMapApp' from project 'FoodMapApp')\n    cd /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp\n    builtin-infoPlistUtility /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/FoodMapApp/Resources/Info.plist -producttype com.apple.product-type.application -genpkginfo /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Products/Debug-iphonesimulator/FoodMapApp.app/PkgInfo -expandbuildsettings -format binary -platform iphonesimulator -additionalcontentfile /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Intermediates.noindex/FoodMapApp.build/Debug-iphonesimulator/FoodMapApp.build/assetcatalog_generated_info.plist -o /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Products/Debug-iphonesimulator/FoodMapApp.app/Info.plist\n\nCopySwiftLibs /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Products/Debug-iphonesimulator/FoodMapApp.app (in target 'FoodMapApp' from project 'FoodMapApp')\n    cd /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp\n    builtin-swiftStdLibTool --copy --verbose --sign - --scan-executable /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Products/Debug-iphonesimulator/FoodMapApp.app/FoodMapApp.debug.dylib --scan-folder /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Products/Debug-iphonesimulator/FoodMapApp.app/Frameworks --scan-folder /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Products/Debug-iphonesimulator/FoodMapApp.app/PlugIns --scan-folder /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Products/Debug-iphonesimulator/FoodMapApp.app/SystemExtensions --scan-folder /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Products/Debug-iphonesimulator/FoodMapApp.app/Extensions --platform iphonesimulator --toolchain /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain --destination /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Products/Debug-iphonesimulator/FoodMapApp.app/Frameworks --strip-bitcode --strip-bitcode-tool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/bitcode_strip --emit-dependency-info /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Intermediates.noindex/FoodMapApp.build/Debug-iphonesimulator/FoodMapApp.build/SwiftStdLibToolInputDependencies.dep --filter-for-swift-os\n\nProcessInfoPlistFile /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Products/Debug-iphonesimulator/FoodMapAppUITests-Runner.app/PlugIns/FoodMapAppUITests.xctest/Info.plist /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Intermediates.noindex/FoodMapApp.build/Debug-iphonesimulator/FoodMapAppUITests.build/empty-FoodMapAppUITests.plist (in target 'FoodMapAppUITests' from project 'FoodMapApp')\n    cd /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp\n    builtin-infoPlistUtility /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Intermediates.noindex/FoodMapApp.build/Debug-iphonesimulator/FoodMapAppUITests.build/empty-FoodMapAppUITests.plist -producttype com.apple.product-type.bundle.ui-testing -expandbuildsettings -format binary -platform iphonesimulator -additionalcontentfile /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Intermediates.noindex/FoodMapApp.build/Debug-iphonesimulator/FoodMapAppUITests.build/ProductTypeInfoPlistAdditions.plist -o /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Products/Debug-iphonesimulator/FoodMapAppUITests-Runner.app/PlugIns/FoodMapAppUITests.xctest/Info.plist\n\nCopySwiftLibs /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Products/Debug-iphonesimulator/FoodMapAppUITests-Runner.app/PlugIns/FoodMapAppUITests.xctest (in target 'FoodMapAppUITests' from project 'FoodMapApp')\n    cd /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp\n    builtin-swiftStdLibTool --copy --verbose --sign - --scan-executable /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Products/Debug-iphonesimulator/FoodMapAppUITests-Runner.app/PlugIns/FoodMapAppUITests.xctest/FoodMapAppUITests --scan-folder /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Products/Debug-iphonesimulator/FoodMapAppUITests-Runner.app/PlugIns/FoodMapAppUITests.xctest/Frameworks --scan-folder /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Products/Debug-iphonesimulator/FoodMapAppUITests-Runner.app/PlugIns/FoodMapAppUITests.xctest/PlugIns --scan-folder /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Products/Debug-iphonesimulator/FoodMapAppUITests-Runner.app/PlugIns/FoodMapAppUITests.xctest/SystemExtensions --scan-folder /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Products/Debug-iphonesimulator/FoodMapAppUITests-Runner.app/PlugIns/FoodMapAppUITests.xctest/Extensions --platform iphonesimulator --toolchain /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain --destination /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Products/Debug-iphonesimulator/FoodMapAppUITests-Runner.app/PlugIns/FoodMapAppUITests.xctest/Frameworks --strip-bitcode --scan-executable /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/lib/libXCTestSwiftSupport.dylib --strip-bitcode-tool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/bitcode_strip --emit-dependency-info /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Intermediates.noindex/FoodMapApp.build/Debug-iphonesimulator/FoodMapAppUITests.build/SwiftStdLibToolInputDependencies.dep --filter-for-swift-os\n\nPruneExplicitPrecompiledModules /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules\n\nPruneExplicitPrecompiledModules /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/SDKExplicitPrecompiledModules\n\nPruneExplicitPrecompiledModules /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Intermediates.noindex/ExplicitPrecompiledModules\n\n2026-11-10 09:36:35.676551+0800 FoodMapAppUITests-Runner[11581:40630971] [Default] Running tests...\n    t =      nans Interface orientation changed to Portrait\nTest Suite 'Selected tests' started at 2026-11-10 09:36:36.290.\nTest Suite 'FoodMapAppUITests.xctest' started at 2026-11-10 09:36:36.291.\nTest Suite 'LoginFlowTests' started at 2026-11-10 09:36:36.291.\nTest Case '-[FoodMapAppUITests.LoginFlowTests testLoginThroughGateway]' started.\n    t =     0.00s Start Test at 2026-11-10 09:36:36.292\n    t =     0.02s Set Up\n    t =     0.02s Open com.foodmap.FoodMapApp\n    t =     0.02s     Launch com.foodmap.FoodMapApp\n    t =     0.02s         Terminate com.foodmap.FoodMapApp:11059\nobjc[11581]: Class UIAccessibilityLoaderWebShared is implemented in both /Library/Developer/CoreSimulator/Volumes/iOS_23F77/Library/Developer/CoreSimulator/Profiles/Runtimes/iOS 26.5.simruntime/Contents/Resources/RuntimeRoot/System/Library/AccessibilityBundles/WebCore.axbundle/WebCore (0x1068d4310) and /Library/Developer/CoreSimulator/Volumes/iOS_23F77/Library/Developer/CoreSimulator/Profiles/Runtimes/iOS 26.5.simruntime/Contents/Resources/RuntimeRoot/System/Library/AccessibilityBundles/WebKit.axbundle/WebKit (0x10696c398). This may cause spurious casting failures and mysterious crashes. One of the duplicates must be removed or renamed.\n    t =     1.50s         Setting up automation session\n    t =     2.25s         Wait for com.foodmap.FoodMapApp to idle\n    t =     3.61s Waiting 30.0s for \"login.identifier\" TextField to exist\n    t =     4.65s     Checking `Expect predicate `existsNoRetry == 1` for object \"login.identifier\" TextField`\n    t =     4.65s         Checking existence of `\"login.identifier\" TextField`\n    t =     4.73s Tap \"login.identifier\" TextField\n    t =     4.73s     Wait for com.foodmap.FoodMapApp to idle\n    t =     4.73s     Find the \"login.identifier\" TextField\n    t =     4.74s     Check for interrupting elements affecting \"login.identifier\" TextField\n    t =     4.76s     Synthesize event\n    t =     5.05s     Wait for com.foodmap.FoodMapApp to idle\n    t =     5.12s Find the \"login.identifier\" TextField\n    t =     5.16s Type '' into \"login.identifier\" TextField\n    t =     5.16s     Wait for com.foodmap.FoodMapApp to idle\n    t =     5.48s     Find the \"login.identifier\" TextField\n    t =     5.51s     Check for interrupting elements affecting \"login.identifier\" TextField\n    t =     5.54s     Synthesize event\n    t =     5.97s     Wait for com.foodmap.FoodMapApp to idle\n    t =     5.97s Type 'zxq_ui_093632' into \"login.identifier\" TextField\n    t =     5.97s     Wait for com.foodmap.FoodMapApp to idle\n    t =     5.97s     Find the \"login.identifier\" TextField\n    t =     6.01s     Check for interrupting elements affecting \"login.identifier\" TextField\n    t =     6.03s     Synthesize event\n    t =     6.45s     Wait for com.foodmap.FoodMapApp to idle\n    t =     6.46s Tap \"login.password\" SecureTextField\n    t =     6.46s     Wait for com.foodmap.FoodMapApp to idle\n    t =     6.47s     Find the \"login.password\" SecureTextField\n    t =     6.49s     Check for interrupting elements affecting \"login.password\" SecureTextField\n    t =     6.52s     Synthesize event\n    t =     6.81s     Wait for com.foodmap.FoodMapApp to idle\n    t =     7.10s Find the \"login.password\" SecureTextField\n    t =     7.13s Type '<redacted>' into \"login.password\" SecureTextField\n    t =     7.13s     Wait for com.foodmap.FoodMapApp to idle\n    t =     7.13s     Find the \"login.password\" SecureTextField\n    t =     7.15s     Check for interrupting elements affecting \"login.password\" SecureTextField\n    t =     7.17s     Synthesize event\n    t =     7.41s     Wait for com.foodmap.FoodMapApp to idle\n    t =     7.62s Type 'Fm@5f5ff1db50b32c7...' into \"login.password\" SecureTextField\n    t =     7.62s     Wait for com.foodmap.FoodMapApp to idle\n    t =     7.63s     Find the \"login.password\" SecureTextField\n    t =     7.65s     Check for interrupting elements affecting \"login.password\" SecureTextField\n    t =     7.68s     Synthesize event\n    t =     8.33s     Wait for com.foodmap.FoodMapApp to idle\n    t =     8.33s Tap \"login.baseURL\" TextField\n    t =     8.33s     Wait for com.foodmap.FoodMapApp to idle\n    t =     8.34s     Find the \"login.baseURL\" TextField\n    t =     8.36s     Check for interrupting elements affecting \"login.baseURL\" TextField\n    t =     8.38s     Synthesize event\n    t =     8.68s     Wait for com.foodmap.FoodMapApp to idle\n    t =     8.98s Find the \"login.baseURL\" TextField\n    t =     9.01s Type '...' into \"login.baseURL\" TextField\n    t =     9.01s     Wait for com.foodmap.FoodMapApp to idle\n    t =     9.01s     Find the \"login.baseURL\" TextField\n    t =     9.03s     Check for interrupting elements affecting \"login.baseURL\" TextField\n    t =     9.05s     Synthesize event\n    t =     9.60s     Wait for com.foodmap.FoodMapApp to idle\n    t =     9.61s Type 'http://127.0.0.1:8...' into \"login.baseURL\" TextField\n    t =     9.61s     Wait for com.foodmap.FoodMapApp to idle\n    t =     9.61s     Find the \"login.baseURL\" TextField\n    t =     9.63s     Check for interrupting elements affecting \"login.baseURL\" TextField\n    t =     9.66s     Synthesize event\n    t =    10.21s     Wait for com.foodmap.FoodMapApp to idle\n    t =    10.21s Tap \"login.submit\" Button\n    t =    10.21s     Wait for com.foodmap.FoodMapApp to idle\n    t =    10.21s     Find the \"login.submit\" Button\n    t =    10.24s     Check for interrupting elements affecting \"login.submit\" Button\n    t =    10.26s     Synthesize event\n    t =    10.55s     Wait for com.foodmap.FoodMapApp to idle\n    t =    10.56s Waiting 30.0s for \"map.home\" Other to exist\n    t =    11.60s     Checking `Expect predicate `existsNoRetry == 1` for object \"map.home\" Other`\n    t =    11.60s         Checking existence of `\"map.home\" Other`\n    t =    11.63s Tear Down\nTest Case '-[FoodMapAppUITests.LoginFlowTests testLoginThroughGateway]' passed (11.912 seconds).\nTest Suite 'LoginFlowTests' passed at 2026-11-10 09:36:48.204.\n\t Executed 1 test, with 0 failures (0 unexpected) in 11.912 (11.913) seconds\nTest Suite 'FoodMapAppUITests.xctest' passed at 2026-11-10 09:36:48.205.\n\t Executed 1 test, with 0 failures (0 unexpected) in 11.912 (11.914) seconds\nTest Suite 'Selected tests' passed at 2026-11-10 09:36:48.206.\n\t Executed 1 test, with 0 failures (0 unexpected) in 11.912 (11.916) seconds\n\nTest session results, code coverage, and logs:\n\t/var/folders/zv/r9w_dmv54wj2q848lhxjt2340000gn/T/verify-xcresult-kkZVnK/run.xcresult\n\n** TEST SUCCEEDED **\n\nTesting started\n",
+            "content": "Command line invocation:\n    /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild test -project FoodMapApp.xcodeproj -scheme FoodMapApp -destination \"platform=iOS Simulator,id=A77A2428-9576-4533-8B62-0C267A395B29\" -derivedDataPath /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd CODE_SIGN_IDENTITY=- \"-only-testing:FoodMapAppUITests/LoginFlowTests/testLoginThroughGateway\" -resultBundlePath /var/folders/zv/r9w_dmv54wj2q848lhxjt2340000gn/T/verify-xcresult-kkZVnK/run.xcresult\n\nBuild settings from command line:\n    CODE_SIGN_IDENTITY = -\n\nWriting result bundle at path:\n\t/var/folders/zv/r9w_dmv54wj2q848lhxjt2340000gn/T/verify-xcresult-kkZVnK/run.xcresult\n\nnote: Using codesigning identity override: -\nComputePackagePrebuildTargetDependencyGraph\n\nPrepare packages\n\nCreateBuildRequest\n\nSendProjectDescription\n\nCreateBuildOperation\n\nComputeTargetDependencyGraph\nnote: Building targets in dependency order\nnote: Target dependency graph (2 targets)\n    Target 'FoodMapAppUITests' in project 'FoodMapApp'\n        ➜ Explicit dependency on target 'FoodMapApp' in project 'FoodMapApp'\n    Target 'FoodMapApp' in project 'FoodMapApp' (no dependencies)\n\nGatherProvisioningInputs\n\nCreateBuildDescription\n\nExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc --version\n\nExecuteExternalTool /Applications/Xcode.app/Contents/Developer/usr/bin/actool --print-asset-tag-combinations --output-format xml1 /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/FoodMapApp/Resources/Assets.xcassets\n\nExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -v -E -dM -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator27.2.sdk -x c -c /dev/null\n\nExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ld -version_details\n\nExecuteExternalTool /Applications/Xcode.app/Contents/Developer/usr/bin/actool --version --output-format xml1\n\nBuild description signature: f6a9412135eccc5a020c09f812fd6efc\nBuild description path: /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Intermediates.noindex/XCBuildData/f6a9412135eccc5a020c09f812fd6efc.xcbuilddata\nClangStatCache /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang-stat-cache /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator27.2.sdk /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/SDKStatCaches.noindex/iphonesimulator27.2-24B8118-cc78df9d8a9de6526dea716b1c70fd8e.sdkstatcache\n    cd /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/FoodMapApp.xcodeproj\n    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang-stat-cache /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator27.2.sdk -o /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/SDKStatCaches.noindex/iphonesimulator27.2-24B8118-cc78df9d8a9de6526dea716b1c70fd8e.sdkstatcache\n\nProcessInfoPlistFile /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Products/Debug-iphonesimulator/FoodMapApp.app/Info.plist /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/FoodMapApp/Resources/Info.plist (in target 'FoodMapApp' from project 'FoodMapApp')\n    cd /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp\n    builtin-infoPlistUtility /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/FoodMapApp/Resources/Info.plist -producttype com.apple.product-type.application -genpkginfo /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Products/Debug-iphonesimulator/FoodMapApp.app/PkgInfo -expandbuildsettings -format binary -platform iphonesimulator -additionalcontentfile /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Intermediates.noindex/FoodMapApp.build/Debug-iphonesimulator/FoodMapApp.build/assetcatalog_generated_info.plist -o /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Products/Debug-iphonesimulator/FoodMapApp.app/Info.plist\n\nCopySwiftLibs /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Products/Debug-iphonesimulator/FoodMapApp.app (in target 'FoodMapApp' from project 'FoodMapApp')\n    cd /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp\n    builtin-swiftStdLibTool --copy --verbose --sign - --scan-executable /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Products/Debug-iphonesimulator/FoodMapApp.app/FoodMapApp.debug.dylib --scan-folder /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Products/Debug-iphonesimulator/FoodMapApp.app/Frameworks --scan-folder /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Products/Debug-iphonesimulator/FoodMapApp.app/PlugIns --scan-folder /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Products/Debug-iphonesimulator/FoodMapApp.app/SystemExtensions --scan-folder /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Products/Debug-iphonesimulator/FoodMapApp.app/Extensions --platform iphonesimulator --toolchain /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain --destination /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Products/Debug-iphonesimulator/FoodMapApp.app/Frameworks --strip-bitcode --strip-bitcode-tool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/bitcode_strip --emit-dependency-info /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Intermediates.noindex/FoodMapApp.build/Debug-iphonesimulator/FoodMapApp.build/SwiftStdLibToolInputDependencies.dep --filter-for-swift-os\n\nProcessInfoPlistFile /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Products/Debug-iphonesimulator/FoodMapAppUITests-Runner.app/PlugIns/FoodMapAppUITests.xctest/Info.plist /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Intermediates.noindex/FoodMapApp.build/Debug-iphonesimulator/FoodMapAppUITests.build/empty-FoodMapAppUITests.plist (in target 'FoodMapAppUITests' from project 'FoodMapApp')\n    cd /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp\n    builtin-infoPlistUtility /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Intermediates.noindex/FoodMapApp.build/Debug-iphonesimulator/FoodMapAppUITests.build/empty-FoodMapAppUITests.plist -producttype com.apple.product-type.bundle.ui-testing -expandbuildsettings -format binary -platform iphonesimulator -additionalcontentfile /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Intermediates.noindex/FoodMapApp.build/Debug-iphonesimulator/FoodMapAppUITests.build/ProductTypeInfoPlistAdditions.plist -o /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Products/Debug-iphonesimulator/FoodMapAppUITests-Runner.app/PlugIns/FoodMapAppUITests.xctest/Info.plist\n\nCopySwiftLibs /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Products/Debug-iphonesimulator/FoodMapAppUITests-Runner.app/PlugIns/FoodMapAppUITests.xctest (in target 'FoodMapAppUITests' from project 'FoodMapApp')\n    cd /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp\n    builtin-swiftStdLibTool --copy --verbose --sign - --scan-executable /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Products/Debug-iphonesimulator/FoodMapAppUITests-Runner.app/PlugIns/FoodMapAppUITests.xctest/FoodMapAppUITests --scan-folder /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Products/Debug-iphonesimulator/FoodMapAppUITests-Runner.app/PlugIns/FoodMapAppUITests.xctest/Frameworks --scan-folder /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Products/Debug-iphonesimulator/FoodMapAppUITests-Runner.app/PlugIns/FoodMapAppUITests.xctest/PlugIns --scan-folder /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Products/Debug-iphonesimulator/FoodMapAppUITests-Runner.app/PlugIns/FoodMapAppUITests.xctest/SystemExtensions --scan-folder /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Products/Debug-iphonesimulator/FoodMapAppUITests-Runner.app/PlugIns/FoodMapAppUITests.xctest/Extensions --platform iphonesimulator --toolchain /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain --destination /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Products/Debug-iphonesimulator/FoodMapAppUITests-Runner.app/PlugIns/FoodMapAppUITests.xctest/Frameworks --strip-bitcode --scan-executable /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/lib/libXCTestSwiftSupport.dylib --strip-bitcode-tool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/bitcode_strip --emit-dependency-info /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Intermediates.noindex/FoodMapApp.build/Debug-iphonesimulator/FoodMapAppUITests.build/SwiftStdLibToolInputDependencies.dep --filter-for-swift-os\n\nPruneExplicitPrecompiledModules /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules\n\nPruneExplicitPrecompiledModules /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/SDKExplicitPrecompiledModules\n\nPruneExplicitPrecompiledModules /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd/Build/Intermediates.noindex/ExplicitPrecompiledModules\n\n2026-11-10 09:36:35.676551+0800 FoodMapAppUITests-Runner[11581:40630971] [Default] Running tests...\n    t =      nans Interface orientation changed to Portrait\nTest Suite 'Selected tests' started at 2026-11-10 09:36:36.290.\nTest Suite 'FoodMapAppUITests.xctest' started at 2026-11-10 09:36:36.291.\nTest Suite 'LoginFlowTests' started at 2026-11-10 09:36:36.291.\nTest Case '-[FoodMapAppUITests.LoginFlowTests testLoginThroughGateway]' started.\n    t =     0.00s Start Test at 2026-11-10 09:36:36.292\n    t =     0.02s Set Up\n    t =     0.02s Open com.foodmap.FoodMapApp\n    t =     0.02s     Launch com.foodmap.FoodMapApp\n    t =     0.02s         Terminate com.foodmap.FoodMapApp:11059\nobjc[11581]: Class UIAccessibilityLoaderWebShared is implemented in both /Library/Developer/CoreSimulator/Volumes/iOS_23F77/Library/Developer/CoreSimulator/Profiles/Runtimes/iOS 26.5.simruntime/Contents/Resources/RuntimeRoot/System/Library/AccessibilityBundles/WebCore.axbundle/WebCore (0x1068d4310) and /Library/Developer/CoreSimulator/Volumes/iOS_23F77/Library/Developer/CoreSimulator/Profiles/Runtimes/iOS 26.5.simruntime/Contents/Resources/RuntimeRoot/System/Library/AccessibilityBundles/WebKit.axbundle/WebKit (0x10696c398). This may cause spurious casting failures and mysterious crashes. One of the duplicates must be removed or renamed.\n    t =     1.50s         Setting up automation session\n    t =     2.25s         Wait for com.foodmap.FoodMapApp to idle\n    t =     3.61s Waiting 30.0s for \"login.identifier\" TextField to exist\n    t =     4.65s     Checking `Expect predicate `existsNoRetry == 1` for object \"login.identifier\" TextField`\n    t =     4.65s         Checking existence of `\"login.identifier\" TextField`\n    t =     4.73s Tap \"login.identifier\" TextField\n    t =     4.73s     Wait for com.foodmap.FoodMapApp to idle\n    t =     4.73s     Find the \"login.identifier\" TextField\n    t =     4.74s     Check for interrupting elements affecting \"login.identifier\" TextField\n    t =     4.76s     Synthesize event\n    t =     5.05s     Wait for com.foodmap.FoodMapApp to idle\n    t =     5.12s Find the \"login.identifier\" TextField\n    t =     5.16s Type '' into \"login.identifier\" TextField\n    t =     5.16s     Wait for com.foodmap.FoodMapApp to idle\n    t =     5.48s     Find the \"login.identifier\" TextField\n    t =     5.51s     Check for interrupting elements affecting \"login.identifier\" TextField\n    t =     5.54s     Synthesize event\n    t =     5.97s     Wait for com.foodmap.FoodMapApp to idle\n    t =     5.97s Type 'zxq_ui_093632' into \"login.identifier\" TextField\n    t =     5.97s     Wait for com.foodmap.FoodMapApp to idle\n    t =     5.97s     Find the \"login.identifier\" TextField\n    t =     6.01s     Check for interrupting elements affecting \"login.identifier\" TextField\n    t =     6.03s     Synthesize event\n    t =     6.45s     Wait for com.foodmap.FoodMapApp to idle\n    t =     6.46s Tap \"login.password\" SecureTextField\n    t =     6.46s     Wait for com.foodmap.FoodMapApp to idle\n    t =     6.47s     Find the \"login.password\" SecureTextField\n    t =     6.49s     Check for interrupting elements affecting \"login.password\" SecureTextField\n    t =     6.52s     Synthesize event\n    t =     6.81s     Wait for com.foodmap.FoodMapApp to idle\n    t =     7.10s Find the \"login.password\" SecureTextField\n    t =     7.13s Type '<redacted>' into \"login.password\" SecureTextField\n    t =     7.13s     Wait for com.foodmap.FoodMapApp to idle\n    t =     7.13s     Find the \"login.password\" SecureTextField\n    t =     7.15s     Check for interrupting elements affecting \"login.password\" SecureTextField\n    t =     7.17s     Synthesize event\n    t =     7.41s     Wait for com.foodmap.FoodMapApp to idle\n    t =     7.62s Type 'Fm@5f5ff1db50b32c7...' into \"login.password\" SecureTextField\n    t =     7.62s     Wait for com.foodmap.FoodMapApp to idle\n    t =     7.63s     Find the \"login.password\" SecureTextField\n    t =     7.65s     Check for interrupting elements affecting \"login.password\" SecureTextField\n    t =     7.68s     Synthesize event\n    t =     8.33s     Wait for com.foodmap.FoodMapApp to idle\n    t =     8.33s Tap \"login.baseURL\" TextField\n    t =     8.33s     Wait for com.foodmap.FoodMapApp to idle\n    t =     8.34s     Find the \"login.baseURL\" TextField\n    t =     8.36s     Check for interrupting elements affecting \"login.baseURL\" TextField\n    t =     8.38s     Synthesize event\n    t =     8.68s     Wait for com.foodmap.FoodMapApp to idle\n    t =     8.98s Find the \"login.baseURL\" TextField\n    t =     9.01s Type '...' into \"login.baseURL\" TextField\n    t =     9.01s     Wait for com.foodmap.FoodMapApp to idle\n    t =     9.01s     Find the \"login.baseURL\" TextField\n    t =     9.03s     Check for interrupting elements affecting \"login.baseURL\" TextField\n    t =     9.05s     Synthesize event\n    t =     9.60s     Wait for com.foodmap.FoodMapApp to idle\n    t =     9.61s Type 'http://127.0.0.1:8...' into \"login.baseURL\" TextField\n    t =     9.61s     Wait for com.foodmap.FoodMapApp to idle\n    t =     9.61s     Find the \"login.baseURL\" TextField\n    t =     9.63s     Check for interrupting elements affecting \"login.baseURL\" TextField\n    t =     9.66s     Synthesize event\n    t =    10.21s     Wait for com.foodmap.FoodMapApp to idle\n    t =    10.21s Tap \"login.submit\" Button\n    t =    10.21s     Wait for com.foodmap.FoodMapApp to idle\n    t =    10.21s     Find the \"login.submit\" Button\n    t =    10.24s     Check for interrupting elements affecting \"login.submit\" Button\n    t =    10.26s     Synthesize event\n    t =    10.55s     Wait for com.foodmap.FoodMapApp to idle\n    t =    10.56s Waiting 30.0s for \"map.home\" Other to exist\n    t =    11.60s     Checking `Expect predicate `existsNoRetry == 1` for object \"map.home\" Other`\n    t =    11.60s         Checking existence of `\"map.home\" Other`\n    t =    11.63s Tear Down\nTest Case '-[FoodMapAppUITests.LoginFlowTests testLoginThroughGateway]' passed (11.912 seconds).\nTest Suite 'LoginFlowTests' passed at 2026-11-10 09:36:48.204.\n\t Executed 1 test, with 0 failures (0 unexpected) in 11.912 (11.913) seconds\nTest Suite 'FoodMapAppUITests.xctest' passed at 2026-11-10 09:36:48.205.\n\t Executed 1 test, with 0 failures (0 unexpected) in 11.912 (11.914) seconds\nTest Suite 'Selected tests' passed at 2026-11-10 09:36:48.206.\n\t Executed 1 test, with 0 failures (0 unexpected) in 11.912 (11.916) seconds\n\nTest session results, code coverage, and logs:\n\t/var/folders/zv/r9w_dmv54wj2q848lhxjt2340000gn/T/verify-xcresult-kkZVnK/run.xcresult\n\n** TEST SUCCEEDED **\n\nTesting started\n\n2026-11-10 09:36:37.381 xcodebuild[11570:40630662] [MT] IDELaunchParametersSnapshot: debugger version lookup failed for path '<nil>': noURL\n2026-11-10 09:36:37.381 xcodebuild[11570:40630662] [MT] IDELaunchParametersSnapshot: no debugger version\n2026-11-10 09:36:48.494 xcodebuild[11570:40630662] [MT] IDETestOperationsObserverDebug: 13.607 elapsed -- Testing started completed.\n2026-11-10 09:36:48.494 xcodebuild[11570:40630662] [MT] IDETestOperationsObserverDebug: 0.000 sec, +0.000 sec -- start\n2026-11-10 09:36:48.494 xcodebuild[11570:40630662] [MT] IDETestOperationsObserverDebug: 13.607 sec, +13.607 sec -- end\n",
+            "value": 0,
+            "command": "xcodebuild test -project FoodMapApp.xcodeproj -scheme FoodMapApp -destination platform=iOS Simulator,id=A77A2428-9576-4533-8B62-0C267A395B29 -derivedDataPath /Users/zhangxuqian/myPrjDev/food-map/front/FoodMapApp/.build/dd CODE_SIGN_IDENTITY=- -only-testing:FoodMapAppUITests/LoginFlowTests/testLoginThroughGateway -resultBundlePath /var/folders/zv/r9w_dmv54wj2q848lhxjt2340000gn/T/verify-xcresult-kkZVnK/run.xcresult",
+            "result": "Passed",
+            "total": 1,
+            "passed": 1,
+            "failed": 0,
+            "skipped": 0,
+            "tests": [
+              {
+                "name": "testLoginThroughGateway()",
+                "identifier": "LoginFlowTests/testLoginThroughGateway()",
+                "status": "Passed",
+                "durationMs": 11912,
+                "failure": ""
+              }
+            ],
+            "resultBundle": "/var/folders/zv/r9w_dmv54wj2q848lhxjt2340000gn/T/verify-xcresult-kkZVnK/run.xcresult"
+          },
+          "checks": [
+            {
+              "name": "equals",
+              "expected": 0,
+              "actual": 0,
+              "ok": true,
+              "error": "",
+              "message": ""
+            }
+          ],
+          "captures": [],
+          "attempts": 1,
+          "ok": true,
+          "durationMs": 16121,
+          "error": "",
+          "hint": ""
+        },
+        {
+          "index": 2,
+          "phase": "step",
+          "action": "command",
+          "display": "command docker exec foodmap-postgres psql -U foodmap -d foodmap_auth_db -tAc \"select count(*) from…",
+          "expected": {
+            "exitCode": 0
+          },
+          "actual": {
+            "exitCode": 0,
+            "signal": null,
+            "stdout": "1\n",
+            "stderr": "",
+            "value": "1",
+            "content": "1\n",
+            "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+          },
+          "checks": [
+            {
+              "name": "exitCode",
+              "expected": 0,
+              "actual": 0,
+              "ok": true,
+              "error": "",
+              "message": ""
+            }
+          ],
+          "captures": [
+            "loginCount"
+          ],
+          "attempts": 1,
+          "ok": true,
+          "durationMs": 223,
+          "error": "",
+          "hint": ""
+        },
+        {
+          "index": 3,
+          "phase": "step",
+          "action": "command",
+          "display": "command [ 1 -ge 1 ]",
+          "expected": {
+            "exitCode": 0
+          },
+          "actual": {
+            "exitCode": 0,
+            "signal": null,
+            "stdout": "",
+            "stderr": "",
+            "value": "",
+            "content": "",
+            "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+          },
+          "checks": [
+            {
+              "name": "exitCode",
+              "expected": 0,
+              "actual": 0,
+              "ok": true,
+              "error": "",
+              "message": ""
+            }
+          ],
+          "captures": [],
+          "attempts": 1,
+          "ok": true,
+          "durationMs": 5,
+          "error": "",
+          "hint": ""
+        },
+        {
+          "index": 4,
+          "phase": "step",
+          "action": "command",
+          "display": "command tail -n +$(( 5123 + 1 )) /tmp/verify-auth.log | grep -c 'path=/api/auth/login status=200'",
+          "expected": {
+            "exitCode": 0
+          },
+          "actual": {
+            "exitCode": 0,
+            "signal": null,
+            "stdout": "1\n",
+            "stderr": "",
+            "value": "1",
+            "content": "1\n",
+            "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+          },
+          "checks": [
+            {
+              "name": "exitCode",
+              "expected": 0,
+              "actual": 0,
+              "ok": true,
+              "error": "",
+              "message": ""
+            }
+          ],
+          "captures": [],
+          "attempts": 1,
+          "ok": true,
+          "durationMs": 55,
+          "error": "",
+          "hint": ""
+        },
+        {
+          "index": 1,
+          "phase": "teardown",
+          "action": "command",
+          "display": "command docker exec foodmap-postgres sh -c 'uid=$(psql -U foodmap -d foodmap_auth_db -tAc \"select …",
+          "expected": null,
+          "actual": {
+            "exitCode": 0,
+            "signal": null,
+            "stdout": "",
+            "stderr": "",
+            "value": "",
+            "content": "",
+            "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+          },
+          "checks": [],
+          "captures": [],
+          "attempts": 1,
+          "ok": true,
+          "durationMs": 694,
+          "error": "",
+          "hint": ""
+        },
+        {
+          "index": 2,
+          "phase": "teardown",
+          "action": "command",
+          "display": "command docker exec foodmap-postgres psql -U foodmap -d foodmap_auth_db -c \"delete from auth_sessi…",
+          "expected": null,
+          "actual": {
+            "exitCode": 0,
+            "signal": null,
+            "stdout": "DELETE 1\n",
+            "stderr": "",
+            "value": "DELETE 1",
+            "content": "DELETE 1\n",
+            "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+          },
+          "checks": [],
+          "captures": [],
+          "attempts": 1,
+          "ok": true,
+          "durationMs": 208,
+          "error": "",
+          "hint": ""
+        },
+        {
+          "index": 3,
+          "phase": "teardown",
+          "action": "command",
+          "display": "command docker exec foodmap-postgres psql -U foodmap -d foodmap_auth_db -c \"delete from auth_ident…",
+          "expected": null,
+          "actual": {
+            "exitCode": 0,
+            "signal": null,
+            "stdout": "DELETE 1\n",
+            "stderr": "",
+            "value": "DELETE 1",
+            "content": "DELETE 1\n",
+            "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+          },
+          "checks": [],
+          "captures": [],
+          "attempts": 1,
+          "ok": true,
+          "durationMs": 213,
+          "error": "",
+          "hint": ""
+        },
+        {
+          "index": 4,
+          "phase": "teardown",
+          "action": "command",
+          "display": "command docker exec foodmap-postgres psql -U foodmap -d foodmap_auth_db -c \"delete from login_logs…",
+          "expected": null,
+          "actual": {
+            "exitCode": 0,
+            "signal": null,
+            "stdout": "DELETE 1\n",
+            "stderr": "",
+            "value": "DELETE 1",
+            "content": "DELETE 1\n",
+            "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+          },
+          "checks": [],
+          "captures": [],
+          "attempts": 1,
+          "ok": true,
+          "durationMs": 205,
+          "error": "",
+          "hint": ""
+        },
+        {
+          "index": 5,
+          "phase": "teardown",
+          "action": "command",
+          "display": "command docker exec foodmap-postgres psql -U foodmap -d foodmap_auth_db -c \"delete from refresh_to…",
+          "expected": null,
+          "actual": {
+            "exitCode": 0,
+            "signal": null,
+            "stdout": "DELETE 1\n",
+            "stderr": "",
+            "value": "DELETE 1",
+            "content": "DELETE 1\n",
+            "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+          },
+          "checks": [],
+          "captures": [],
+          "attempts": 1,
+          "ok": true,
+          "durationMs": 208,
+          "error": "",
+          "hint": ""
+        },
+        {
+          "index": 6,
+          "phase": "teardown",
+          "action": "command",
+          "display": "command docker exec foodmap-postgres psql -U foodmap -d foodmap_auth_db -c \"delete from auth_crede…",
+          "expected": null,
+          "actual": {
+            "exitCode": 0,
+            "signal": null,
+            "stdout": "DELETE 1\n",
+            "stderr": "",
+            "value": "DELETE 1",
+            "content": "DELETE 1\n",
+            "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+          },
+          "checks": [],
+          "captures": [],
+          "attempts": 1,
+          "ok": true,
+          "durationMs": 207,
+          "error": "",
+          "hint": ""
+        },
+        {
+          "index": 7,
+          "phase": "teardown",
+          "action": "command",
+          "display": "command docker exec foodmap-postgres psql -U foodmap -d foodmap_auth_db -c \"delete from auth_accou…",
+          "expected": null,
+          "actual": {
+            "exitCode": 0,
+            "signal": null,
+            "stdout": "DELETE 1\n",
+            "stderr": "",
+            "value": "DELETE 1",
+            "content": "DELETE 1\n",
+            "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+          },
+          "checks": [],
+          "captures": [],
+          "attempts": 1,
+          "ok": true,
+          "durationMs": 195,
+          "error": "",
+          "hint": ""
+        },
+        {
+          "index": 8,
+          "phase": "teardown",
+          "action": "command",
+          "display": "command docker exec foodmap-postgres psql -U foodmap -d foodmap_auth_db -tAc \"select count(*) from…",
+          "expected": {
+            "equals": "0"
+          },
+          "actual": {
+            "exitCode": 0,
+            "signal": null,
+            "stdout": "0\n",
+            "stderr": "",
+            "value": "0",
+            "content": "0\n",
+            "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+          },
+          "checks": [
+            {
+              "name": "equals",
+              "expected": "0",
+              "actual": "0",
+              "ok": true,
+              "error": "",
+              "message": ""
+            }
+          ],
+          "captures": [],
+          "attempts": 1,
+          "ok": true,
+          "durationMs": 196,
+          "error": "",
+          "hint": ""
+        }
+      ],
+      "evidence": {
+        "text": "/Users/zhangxuqian/myPrjDev/food-map/docs/integration/B1.5-orbstack-logging/evidence/2026-11-10T09-36-eaf79649-B1 iOS 登录 UI 全链路.txt",
+        "json": "/Users/zhangxuqian/myPrjDev/food-map/docs/integration/B1.5-orbstack-logging/evidence/2026-11-10T09-36-eaf79649-B1 iOS 登录 UI 全链路.json"
+      }
+    }
+  ],
+  "evidence": {
+    "text": "/Users/zhangxuqian/myPrjDev/food-map/docs/integration/B1.5-orbstack-logging/evidence/2026-11-10T09-36-suite-81840d2d-973f-4968-b6e2-44a188977b99-harness_scenarios.txt",
+    "json": "/Users/zhangxuqian/myPrjDev/food-map/docs/integration/B1.5-orbstack-logging/evidence/2026-11-10T09-36-suite-81840d2d-973f-4968-b6e2-44a188977b99-harness_scenarios.json"
+  }
+}

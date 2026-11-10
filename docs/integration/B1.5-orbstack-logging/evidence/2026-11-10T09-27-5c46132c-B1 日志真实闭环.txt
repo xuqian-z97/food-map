@@ -1,0 +1,10 @@
+验证场景: B1 日志真实闭环
+Run ID: run-20261110T012737Z-5c46132c
+Scenario: /Users/zhangxuqian/myPrjDev/food-map/harness/scenarios/b1-logging-closure.yml
+开始: 2026-11-10T01:27:37.585Z
+结束: 2026-11-10T01:27:50.929Z
+耗时: 13344ms
+结果: PASS (1/1)
+
+#   结果  耗时     步骤
+1   ok    13344ms  command python3 logging-closure-check.py

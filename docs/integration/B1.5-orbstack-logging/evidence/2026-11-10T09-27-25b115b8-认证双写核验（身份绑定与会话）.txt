@@ -1,0 +1,28 @@
+验证场景: 认证双写核验（身份绑定与会话）
+Run ID: run-20261110T012721Z-25b115b8
+Scenario: /Users/zhangxuqian/myPrjDev/food-map/harness/scenarios/b1-identity-dual-write.yml
+开始: 2026-11-10T01:27:21.122Z
+结束: 2026-11-10T01:27:22.729Z
+耗时: 1608ms
+结果: PASS (19/19)
+
+#   结果  耗时     步骤
+1   ok    12ms     command date +%s | cut -c3-10
+2   ok    7ms      command date +%s | cut -c7-10
+3   ok    80ms     http POST /api/auth/register
+4   ok    195ms    command docker exec foodmap-postgres psql -U foodmap -d foodmap_auth_db -tAc "select count(*) from…
+5   ok    5ms      command [ 3 -eq 3 ]
+6   ok    202ms    command docker exec foodmap-postgres psql -U foodmap -d foodmap_auth_db -tAc "select count(*) from…
+7   ok    5ms      command [ 1 -eq 1 ]
+8   ok    193ms    command docker exec foodmap-postgres psql -U foodmap -d foodmap_auth_db -tAc "select display_maske…
+9   ok    5ms      command [ '139****4041' = '139****4041' ]
+10  ok    195ms    command docker exec foodmap-postgres psql -U foodmap -d foodmap_auth_db -tAc "select display_maske…
+11  ok    6ms      command [ 'd***@example.com' = 'd***@example.com' ]
+12  ok    42ms     http POST /api/auth/login
+13  ok    208ms    command docker exec foodmap-postgres psql -U foodmap -d foodmap_auth_db -tAc "select count(*) from…
+14  ok    5ms      command [ 1 -eq 1 ]
+15  ok    18ms     http POST /api/auth/logout
+16  ok    211ms    command docker exec foodmap-postgres psql -U foodmap -d foodmap_auth_db -tAc "select count(*) from…
+17  ok    5ms      command [ 1 -eq 1 ]
+18  ok    207ms    command docker exec foodmap-postgres psql -U foodmap -d foodmap_auth_db -tAc "select count(*) from…
+19  ok    5ms      command [ 0 -eq 0 ]

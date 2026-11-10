@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-09T17-58-orbstack-logging-java",
+  "at": "2026-11-09T17:58:12+08:00",
+  "kind": "unit",
+  "command": "cd after && mvn -pl foodmap-common,foodmap-gateway-service,foodmap-auth-service,foodmap-user-service,foodmap-admin-service,foodmap-log-service -am test -Dstyle.color=never",
+  "env": "local",
+  "result": {
+    "total": 159,
+    "passed": 159,
+    "failed": 0,
+    "skipped": 0
+  },
+  "perModule": {
+    "foodmap-admin-service": 12,
+    "foodmap-auth-service": 24,
+    "foodmap-common": 80,
+    "foodmap-gateway-service": 14,
+    "foodmap-log-service": 22,
+    "foodmap-user-service": 7
+  },
+  "modules": [
+    "foodmap-admin-service",
+    "foodmap-auth-service",
+    "foodmap-common",
+    "foodmap-gateway-service",
+    "foodmap-log-service",
+    "foodmap-user-service"
+  ],
+  "covers": [
+    "F-019"
+  ],
+  "evidence": [
+    "after/foodmap-admin-service/target/surefire-reports"
+  ]
+}

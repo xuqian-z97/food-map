@@ -7,6 +7,7 @@
 
 | 场景 | 覆盖 | 依赖 |
 | --- | --- | --- |
+| `b1-logging-closure.yml` | 新认证实例 18081：真实 200/401 请求 → JSON 文件 → Fluent Bit/Kafka → ES 与日志库；检查时间解析与密码泄露 | logging profile + log-service 18089 + `/tmp/foodmap-orbstack-logs`；可通过 `LOGGING_TEST_BASE_URL`、`LOGGING_TEST_ES_URL`、`FOODMAP_LOGGING_DIR` 覆盖单场景连接 |
 | `b1-identity-consistency.yml` | 全库身份绑定/会话不变量只读核验；历史不一致也会失败，不自动清理 | PostgreSQL |
 | `b1-identity-dual-write.yml` | 注册绑定双写、登录创建会话、登出撤销及脱敏字段 | Gateway/Auth/User + PostgreSQL + Redis |
 | `b1-logout.yml` | B1 登出链路：注册 → 登录 → `/api/users/me` → 登出 → 旧 Access 401 → 旧 Refresh 401 → Refresh 状态落库 → 拒绝名单只 +1 | Gateway + Auth + Redis + PostgreSQL（`foodmap-redis` / `foodmap-postgres` 容器） |

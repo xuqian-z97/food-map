@@ -3,14 +3,14 @@ package com.foodmap.log.infrastructure.archive;
 import com.foodmap.log.application.port.LogArchiveObjectStorageClient;
 import com.foodmap.log.application.port.LogArchivePayload;
 import com.foodmap.log.infrastructure.persistence.entity.LogArchiveRecordEntity;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 /**
  * 占位日志归档对象存储适配器，真实 OSS 适配器接入前用于保持服务可启动。
  */
 @Component
-@ConditionalOnMissingBean(LogArchiveObjectStorageClient.class)
+@ConditionalOnProperty(prefix = "foodmap.log.archive.storage", name = "enabled", havingValue = "false", matchIfMissing = true)
 public class NoopLogArchiveObjectStorageClient implements LogArchiveObjectStorageClient {
 
     /**

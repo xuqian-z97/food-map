@@ -1,0 +1,476 @@
+{
+  "schemaVersion": 2,
+  "name": "B1 身份模型一致性核验",
+  "description": "核对 auth_identity_bindings / auth_sessions 与旧表是否全局一致：绑定数等于账号标识数、无孤儿绑定与会话、会话状态与 Refresh Token 一致、缺会话的 Token 只能由账号缺失解释",
+  "runId": "run-20261110T012719Z-dccdbc9b",
+  "source": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios/b1-identity-consistency.yml",
+  "ok": true,
+  "exitCode": 0,
+  "startedAt": "2026-11-10T01:27:19.455Z",
+  "finishedAt": "2026-11-10T01:27:21.121Z",
+  "durationMs": 1666,
+  "summary": {
+    "total": 15,
+    "passed": 15,
+    "failed": 0,
+    "skipped": 0,
+    "setupFailed": 0,
+    "teardownFailed": 0
+  },
+  "variableNames": [
+    "accountsWithMissingBindings",
+    "accountsWithoutBindings",
+    "dbContainer",
+    "emptyFields",
+    "orphanBindings",
+    "orphanSessions",
+    "runId",
+    "statusMismatch",
+    "totals",
+    "unexplained"
+  ],
+  "steps": [
+    {
+      "index": 1,
+      "phase": "step",
+      "action": "command",
+      "display": "command docker exec foodmap-postgres psql -U foodmap -d foodmap_auth_db -tAc \"select count(*) from…",
+      "expected": null,
+      "actual": {
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "0\n",
+        "stderr": "",
+        "value": "0",
+        "content": "0\n",
+        "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+      },
+      "checks": [],
+      "captures": [
+        "accountsWithMissingBindings"
+      ],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 202,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 2,
+      "phase": "step",
+      "action": "command",
+      "display": "command [ 0 -eq 0 ]",
+      "expected": {
+        "exitCode": 0
+      },
+      "actual": {
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "",
+        "stderr": "",
+        "value": "",
+        "content": "",
+        "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+      },
+      "checks": [
+        {
+          "name": "exitCode",
+          "expected": 0,
+          "actual": 0,
+          "ok": true,
+          "error": "",
+          "message": ""
+        }
+      ],
+      "captures": [],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 5,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 3,
+      "phase": "step",
+      "action": "command",
+      "display": "command docker exec foodmap-postgres psql -U foodmap -d foodmap_auth_db -tAc \"select count(*) from…",
+      "expected": null,
+      "actual": {
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "0\n",
+        "stderr": "",
+        "value": "0",
+        "content": "0\n",
+        "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+      },
+      "checks": [],
+      "captures": [
+        "accountsWithoutBindings"
+      ],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 207,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 4,
+      "phase": "step",
+      "action": "command",
+      "display": "command [ 0 -eq 0 ]",
+      "expected": {
+        "exitCode": 0
+      },
+      "actual": {
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "",
+        "stderr": "",
+        "value": "",
+        "content": "",
+        "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+      },
+      "checks": [
+        {
+          "name": "exitCode",
+          "expected": 0,
+          "actual": 0,
+          "ok": true,
+          "error": "",
+          "message": ""
+        }
+      ],
+      "captures": [],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 5,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 5,
+      "phase": "step",
+      "action": "command",
+      "display": "command docker exec foodmap-postgres psql -U foodmap -d foodmap_auth_db -tAc \"select count(*) from…",
+      "expected": null,
+      "actual": {
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "0\n",
+        "stderr": "",
+        "value": "0",
+        "content": "0\n",
+        "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+      },
+      "checks": [],
+      "captures": [
+        "orphanBindings"
+      ],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 215,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 6,
+      "phase": "step",
+      "action": "command",
+      "display": "command [ 0 -eq 0 ]",
+      "expected": {
+        "exitCode": 0
+      },
+      "actual": {
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "",
+        "stderr": "",
+        "value": "",
+        "content": "",
+        "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+      },
+      "checks": [
+        {
+          "name": "exitCode",
+          "expected": 0,
+          "actual": 0,
+          "ok": true,
+          "error": "",
+          "message": ""
+        }
+      ],
+      "captures": [],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 6,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 7,
+      "phase": "step",
+      "action": "command",
+      "display": "command docker exec foodmap-postgres psql -U foodmap -d foodmap_auth_db -tAc \"select count(*) from…",
+      "expected": null,
+      "actual": {
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "0\n",
+        "stderr": "",
+        "value": "0",
+        "content": "0\n",
+        "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+      },
+      "checks": [],
+      "captures": [
+        "orphanSessions"
+      ],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 203,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 8,
+      "phase": "step",
+      "action": "command",
+      "display": "command [ 0 -eq 0 ]",
+      "expected": {
+        "exitCode": 0
+      },
+      "actual": {
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "",
+        "stderr": "",
+        "value": "",
+        "content": "",
+        "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+      },
+      "checks": [
+        {
+          "name": "exitCode",
+          "expected": 0,
+          "actual": 0,
+          "ok": true,
+          "error": "",
+          "message": ""
+        }
+      ],
+      "captures": [],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 5,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 9,
+      "phase": "step",
+      "action": "command",
+      "display": "command docker exec foodmap-postgres psql -U foodmap -d foodmap_auth_db -tAc \"select count(*) from…",
+      "expected": null,
+      "actual": {
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "0\n",
+        "stderr": "",
+        "value": "0",
+        "content": "0\n",
+        "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+      },
+      "checks": [],
+      "captures": [
+        "statusMismatch"
+      ],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 200,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 10,
+      "phase": "step",
+      "action": "command",
+      "display": "command [ 0 -eq 0 ]",
+      "expected": {
+        "exitCode": 0
+      },
+      "actual": {
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "",
+        "stderr": "",
+        "value": "",
+        "content": "",
+        "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+      },
+      "checks": [
+        {
+          "name": "exitCode",
+          "expected": 0,
+          "actual": 0,
+          "ok": true,
+          "error": "",
+          "message": ""
+        }
+      ],
+      "captures": [],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 5,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 11,
+      "phase": "step",
+      "action": "command",
+      "display": "command docker exec foodmap-postgres psql -U foodmap -d foodmap_auth_db -tAc \"select (select count…",
+      "expected": null,
+      "actual": {
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "0\n",
+        "stderr": "",
+        "value": "0",
+        "content": "0\n",
+        "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+      },
+      "checks": [],
+      "captures": [
+        "unexplained"
+      ],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 208,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 12,
+      "phase": "step",
+      "action": "command",
+      "display": "command [ 0 -eq 0 ]",
+      "expected": {
+        "exitCode": 0
+      },
+      "actual": {
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "",
+        "stderr": "",
+        "value": "",
+        "content": "",
+        "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+      },
+      "checks": [
+        {
+          "name": "exitCode",
+          "expected": 0,
+          "actual": 0,
+          "ok": true,
+          "error": "",
+          "message": ""
+        }
+      ],
+      "captures": [],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 4,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 13,
+      "phase": "step",
+      "action": "command",
+      "display": "command docker exec foodmap-postgres psql -U foodmap -d foodmap_auth_db -tAc \"select count(*) from…",
+      "expected": null,
+      "actual": {
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "0\n",
+        "stderr": "",
+        "value": "0",
+        "content": "0\n",
+        "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+      },
+      "checks": [],
+      "captures": [
+        "emptyFields"
+      ],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 197,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 14,
+      "phase": "step",
+      "action": "command",
+      "display": "command [ 0 -eq 0 ]",
+      "expected": {
+        "exitCode": 0
+      },
+      "actual": {
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "",
+        "stderr": "",
+        "value": "",
+        "content": "",
+        "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+      },
+      "checks": [
+        {
+          "name": "exitCode",
+          "expected": 0,
+          "actual": 0,
+          "ok": true,
+          "error": "",
+          "message": ""
+        }
+      ],
+      "captures": [],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 4,
+      "error": "",
+      "hint": ""
+    },
+    {
+      "index": 15,
+      "phase": "step",
+      "action": "command",
+      "display": "command docker exec foodmap-postgres psql -U foodmap -d foodmap_auth_db -tAc \"select 'accounts=' |…",
+      "expected": null,
+      "actual": {
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "accounts=52\nbindings=103\nrefresh_tokens=121\nsessions=50\n",
+        "stderr": "",
+        "value": "accounts=52\nbindings=103\nrefresh_tokens=121\nsessions=50",
+        "content": "accounts=52\nbindings=103\nrefresh_tokens=121\nsessions=50\n",
+        "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+      },
+      "checks": [],
+      "captures": [
+        "totals"
+      ],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 198,
+      "error": "",
+      "hint": ""
+    }
+  ],
+  "evidence": {
+    "text": "/Users/zhangxuqian/myPrjDev/food-map/docs/integration/B1.5-orbstack-logging/evidence/2026-11-10T09-27-dccdbc9b-B1 身份模型一致性核验.txt",
+    "json": "/Users/zhangxuqian/myPrjDev/food-map/docs/integration/B1.5-orbstack-logging/evidence/2026-11-10T09-27-dccdbc9b-B1 身份模型一致性核验.json"
+  }
+}
