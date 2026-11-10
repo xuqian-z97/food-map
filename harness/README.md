@@ -99,3 +99,9 @@ VERIFY_REQUIRE_FULL=1 ./harness/scripts/verify.sh --json
 - 包装脚本兼容 macOS Bash 3.2 与 POSIX sh，不使用空 Bash 数组。`--json` 保持 stdout 纯 JSON；预检与进度到 stderr。
 - `--evidence-dir` 可覆盖默认 `/tmp/verify-evidence`；`--junit /tmp/verify.xml` 生成机器报告。`--dependencies <JSON>` 可显式覆盖预检清单。跳过不生成业务验收通过结论；真实全量通过后按规则写台账。
 - 普通的 `node tools/verify/cli.mjs run harness/scenarios/` **不自动预检/跳过**，保持原有全部执行语义。
+
+## 8. 日志闭环依赖（18081 / 18089）
+
+`b1-logging-closure.yml` 需要额外的备用认证实例（18081）和日志消费实例（18089）。
+用 `./deploy/dev-env/logging-stack.sh start` 启动，`status` 只读检查，`stop` 停止。
+未启动时 `verify.sh` 会把该场景标记为 SKIP（严格模式返回 1），不会误判为通过。

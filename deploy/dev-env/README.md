@@ -188,6 +188,18 @@ ADMIN_LOG_SERVICE_REQUEST_TIMEOUT=5s
 node tools/verify/cli.mjs run harness/scenarios/b1-logging-closure.yml
 ```
 
+常驻启停（推荐）：用脚本代替手工拼命令，端口和依赖变量与本文一致。
+
+```sh
+./deploy/dev-env/logging-stack.sh start    # 18081 认证 + 18089 日志消费；已在运行则跳过
+./deploy/dev-env/logging-stack.sh status   # 只读检查两个健康端点
+./deploy/dev-env/logging-stack.sh stop     # 只停止本脚本记录的进程
+```
+
+脚本首次运行会在 `after/*/target/cp.txt` 缺失时自动生成 classpath（需要 Maven 仓库可访问）；
+日志写入 `$FOODMAP_LOGGING_DIR`（默认 `/tmp/foodmap-orbstack-logs`），pid 文件在
+`/tmp/foodmap-dev-env/`。两个实例不会替换原有 8080/8081/8082。
+
 该场景检查健康请求 200、错误登录 401、注册/成功登录/登出 200 的完整链路。测试账号按运行时间生成，Refresh Token 会注销；账号和对应测试摘要保留用于追溯，不自动删除历史数据。`LOGGING_TEST_BASE_URL`、`LOGGING_TEST_ES_URL`、`FOODMAP_LOGGING_DIR` 可覆盖单场景连接；使用套件预检时也应同步 `harness/verify-dependencies.json` 的本机路径。
 
 本机启动接口访问摘要消费服务示例：

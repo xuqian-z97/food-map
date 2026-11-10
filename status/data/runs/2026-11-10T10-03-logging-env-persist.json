@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-10T10-03-logging-env-persist",
+  "at": "2026-11-10T10:03:47+08:00",
+  "kind": "integration",
+  "command": "FM_TEST_PW=<env> VERIFY_REQUIRE_FULL=1 ./harness/scripts/verify.sh",
+  "env": "local",
+  "result": {
+    "total": 6,
+    "passed": 6,
+    "failed": 0,
+    "skipped": 0
+  },
+  "covers": [
+    "F-021",
+    "F-019"
+  ],
+  "evidence": [
+    "deploy/dev-env/logging-stack.sh",
+    "harness/scenarios/b1-logging-closure.yml"
+  ],
+  "notes": "常驻 18081/18089 后严格套件 6/6、103 步、0 跳过；新增 logging-stack.sh 统一启停与只读状态检查。"
+}
