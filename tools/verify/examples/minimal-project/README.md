@@ -8,13 +8,15 @@
 ```text
 minimal-project/
 ├── server.py              # 20 行风格的 HTTP 服务：/health、/items、/items/<id>
-├── deps.json              # 依赖预检清单（服务是否在跑、python3 是否存在）
+├── deps.json              # 依赖预检清单（只检查示例服务是否在跑）
 ├── scenarios/smoke.yml    # 一个场景：健康检查 + 创建 + 查询 + 404 + 日志断言
 ├── logs/                  # 访问日志（运行时生成，不提交内容）
 └── README.md
 ```
 
 ## 怎么用
+
+### 情况 A：在本仓库内试跑
 
 ```sh
 # 1. 起服务（在 minimal-project 目录内）
@@ -28,6 +30,22 @@ node tools/verify/cli.mjs run tools/verify/examples/minimal-project/scenarios \
 VERIFY_REQUIRE_FULL=1 node tools/verify/cli.mjs run tools/verify/examples/minimal-project/scenarios \
   --dependencies tools/verify/examples/minimal-project/deps.json
 ```
+
+### 情况 B：已经复制到新项目（按复制后的布局执行）
+
+复制后的目录是 `scenarios/`、`deps.json`、`server.py` 与 `tools/verify/` 同级，
+所以命令里的路径要跟着变：
+
+```sh
+cd /path/to/other-project
+python3 server.py --port 19100          # 另开终端
+
+node tools/verify/cli.mjs run scenarios --dependencies deps.json
+
+VERIFY_REQUIRE_FULL=1 node tools/verify/cli.mjs run scenarios --dependencies deps.json
+```
+
+上面两条就是复制后应该照抄的命令；如果只照抄“情况 A”的路径，会指向原仓库的示例目录。
 
 ## 复制到新项目（完整命令）
 
