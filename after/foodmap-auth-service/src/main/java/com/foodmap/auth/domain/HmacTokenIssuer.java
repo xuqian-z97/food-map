@@ -3,7 +3,6 @@ package com.foodmap.auth.domain;
 import com.foodmap.auth.config.TokenSecretProperties;
 import com.foodmap.common.security.HmacTokenCodec;
 import com.foodmap.common.security.TokenClaims;
-import com.foodmap.common.validation.Check;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -25,11 +24,15 @@ public class HmacTokenIssuer {
     /**
      * 使用启动期校验过的密钥配置创建签发器，Spring 容器只使用本构造器，避免回退到测试用构造器。
      *
+     * <p>字段直接在本构造器内赋值，不使用 {@code this(...)} 委托：IDE 的确定赋值分析在
+     * 「委托 + 三元 null」组合下可能误报 {@code tokenCodec} 未初始化，直接赋值可避免歧义。</p>
+     *
      * @param tokenSecretProperties 从 {@code foodmap.security} 绑定的 Token 密钥配置，缺失或过短时启动阶段即失败。
      */
     @Autowired
     public HmacTokenIssuer(TokenSecretProperties tokenSecretProperties) {
-        this(tokenSecretProperties == null ? null : tokenSecretProperties.getTokenSecret());
+        this.tokenCodec = new HmacTokenCodec(
+                tokenSecretProperties == null ? null : tokenSecretProperties.getTokenSecret());
     }
 
     /**
@@ -38,7 +41,7 @@ public class HmacTokenIssuer {
      * @param secret HMAC 签名密钥。
      */
     public HmacTokenIssuer(String secret) {
-        this.tokenCodec = new HmacTokenCodec(Check.notBlank("secret", secret));
+        this.tokenCodec = new HmacTokenCodec(secret);
     }
 
     /**
