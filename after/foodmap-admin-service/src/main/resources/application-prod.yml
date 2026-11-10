@@ -20,6 +20,9 @@ spring:
         server-addr: ${NACOS_SERVER_ADDR}
 
 foodmap:
+  internal:
+    enabled: true
+    secret: ${FOODMAP_INTERNAL_SECRET}
   admin:
     password:
       # 生产环境不允许任何默认 pepper，缺失 ADMIN_PEPPER 时启动失败。

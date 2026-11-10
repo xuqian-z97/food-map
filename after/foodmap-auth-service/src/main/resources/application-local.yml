@@ -20,6 +20,9 @@ spring:
         server-addr: ${NACOS_SERVER_ADDR:127.0.0.1:8848}
 
 foodmap:
+  internal:
+    enabled: true
+    secret: ${FOODMAP_INTERNAL_SECRET:foodmap-dev-only-internal-secret-please-change}
   security:
     # 仅 local 本机开发默认值，不对公网开放；prod profile 在 application-prod.yml 中要求显式注入 FOODMAP_TOKEN_SECRET。
     token-secret: ${FOODMAP_TOKEN_SECRET:foodmap-dev-only-token-secret-please-change}

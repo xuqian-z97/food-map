@@ -4,7 +4,7 @@ title: 内部信任与网关攻击面收敛
 layer: backend
 phase: B1.6
 priority: P0
-status: in_progress
+status: implemented
 summary: "关闭 discovery locator；内部接口需服务身份签名，无签名或重放返回 401"
 backendModules:
   - foodmap-gateway-service
@@ -23,4 +23,4 @@ tasks:
   - T-032
 dependsOn:
   - F-024
-notes: "T-031 已完成（locator 关闭，/foodmap-log-service/internal/... 实测 404）；T-032 待做"
+notes: "T-031/T-032 完成：locator 关闭，内部签名四类拒绝分支与注册链路实测通过；待验收单"

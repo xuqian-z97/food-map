@@ -11,6 +11,7 @@ import com.foodmap.common.exception.CommonErrorCode;
 import com.foodmap.common.exception.FoodMapException;
 import com.foodmap.common.logging.LogMdcKeys;
 import com.foodmap.common.logging.TraceHeaders;
+import com.foodmap.common.security.InternalServiceSigner;
 import org.slf4j.MDC;
 
 import java.io.IOException;
@@ -24,6 +25,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 日志平台接口访问摘要 HTTP 客户端，通过内部接口查询 15 天访问摘要。
@@ -33,9 +35,15 @@ public class HttpLogApiAccessLogClient implements LogApiAccessLogClient {
             new TypeReference<>() {
             };
 
+    /**
+     * 日志平台内部查询路径，签名只覆盖路径本身，不包含查询字符串。
+     */
+    private static final String LOG_QUERY_PATH = "/internal/logs/api-access";
+
     private final HttpClient httpClient;
     private final ObjectMapper objectMapper;
     private final AdminLogClientProperties properties;
+    private final InternalServiceSigner signer;
 
     /**
      * 创建日志平台接口访问摘要 HTTP 客户端。
@@ -43,15 +51,18 @@ public class HttpLogApiAccessLogClient implements LogApiAccessLogClient {
      * @param httpClient Java HTTP 客户端。
      * @param objectMapper JSON 解析组件。
      * @param properties 日志平台客户端配置。
+     * @param signer 内部服务请求签名器，用于写入内部接口身份头。
      */
     public HttpLogApiAccessLogClient(
             HttpClient httpClient,
             ObjectMapper objectMapper,
-            AdminLogClientProperties properties
+            AdminLogClientProperties properties,
+            InternalServiceSigner signer
     ) {
         this.httpClient = httpClient;
         this.objectMapper = objectMapper;
         this.properties = properties;
+        this.signer = signer;
     }
 
     /**
@@ -90,9 +101,11 @@ public class HttpLogApiAccessLogClient implements LogApiAccessLogClient {
      */
     private HttpRequest buildRequest(AdminApiAccessLogQueryRequest request) {
         HttpRequest.Builder builder = HttpRequest.newBuilder()
-                .uri(URI.create(normalizedBaseUrl() + "/internal/logs/api-access" + queryString(request)))
+                .uri(URI.create(normalizedBaseUrl() + LOG_QUERY_PATH + queryString(request)))
                 .timeout(properties.getRequestTimeout())
                 .GET();
+        Map<String, String> signatureHeaders = signer.signHeaders("GET", LOG_QUERY_PATH, null);
+        signatureHeaders.forEach(builder::header);
         addHeaderIfPresent(builder, TraceHeaders.REQUEST_ID, MDC.get(LogMdcKeys.REQUEST_ID));
         addHeaderIfPresent(builder, TraceHeaders.TRACE_ID, MDC.get(LogMdcKeys.TRACE_ID));
         addHeaderIfPresent(builder, TraceHeaders.SPAN_ID, MDC.get(LogMdcKeys.SPAN_ID));

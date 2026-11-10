@@ -2350,6 +2350,19 @@ Docker Compose
 - 对最终一致性场景使用事件和本地索引，不用链式同步调用拼装复杂页面。
 - 对跨服务事件携带必要快照字段，避免消费者为了展示再反查多个服务。
 
+#### 16.1.1 内部接口鉴权
+
+除健康检查外，`/internal/**` 不能只依赖网关拦截，被调服务必须校验调用方服务身份：
+
+- 健康检查固定为 `/internal/{service}/health`，保持免签名，供网关和 verify 预检使用。
+- 调用方必须写入 `X-FoodMap-Service`、`X-FoodMap-Timestamp`、`X-FoodMap-Nonce`、`X-FoodMap-Signature` 四个请求头。
+- 签名算法为 HMAC-SHA256，原文固定六行：服务名、毫秒时间戳、nonce、大写 HTTP 方法、应用内路径、请求体 SHA-256 十六进制摘要；路径不包含查询字符串。
+- 时间窗默认 5 分钟，nonce 在 Redis 中保留 10 分钟；时间戳越窗、签名不一致、nonce 重复均返回 `401`。
+- 调用方白名单按路径登记：`/internal/users/provision` 只允许 `foodmap-auth-service`，`/internal/logs/**` 只允许 `foodmap-admin-service`；未登记路径或越权服务返回 `403`。
+- nonce 去重使用 Redis 原子 `trySet`，Key 为 `foodmap:internal:nonce:v1:{service}:{nonce}`；Redis 不可用时按 fail-closed 返回 `401`，不得降级放行。
+- 共享密钥来自 `FOODMAP_INTERNAL_SECRET`，签发方与校验方必须一致；生产 profile 缺失或不足 32 字符时启动失败。
+- 网关不签发也不校验内部签名，内部签名只在服务之间生效。
+
 暂缓引入：
 
 - 服务网格。

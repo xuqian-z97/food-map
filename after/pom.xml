@@ -87,6 +87,8 @@
                     <version>3.13.0</version>
                     <configuration>
                         <release>${maven.compiler.release}</release>
+                        <!-- 保留方法参数名，避免 @RequestParam / @PathVariable 依赖隐式参数名时运行期 400。 -->
+                        <parameters>true</parameters>
                     </configuration>
                 </plugin>
                 <plugin>

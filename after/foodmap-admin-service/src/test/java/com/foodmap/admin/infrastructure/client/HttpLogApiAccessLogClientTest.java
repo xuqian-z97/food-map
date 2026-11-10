@@ -4,6 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.foodmap.admin.dto.AdminApiAccessLogQueryRequest;
 import com.foodmap.common.logging.LogMdcKeys;
 import com.foodmap.common.logging.TraceHeaders;
+import com.foodmap.common.security.InternalServiceHeaders;
+import com.foodmap.common.security.InternalServiceSignature;
+import com.foodmap.common.security.InternalServiceSigner;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.MDC;
@@ -37,10 +40,13 @@ class HttpLogApiAccessLogClientTest {
         CapturingHttpClient httpClient = new CapturingHttpClient();
         AdminLogClientProperties properties = new AdminLogClientProperties();
         properties.setBaseUrl("http://log-service:8089");
+        String secret = "0123456789abcdef0123456789abcdef";
+        InternalServiceSigner signer = new InternalServiceSigner(secret, "foodmap-admin-service");
         HttpLogApiAccessLogClient client = new HttpLogApiAccessLogClient(
                 httpClient,
                 new ObjectMapper().findAndRegisterModules(),
-                properties
+                properties,
+                signer
         );
         MDC.put(LogMdcKeys.REQUEST_ID, "req-admin");
         MDC.put(LogMdcKeys.TRACE_ID, "trace-admin");
@@ -66,6 +72,21 @@ class HttpLogApiAccessLogClientTest {
         assertThat(httpClient.request.headers().firstValue(TraceHeaders.REQUEST_ID)).contains("req-admin");
         assertThat(httpClient.request.headers().firstValue(TraceHeaders.TRACE_ID)).contains("trace-admin");
         assertThat(httpClient.request.headers().firstValue(TraceHeaders.SPAN_ID)).contains("span-admin");
+        assertThat(httpClient.request.headers().firstValue(InternalServiceHeaders.SERVICE))
+                .contains("foodmap-admin-service");
+        String timestamp = httpClient.request.headers().firstValue(InternalServiceHeaders.TIMESTAMP).orElseThrow();
+        String nonce = httpClient.request.headers().firstValue(InternalServiceHeaders.NONCE).orElseThrow();
+        String expectedSignature = InternalServiceSignature.sign(
+                secret,
+                "foodmap-admin-service",
+                Long.parseLong(timestamp),
+                nonce,
+                "GET",
+                "/internal/logs/api-access",
+                null
+        );
+        assertThat(httpClient.request.headers().firstValue(InternalServiceHeaders.SIGNATURE))
+                .contains(expectedSignature);
         assertThat(response.total()).isEqualTo(1L);
         assertThat(response.items().getFirst().requestId()).isEqualTo("req-admin");
     }

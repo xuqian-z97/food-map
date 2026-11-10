@@ -20,6 +20,9 @@ spring:
         server-addr: ${NACOS_SERVER_ADDR:127.0.0.1:8848}
 
 foodmap:
+  internal:
+    enabled: true
+    secret: ${FOODMAP_INTERNAL_SECRET:foodmap-dev-only-internal-secret-please-change}
   logging:
     sql:
       enabled: true
