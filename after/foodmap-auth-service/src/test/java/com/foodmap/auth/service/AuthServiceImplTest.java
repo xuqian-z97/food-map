@@ -260,6 +260,40 @@ class AuthServiceImplTest {
     }
 
     @Test
+    void logoutShouldRejectInvalidAccessTokenAndNotWriteDenylist() {
+        RecordingAccessTokenDenylist recordingDenylist = new RecordingAccessTokenDenylist();
+        TestContext context = newContext(recordingDenylist);
+        AuthService service = context.service();
+        service.register(defaultRegisterRequest());
+        LoginResponse loginResponse = service.login(new LoginRequest("foodie_01", "secret123"));
+
+        assertThatThrownBy(() -> service.logout(
+                new LogoutRequest(loginResponse.refreshToken()), "Bearer not-a-valid-token"))
+                .isInstanceOf(FoodMapException.class)
+                .satisfies(ex -> assertThat(((FoodMapException) ex).status()).isEqualTo(401));
+
+        assertThat(recordingDenylist.denyCount()).isZero();
+        assertThat(recordingDenylist.deniedHash()).isNull();
+    }
+
+    @Test
+    void logoutWithoutAccessTokenShouldOnlyRevokeRefreshToken() {
+        RecordingAccessTokenDenylist recordingDenylist = new RecordingAccessTokenDenylist();
+        TestContext context = newContext(recordingDenylist);
+        AuthService service = context.service();
+        RegisterResponse registerResponse = service.register(defaultRegisterRequest());
+        LoginResponse loginResponse = service.login(new LoginRequest("foodie_01", "secret123"));
+
+        service.logout(new LogoutRequest(loginResponse.refreshToken()), null);
+
+        assertThat(recordingDenylist.denyCount()).isZero();
+        assertThat(context.tokenIssuer().parseAccessToken(loginResponse.accessToken()).userId())
+                .isEqualTo(registerResponse.userId());
+        assertThatThrownBy(() -> service.refresh(new RefreshTokenRequest(loginResponse.refreshToken())))
+                .isInstanceOf(FoodMapException.class);
+    }
+
+    @Test
     void registerUsesRollbackTransactionForUserProvisionFailure() throws NoSuchMethodException {
         Method registerMethod = AuthServiceImpl.class.getMethod("register", RegisterRequest.class);
 
@@ -397,11 +431,13 @@ class AuthServiceImplTest {
     private static final class RecordingAccessTokenDenylist implements AccessTokenDenylistClient {
         private String deniedHash;
         private OffsetDateTime expiresTime;
+        private int denyCount;
 
         @Override
         public void deny(String accessTokenHash, OffsetDateTime expiresTime) {
             this.deniedHash = accessTokenHash;
             this.expiresTime = expiresTime;
+            this.denyCount++;
         }
 
         @Override
@@ -415,6 +451,10 @@ class AuthServiceImplTest {
 
         private OffsetDateTime expiresTime() {
             return expiresTime;
+        }
+
+        private int denyCount() {
+            return denyCount;
         }
     }
 }

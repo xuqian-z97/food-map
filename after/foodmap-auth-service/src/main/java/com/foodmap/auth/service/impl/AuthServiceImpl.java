@@ -311,7 +311,15 @@ public class AuthServiceImpl implements AuthService {
     }
 
     /**
-     * 退出登录并撤销 Refresh Token；请求携带未过期 Bearer Access Token 时同步写入 Redis 拒绝名单。
+     * 退出登录并撤销 Refresh Token；请求携带 Bearer Access Token 时同步写入 Redis 拒绝名单。
+     *
+     * <p>两个分支的语义必须区分清楚：</p>
+     * <ul>
+     *   <li>携带 Authorization：Token 必须是可解析、类型正确且未过期的 Access Token，否则抛出 401，
+     *       不能静默返回成功；校验通过后按 Access Token 原过期时间写入拒绝名单，实现「登出即失效」。</li>
+     *   <li>不携带 Authorization：仅撤销 Refresh Token 和对应会话，不写拒绝名单；旧 Access Token 在自然过期前
+     *       仍然可用，这是兼容旧调用方的已知边界，客户端登出时应始终携带 Access Token。</li>
+     * </ul>
      *
      * <p>除旧表 refresh_tokens 外，同步把 refresh_token_hash 对应的 auth_sessions 会话置为 REVOKED，
      * 并记录 revoked_time，保证新旧会话事实一致。</p>
@@ -341,6 +349,10 @@ public class AuthServiceImpl implements AuthService {
 
     /**
      * 执行退出登录：撤销旧表 Refresh Token、撤销新表会话，并按需把 Access Token 写入拒绝名单。
+     *
+     * <p>携带 Authorization 时先撤销 Refresh Token 再校验 Access Token；Access Token 无效会抛出 401，
+     * 事务整体回滚，避免出现「Refresh Token 已撤销但请求返回失败」的半完成状态。
+     * 不携带 Authorization 时跳过拒绝名单写入，只完成 Refresh Token 撤销。</p>
      *
      * @param request 退出登录请求，包含待撤销的 Refresh Token。
      * @param authorization HTTP Authorization 请求头，允许为空。

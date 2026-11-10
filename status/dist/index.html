@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="color-scheme" content="light">
-<meta name="status-digest" content="1943bfc49b46">
+<meta name="status-digest" content="4413431296e5">
 <meta name="description" content="FoodMap 项目进度台账看板：功能点、任务、测试证据与验收门禁。生成物，请勿手改。">
-<title>FoodMap 进度看板 · b468bc1</title>
+<title>FoodMap 进度看板 · 16d18e2</title>
 <style>
 :root{--paper:#faf8f3;--white:#fffefa;--ink:#24352e;--muted:#65746c;--line:#dedfd5;--green:#265b47;--green-soft:#e8f0e8;--orange:#a94a2b;--orange-soft:#faeee3;--red:#9c4037;--blue:#3d5a80;--radius:8px}
 *{box-sizing:border-box}
@@ -94,11 +94,11 @@ footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--line);font-si
 <div class="wrap">
 <header class="top">
   <div class="eyebrow">FOODMAP · PROJECT LEDGER</div>
-  <h1>事实台账，<em>已完成 6</em> / 待验收 1</h1>
+  <h1>事实台账，<em>已完成 6</em> / 待验收 2</h1>
   <div class="meta">
-    <span>生成 <code>2026-11-10 11:34</code></span>
-    <span>HEAD <code>b468bc1</code> main</span>
-    <span>数据摘要 <code>1943bfc49b46</code></span>
+    <span>生成 <code>2026-11-10 11:58</code></span>
+    <span>HEAD <code>16d18e2</code> main</span>
+    <span>数据摘要 <code>4413431296e5</code></span>
     <span>功能点 30 · 跨端 18 · 仅前端 2 · 仅后端 10</span>
   </div>
 </header>
@@ -106,10 +106,10 @@ footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--line);font-si
 <div class="kpis">
   <div class="kpi"><span>功能点</span><strong>30</strong><small>含未开始</small></div>
   <div class="kpi"><span>已完成</span><strong>6</strong><small>通过验收</small></div>
-  <div class="kpi"><span>待验收</span><strong>1</strong><small>已实现或已提测</small></div>
+  <div class="kpi"><span>待验收</span><strong>2</strong><small>已实现或已提测</small></div>
   <div class="kpi"><span>未排任务</span><strong>5</strong><small>未完成且无任务</small></div>
   <div class="kpi"><span>P0 未完成</span><strong>2</strong><small>最高优先级</small></div>
-  <div class="kpi"><span>任务</span><strong>17<small>/47</small></strong><small>已完成 / 总数</small></div>
+  <div class="kpi"><span>任务</span><strong>20<small>/47</small></strong><small>已完成 / 总数</small></div>
 </div>
 
 <div class="bar">
@@ -162,21 +162,21 @@ footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--line);font-si
   <td>A-005 · pass</td>
   <td class="nowrap">80e9022<div class="muted">2026-11-09</div></td>
 </tr>
-<tr data-row data-state="in_progress" data-priority="P0" data-layer="backend">
+<tr data-row data-state="implemented" data-priority="P0" data-layer="backend">
   <td><a href="#F-024"><code>F-024</code></a><div class="t">认证密钥与 Token 闭环</div></td>
-  <td><span class="st st-in_progress">进行中</span></td>
+  <td><span class="st st-implemented">已实现·待测试</span></td>
   <td><span class="pr pr-P0">P0</span></td>
   <td><code class="chip">foodmap-auth-service</code><code class="chip">foodmap-gateway-service</code><code class="chip">foodmap-common</code><code class="chip">foodmap-admin-service</code></td>
-  <td>6 项</td>
+  <td>3 项</td>
   <td><span class="muted">—</span></td>
   <td class="nowrap">80e9022<div class="muted">2026-11-09</div></td>
 </tr>
-<tr data-row data-state="planned" data-priority="P0" data-layer="backend">
+<tr data-row data-state="in_progress" data-priority="P0" data-layer="backend">
   <td><a href="#F-025"><code>F-025</code></a><div class="t">内部信任与网关攻击面收敛</div></td>
-  <td><span class="st st-planned">已排期</span></td>
+  <td><span class="st st-in_progress">进行中</span></td>
   <td><span class="pr pr-P0">P0</span></td>
   <td><code class="chip">foodmap-gateway-service</code><code class="chip">foodmap-user-service</code><code class="chip">foodmap-log-service</code><code class="chip">foodmap-common</code><code class="chip">foodmap-auth-service</code><code class="chip">foodmap-admin-service</code></td>
-  <td>4 项</td>
+  <td>2 项</td>
   <td><span class="muted">—</span></td>
   <td class="nowrap">80e9022<div class="muted">2026-11-09</div></td>
 </tr>
@@ -574,17 +574,17 @@ footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--line);font-si
 <div class="grp">
   <h3><span class="pr pr-P0">P0</span> <span class="muted">P0 最高 · 2 项</span></h3>
   <div class="cards">
-    <article class="card" data-row data-state="in_progress" data-priority="P0" data-layer="backend">
-      <div class="card-top"><a href="#F-024"><code>F-024</code></a> <span class="st st-in_progress">进行中</span> <span class="ly ly-backend">后端</span></div>
+    <article class="card" data-row data-state="implemented" data-priority="P0" data-layer="backend">
+      <div class="card-top"><a href="#F-024"><code>F-024</code></a> <span class="st st-implemented">已实现·待测试</span> <span class="ly ly-backend">后端</span></div>
       <h4>认证密钥与 Token 闭环</h4>
       <p class="muted">密钥统一注入且生产缺失即失败；Token 严格分段，登出后追加后缀仍返回 401</p>
-      <div class="card-meta"><span class="muted">任务 6 项</span><span class="blk">缺验收单</span><span class="blk">缺测试运行证据</span></div>
+      <div class="card-meta"><span class="muted">任务 3 项</span><span class="blk">缺验收单</span></div>
     </article>
-    <article class="card" data-row data-state="planned" data-priority="P0" data-layer="backend">
-      <div class="card-top"><a href="#F-025"><code>F-025</code></a> <span class="st st-planned">已排期</span> <span class="ly ly-backend">后端</span></div>
+    <article class="card" data-row data-state="in_progress" data-priority="P0" data-layer="backend">
+      <div class="card-top"><a href="#F-025"><code>F-025</code></a> <span class="st st-in_progress">进行中</span> <span class="ly ly-backend">后端</span></div>
       <h4>内部信任与网关攻击面收敛</h4>
       <p class="muted">关闭 discovery locator；内部接口需服务身份签名，无签名或重放返回 401</p>
-      <div class="card-meta"><span class="muted">任务 4 项</span><span class="blk">缺验收单</span><span class="blk">缺测试运行证据</span></div>
+      <div class="card-meta"><span class="muted">任务 2 项</span><span class="blk">缺验收单</span><span class="blk">缺测试运行证据</span></div>
     </article>
   </div>
 </div>
@@ -737,29 +737,8 @@ footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--line);font-si
   <p class="lead">已完成任务记录实施时间点与提交；未完成任务按优先级排序。</p>
 <div class="two-col">
   <div>
-    <h3>未完成任务 <span class="muted">30 项 · 按优先级</span></h3>
+    <h3>未完成任务 <span class="muted">27 项 · 按优先级</span></h3>
     <div class="table-wrap"><table><thead><tr><th>任务</th><th>内容</th><th>功能点</th><th>优先级</th><th>状态</th></tr></thead><tbody>
-<tr data-row data-state="todo" data-priority="P0">
-  <td><code>T-026</code></td>
-  <td>Access/Refresh Token 严格分段校验</td>
-  <td><a href="#F-024"><code>F-024</code></a></td>
-  <td><span class="pr pr-P0">P0</span></td>
-  <td>未开始</td>
-</tr>
-<tr data-row data-state="todo" data-priority="P0">
-  <td><code>T-027</code></td>
-  <td>登出必须写拒绝名单</td>
-  <td><a href="#F-024"><code>F-024</code></a></td>
-  <td><span class="pr pr-P0">P0</span></td>
-  <td>未开始</td>
-</tr>
-<tr data-row data-state="todo" data-priority="P0">
-  <td><code>T-031</code></td>
-  <td>关闭 gateway discovery locator</td>
-  <td><a href="#F-025"><code>F-025</code></a></td>
-  <td><span class="pr pr-P0">P0</span></td>
-  <td>未开始</td>
-</tr>
 <tr data-row data-state="todo" data-priority="P0">
   <td><code>T-032</code></td>
   <td>内部接口服务身份签名</td>
@@ -952,7 +931,7 @@ footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--line);font-si
     </tbody></table></div>
   </div>
   <div>
-    <h3>已完成任务 <span class="muted">17 项 · 含实施时间点</span></h3>
+    <h3>已完成任务 <span class="muted">20 项 · 含实施时间点</span></h3>
     <div class="table-wrap"><table><thead><tr><th>任务</th><th>内容</th><th>功能点</th><th>完成时间</th><th>提交</th></tr></thead><tbody>
 <tr data-row data-state="done" data-priority="P0">
   <td><code>T-009</code></td>
@@ -1030,6 +1009,27 @@ footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--line);font-si
   <td><a href="#F-019"><code>F-019</code></a></td>
   <td class="nowrap">2026-11-10 09:40</td>
   <td><code>6120cee</code></td>
+</tr>
+<tr data-row data-state="done" data-priority="P0">
+  <td><code>T-026</code></td>
+  <td>Access/Refresh Token 严格分段校验</td>
+  <td><a href="#F-024"><code>F-024</code></a></td>
+  <td class="nowrap">2026-11-10 11:58</td>
+  <td><code>—</code></td>
+</tr>
+<tr data-row data-state="done" data-priority="P0">
+  <td><code>T-027</code></td>
+  <td>登出必须写拒绝名单</td>
+  <td><a href="#F-024"><code>F-024</code></a></td>
+  <td class="nowrap">2026-11-10 11:58</td>
+  <td><code>—</code></td>
+</tr>
+<tr data-row data-state="done" data-priority="P0">
+  <td><code>T-031</code></td>
+  <td>关闭 gateway discovery locator</td>
+  <td><a href="#F-025"><code>F-025</code></a></td>
+  <td class="nowrap">2026-11-10 11:58</td>
+  <td><code>—</code></td>
 </tr>
 <tr data-row data-state="done" data-priority="P1">
   <td><code>T-001</code></td>
@@ -1225,8 +1225,8 @@ footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--line);font-si
 <li><code>front/FoodMapApp/FoodMapApp/Core/Auth/**</code></li></ul>
   </div>
 </details>
-<details class="item" id="F-024" data-row data-state="in_progress" data-priority="P0" data-layer="backend">
-  <summary><code>F-024</code> 认证密钥与 Token 闭环 <span class="st st-in_progress">进行中</span> <span class="pr pr-P0">P0</span> <span class="ly ly-backend">后端</span></summary>
+<details class="item" id="F-024" data-row data-state="implemented" data-priority="P0" data-layer="backend">
+  <summary><code>F-024</code> 认证密钥与 Token 闭环 <span class="st st-implemented">已实现·待测试</span> <span class="pr pr-P0">P0</span> <span class="ly ly-backend">后端</span></summary>
   <div class="item-body">
     <p>密钥统一注入且生产缺失即失败；Token 严格分段，登出后追加后缀仍返回 401</p>
     <dl>
@@ -1235,15 +1235,12 @@ footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--line);font-si
       <dt>最近提交</dt><dd><code>80e9022</code> 2026-11-09 · feat: 注入 Token 密钥并输出结构化 JSON 日志</dd>
       <dt>验收单</dt><dd><span class="muted">无验收单</span></dd>
       <dt>联调 case</dt><dd><span class="muted">—</span></dd>
-      <dt>测试证据</dt><dd><span class="muted">无覆盖该功能点的运行记录</span></dd>
-      <dt>未完成原因</dt><dd><span class="blk">缺验收单</span><span class="blk">缺测试运行证据</span></dd>
+      <dt>测试证据</dt><dd><code></code> </dd>
+      <dt>未完成原因</dt><dd><span class="blk">缺验收单</span></dd>
     </dl>
     <h4>任务</h4><ul><li><code>T-025</code> Token 密钥统一注入与 fail-fast · done · 2026-11-09 16:39</li>
-<li><code>T-026</code> Access/Refresh Token 严格分段校验 · todo</li>
-<li><code>T-027</code> 登出必须写拒绝名单 · todo</li>
-<li><code>T-025</code> Token 密钥统一注入与 fail-fast · done · 2026-11-09 16:39</li>
-<li><code>T-026</code> Access/Refresh Token 严格分段校验 · todo</li>
-<li><code>T-027</code> 登出必须写拒绝名单 · todo</li></ul>
+<li><code>T-026</code> Access/Refresh Token 严格分段校验 · done · 2026-11-10 11:58</li>
+<li><code>T-027</code> 登出必须写拒绝名单 · done · 2026-11-10 11:58</li></ul>
     <h4>路径</h4><ul><li><code>after/foodmap-auth-service/src/**</code></li>
 <li><code>after/foodmap-gateway-service/src/**</code></li>
 <li><code>after/foodmap-common/src/main/java/com/foodmap/common/security/**</code></li>
@@ -1251,8 +1248,8 @@ footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--line);font-si
 <li><code>deploy/env.example</code></li></ul>
   </div>
 </details>
-<details class="item" id="F-025" data-row data-state="planned" data-priority="P0" data-layer="backend">
-  <summary><code>F-025</code> 内部信任与网关攻击面收敛 <span class="st st-planned">已排期</span> <span class="pr pr-P0">P0</span> <span class="ly ly-backend">后端</span></summary>
+<details class="item" id="F-025" data-row data-state="in_progress" data-priority="P0" data-layer="backend">
+  <summary><code>F-025</code> 内部信任与网关攻击面收敛 <span class="st st-in_progress">进行中</span> <span class="pr pr-P0">P0</span> <span class="ly ly-backend">后端</span></summary>
   <div class="item-body">
     <p>关闭 discovery locator；内部接口需服务身份签名，无签名或重放返回 401</p>
     <dl>
@@ -1264,9 +1261,7 @@ footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--line);font-si
       <dt>测试证据</dt><dd><span class="muted">无覆盖该功能点的运行记录</span></dd>
       <dt>未完成原因</dt><dd><span class="blk">缺验收单</span><span class="blk">缺测试运行证据</span></dd>
     </dl>
-    <h4>任务</h4><ul><li><code>T-031</code> 关闭 gateway discovery locator · todo</li>
-<li><code>T-032</code> 内部接口服务身份签名 · todo</li>
-<li><code>T-031</code> 关闭 gateway discovery locator · todo</li>
+    <h4>任务</h4><ul><li><code>T-031</code> 关闭 gateway discovery locator · done · 2026-11-10 11:58</li>
 <li><code>T-032</code> 内部接口服务身份签名 · todo</li></ul>
     <h4>路径</h4><ul><li><code>after/foodmap-gateway-service/src/main/resources/application.yml</code></li>
 <li><code>after/foodmap-common/src/main/java/com/foodmap/common/security/**</code></li>
@@ -1725,7 +1720,7 @@ footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--line);font-si
 
 <footer>
   <span>FoodMap 进度台账 · 由 <code>status build</code> 生成，请勿手改</span>
-  <span>HEAD b468bc1 · 2026-11-10</span>
+  <span>HEAD 16d18e2 · 2026-11-10</span>
   <span>时区 Asia/Shanghai</span>
   <a href="#backend">回到顶部 ↑</a>
 </footer>

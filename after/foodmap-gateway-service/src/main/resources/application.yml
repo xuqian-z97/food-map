@@ -26,8 +26,9 @@ spring:
     gateway:
       discovery:
         locator:
-          enabled: true
-          lower-case-service-id: true
+          # 只保留下面显式声明的路由。启用 locator 会为每个 Nacos 服务自动生成 /{serviceId}/**
+          # 路由，绕过 GatewayAuthFilter 对 /api/ 与 /internal/ 的路径前缀判断。
+          enabled: false
       routes:
         - id: auth-service
           uri: lb://foodmap-auth-service

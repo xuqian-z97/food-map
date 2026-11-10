@@ -53,6 +53,15 @@ steps:
       status: 200
       json: { code: OK }
 
+  # Token 分段绕过：签名只覆盖前两段，追加完整第 4 段后签名仍有效，
+  # 但 Access Token 必须因段数不等于 3 直接 401，不能进入网关后续处理。
+  - http: GET /api/users/me
+    headers:
+      Authorization: Bearer ${access}.appended
+    expect:
+      status: 401
+      json: { code: UNAUTHORIZED }
+
   - command: "docker exec ${redisContainer} redis-cli --scan --pattern 'foodmap:auth:access-token-denylist:v1:*' | wc -l"
     capture:
       before: value
@@ -100,6 +109,49 @@ steps:
   - command: "[ ${revoked} -eq 1 ]"
     expect:
       exitCode: 0
+
+  # 边界：不带 Authorization 登出只撤销 Refresh Token，旧 Access Token 不会进入拒绝名单，
+  # 在自然过期前仍可用。该行为用于兼容旧调用方，客户端登出应始终携带 Access Token。
+  - http: POST /api/auth/login
+    json:
+      loginIdentifier: zxq_vk_${stamp}
+      password: ${env:FM_TEST_PW}
+    expect:
+      status: 200
+      json: { code: OK }
+    capture:
+      boundaryAccess: data.accessToken
+      boundaryRefresh: data.refreshToken
+
+  - http: POST /api/auth/logout
+    json:
+      refreshToken: ${boundaryRefresh}
+    expect:
+      status: 200
+
+  - http: GET /api/users/me
+    headers:
+      Authorization: Bearer ${boundaryAccess}
+    expect:
+      status: 200
+      json: { code: OK }
+
+  - command: "docker exec ${redisContainer} redis-cli --scan --pattern 'foodmap:auth:access-token-denylist:v1:*' | wc -l"
+    capture:
+      afterNoAuth: value
+    expect:
+      exitCode: 0
+
+  - command: "[ ${afterNoAuth} -eq ${after} ]"
+    expect:
+      exitCode: 0
+
+  - http: POST /api/auth/refresh
+    json:
+      refreshToken: ${boundaryRefresh}
+    expect:
+      status: 401
+      json: { code: UNAUTHORIZED }
 
 # 只清理本轮生成的账号（按 account_id / user_id），不按前缀删库，也不触碰历史数据。
 teardown:

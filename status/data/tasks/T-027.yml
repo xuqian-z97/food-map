@@ -2,7 +2,8 @@ schemaVersion: 1
 id: T-027
 feature: F-024
 title: 登出必须写拒绝名单
-status: todo
+status: done
 priority: P0
 owner: agent
+doneAt: 2026-11-10T11:58:07+08:00
 planRef: docs/superpowers/plans/2026-11-09-backend-hardening.md

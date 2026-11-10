@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-10T11-57-b1-logout",
+  "at": "2026-11-10T11:57:32+08:00",
+  "kind": "e2e",
+  "command": "node tools/verify/cli.mjs run harness/scenarios/b1-logout.yml",
+  "env": "local",
+  "result": {
+    "total": 30,
+    "passed": 30,
+    "failed": 0,
+    "skipped": 0
+  },
+  "covers": [
+    "F-024"
+  ],
+  "evidence": [
+    "docs/integration/B1-auth-ios-backend/evidence/2026-11-10T11-57-e269e40f-B1 退出登录链路（接口级）.json"
+  ],
+  "notes": "T-026/T-027 复跑：Access Token 追加第 4 段返回 401；带有效 Token 登出 denylist +1 且旧 Token 401；不带 Authorization 登出只撤销 Refresh，旧 Access 仍可用（denylist 不变）。30/30 通过。"
+}

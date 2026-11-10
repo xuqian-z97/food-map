@@ -35,6 +35,21 @@ public class HmacTokenCodec {
      */
     private static final Base64.Decoder URL_DECODER = Base64.getUrlDecoder();
 
+    /**
+     * Access Token 固定段数：{@code header.payload.signature}。
+     *
+     * <p>段数必须精确匹配。历史实现只校验 {@code >= 3}，攻击者追加一个完整段后签名仍然有效，
+     * 但 tokenHash 改变，可绕过拒绝名单；排查「登出后旧 Access Token 仍可用」时应先确认该值。</p>
+     */
+    private static final int ACCESS_TOKEN_PARTS = 3;
+
+    /**
+     * Refresh Token 固定段数：在 Access Token 基础上追加 UUID nonce，共 4 段。
+     *
+     * <p>不能与 Access Token 共用同一期望段数，否则所有 Refresh Token 会被误判为结构错误。</p>
+     */
+    private static final int REFRESH_TOKEN_PARTS = 4;
+
     private final String secret;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -114,7 +129,7 @@ public class HmacTokenCodec {
      * @return 解析出的 Token 声明。
      */
     public TokenClaims parseAccessToken(String token) {
-        TokenClaims claims = parse(token);
+        TokenClaims claims = parse(token, ACCESS_TOKEN_PARTS);
         if (claims.tokenType() != TokenType.ACCESS) {
             throw new FoodMapException(CommonErrorCode.UNAUTHORIZED, "Access Token 类型错误");
         }
@@ -128,7 +143,7 @@ public class HmacTokenCodec {
      * @return 解析出的 Token 声明。
      */
     public TokenClaims parseRefreshToken(String token) {
-        TokenClaims claims = parse(token);
+        TokenClaims claims = parse(token, REFRESH_TOKEN_PARTS);
         if (claims.tokenType() != TokenType.REFRESH) {
             throw new FoodMapException(CommonErrorCode.UNAUTHORIZED, "Refresh Token 类型错误");
         }
@@ -156,10 +171,20 @@ public class HmacTokenCodec {
         return unsignedToken + "." + sign(unsignedToken);
     }
 
-    private TokenClaims parse(String token) {
+    /**
+     * 按 Token 类型解析并校验结构、签名和载荷。
+     *
+     * <p>段数使用精确匹配而不是下限匹配：签名只覆盖前两段，若允许追加段，则可构造「签名有效但 tokenHash 不同」
+     * 的 Token 绕过拒绝名单。调用方必须按 Token 类型传入期望段数，不能统一按 Access Token 处理。</p>
+     *
+     * @param token 待解析的明文 Token。
+     * @param expectedParts 该 Token 类型要求的精确段数。
+     * @return 解析出的 Token 声明。
+     */
+    private TokenClaims parse(String token, int expectedParts) {
         String effectiveToken = Check.notBlank("token", token);
         String[] parts = effectiveToken.split("\\.");
-        if (parts.length < 3) {
+        if (parts.length != expectedParts) {
             throw new FoodMapException(CommonErrorCode.UNAUTHORIZED, "Token 结构错误");
         }
         String unsignedToken = parts[0] + "." + parts[1];

@@ -67,6 +67,9 @@ public class AuthController {
     /**
      * 退出登录并撤销 Refresh Token，可选携带当前 Access Token 以便写入拒绝名单。
      *
+     * <p>携带 Authorization 时必须提供可解析且未过期的 Bearer Access Token，否则返回 401；
+     * 不携带时仅撤销 Refresh Token，旧 Access Token 在自然过期前仍可用。客户端登出应始终携带 Access Token。</p>
+     *
      * @param request 退出登录请求，包含待撤销的 Refresh Token。
      * @param authorization HTTP Authorization 请求头，存在 Bearer Access Token 时会同步触发短期失效。
      * @return 空响应体，用于表示退出登录处理完成。
