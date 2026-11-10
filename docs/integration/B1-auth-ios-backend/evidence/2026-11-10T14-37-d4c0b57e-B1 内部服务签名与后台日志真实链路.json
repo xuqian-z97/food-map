@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 2,
+  "name": "B1 内部服务签名与后台日志真实链路",
+  "description": "只读验证 locator、无签名、过期、重放、越权、篡改和 admin Java HttpClient 到 log 的真实签名链路；不验证 T-033 RBAC",
+  "runId": "run-20261110T063749Z-d4c0b57e",
+  "source": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios/b1-internal-service-auth.yml",
+  "ok": true,
+  "exitCode": 0,
+  "startedAt": "2026-11-10T06:37:49.406Z",
+  "finishedAt": "2026-11-10T06:37:49.543Z",
+  "durationMs": 137,
+  "summary": {
+    "total": 1,
+    "passed": 1,
+    "failed": 0,
+    "skipped": 0,
+    "setupFailed": 0,
+    "teardownFailed": 0
+  },
+  "variableNames": [
+    "runId"
+  ],
+  "steps": [
+    {
+      "index": 1,
+      "phase": "step",
+      "action": "command",
+      "display": "command python3 internal-service-auth-check.py",
+      "expected": {
+        "exitCode": 0,
+        "stdoutContains": "\"result\": \"pass\""
+      },
+      "actual": {
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "{\"result\": \"pass\", \"checks\": [{\"name\": \"locator-disabled\", \"status\": 404}, {\"name\": \"explicit-auth-health\", \"status\": 200}, {\"name\": \"explicit-user-health\", \"status\": 200}, {\"name\": \"user-missing-signature\", \"status\": 401}, {\"name\": \"log-missing-signature\", \"status\": 401}, {\"name\": \"log-valid-signature\", \"status\": 200}, {\"name\": \"log-replayed-nonce\", \"status\": 401}, {\"name\": \"log-expired-timestamp\", \"status\": 401}, {\"name\": \"log-wrong-service\", \"status\": 403}, {\"name\": \"provision-wrong-service\", \"status\": 403}, {\"name\": \"log-tampered-signature\", \"status\": 401}, {\"name\": \"user-health-exempt\", \"status\": 200}, {\"name\": \"admin-http-client-to-log\", \"status\": 200}], \"adminRbacValidated\": false}\n",
+        "stderr": "",
+        "value": "{\"result\": \"pass\", \"checks\": [{\"name\": \"locator-disabled\", \"status\": 404}, {\"name\": \"explicit-auth-health\", \"status\": 200}, {\"name\": \"explicit-user-health\", \"status\": 200}, {\"name\": \"user-missing-signature\", \"status\": 401}, {\"name\": \"log-missing-signature\", \"status\": 401}, {\"name\": \"log-valid-signature\", \"status\": 200}, {\"name\": \"log-replayed-nonce\", \"status\": 401}, {\"name\": \"log-expired-timestamp\", \"status\": 401}, {\"name\": \"log-wrong-service\", \"status\": 403}, {\"name\": \"provision-wrong-service\", \"status\": 403}, {\"name\": \"log-tampered-signature\", \"status\": 401}, {\"name\": \"user-health-exempt\", \"status\": 200}, {\"name\": \"admin-http-client-to-log\", \"status\": 200}], \"adminRbacValidated\": false}",
+        "content": "{\"result\": \"pass\", \"checks\": [{\"name\": \"locator-disabled\", \"status\": 404}, {\"name\": \"explicit-auth-health\", \"status\": 200}, {\"name\": \"explicit-user-health\", \"status\": 200}, {\"name\": \"user-missing-signature\", \"status\": 401}, {\"name\": \"log-missing-signature\", \"status\": 401}, {\"name\": \"log-valid-signature\", \"status\": 200}, {\"name\": \"log-replayed-nonce\", \"status\": 401}, {\"name\": \"log-expired-timestamp\", \"status\": 401}, {\"name\": \"log-wrong-service\", \"status\": 403}, {\"name\": \"provision-wrong-service\", \"status\": 403}, {\"name\": \"log-tampered-signature\", \"status\": 401}, {\"name\": \"user-health-exempt\", \"status\": 200}, {\"name\": \"admin-http-client-to-log\", \"status\": 200}], \"adminRbacValidated\": false}\n",
+        "cwd": "/Users/zhangxuqian/myPrjDev/food-map/harness/scenarios"
+      },
+      "checks": [
+        {
+          "name": "exitCode",
+          "expected": 0,
+          "actual": 0,
+          "ok": true,
+          "error": "",
+          "message": ""
+        },
+        {
+          "name": "stdoutContains",
+          "expected": "\"result\": \"pass\"",
+          "actual": "{\"result\": \"pass\", \"checks\": [{\"name\": \"locator-disabled\", \"status\": 404}, {\"name\": \"explicit-auth-health\", \"status\": 200}, {\"name\": \"explicit-user-health\", \"status\": 200}, {\"name\": \"user-missing-signature\", \"status\": 401}, {\"name\": \"log-missing-signature\", \"status\": 401}, {\"name\": \"log-valid-signature\", \"status\": 200}, {\"name\": \"log-replayed-nonce\", \"status\": 401}, {\"name\": \"log-expired-timestamp\", \"status\": 401}, {\"name\": \"log-wrong-service\", \"status\": 403}, {\"name\": \"provision-wrong-service\", \"status\": 403}, {\"name\": \"log-tampered-signature\", \"status\": 401}, {\"name\": \"user-health-exempt\", \"status\": 200}, {\"name\": \"admin-http-client-to-log\", \"status\": 200}], \"adminRbacValidated\": false}\n",
+          "ok": true,
+          "error": "",
+          "message": ""
+        }
+      ],
+      "captures": [],
+      "attempts": 1,
+      "ok": true,
+      "durationMs": 136,
+      "error": "",
+      "hint": ""
+    }
+  ],
+  "evidence": {
+    "text": "/Users/zhangxuqian/myPrjDev/food-map/docs/integration/B1-auth-ios-backend/evidence/2026-11-10T14-37-d4c0b57e-B1 内部服务签名与后台日志真实链路.txt",
+    "json": "/Users/zhangxuqian/myPrjDev/food-map/docs/integration/B1-auth-ios-backend/evidence/2026-11-10T14-37-d4c0b57e-B1 内部服务签名与后台日志真实链路.json"
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-10T14-48-hardening-final-harness",
+  "at": "2026-11-10T14:48:29+08:00",
+  "kind": "e2e",
+  "command": "VERIFY_REQUIRE_FULL=1 ./harness/scripts/run-all.sh",
+  "env": "local",
+  "result": {
+    "total": 11,
+    "passed": 11,
+    "failed": 0,
+    "skipped": 0
+  },
+  "covers": [
+    "F-001",
+    "F-002",
+    "F-003",
+    "F-004",
+    "F-018",
+    "F-019",
+    "F-023",
+    "F-024",
+    "F-025"
+  ],
+  "evidence": [
+    "docs/integration/B1-auth-ios-backend/evidence/2026-11-10-hardening-retest.json"
+  ],
+  "notes": "最终完整 Harness 含全部静态检查及严格套件 11/11；伪终端权限已显式审批；无断言变更。"
+}

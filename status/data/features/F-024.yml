@@ -21,7 +21,7 @@ tasks:
   - T-025
   - T-026
   - T-027
+acceptance: A-007
 dependsOn:
   - F-003
-acceptance: A-007
-notes: "T-025/T-026/T-027 全部完成，A-007 验收通过；接口级 30/30（含追加后缀 401、登出 denylist +1）"
+notes: "A-007 已复核重签；修复 Token 尾空段绕过与无效登出语义；212 单测、严格 11/11、登出 36/36。"

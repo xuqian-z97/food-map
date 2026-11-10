@@ -2049,6 +2049,8 @@ GET /api/admin/operations
 - Redis 用于认证会话热缓存、Access Token denylist、登录失败计数、验证码和 OAuth state 等短期状态；Redis 不能作为长期认证凭证和会话事实的唯一来源，除非明确接受 Redis 丢失导致全员重新登录。
 - 支持 Token 撤销。
 - 退出登录时，请求体中的 Refresh Token 用于撤销长期会话；如请求同时携带 `Authorization: Bearer <access-token>`，认证服务必须将 Access Token 摘要写入 Redis denylist，TTL 截止到该 Access Token 原过期时间。
+- 登出仅在完全缺少 `Authorization` 头时兼容只撤销 Refresh Token；头已提供但为空、非 Bearer、Token 结构/签名/类型无效或已过期时返回 `401`，且不撤销 Refresh 会话、不写 denylist。
+- 当前 HMAC Access/Refresh 分别要求 3/4 个非空片段，分段必须保留尾部空段；追加 `.`、`..` 或非空后缀均返回 `401`，不能通过变更完整 Token 哈希绕过 denylist。
 - 网关校验非公开 `/api/**` 请求时，必须在签名和过期时间校验通过后检查 Access Token denylist；命中 denylist 时返回 `401`，不能继续向下游服务透传可信用户身份头。
 
 ### 11.2 授权
@@ -2361,6 +2363,7 @@ Docker Compose
 - 调用方白名单按路径登记：`/internal/users/provision` 只允许 `foodmap-auth-service`，`/internal/logs/**` 只允许 `foodmap-admin-service`；未登记路径或越权服务返回 `403`。
 - nonce 去重使用 Redis 原子 `trySet`，Key 为 `foodmap:internal:nonce:v1:{service}:{nonce}`；Redis 不可用时按 fail-closed 返回 `401`，不得降级放行。
 - 共享密钥来自 `FOODMAP_INTERNAL_SECRET`，签发方与校验方必须一致；生产 profile 缺失或不足 32 字符时启动失败。
+- 出站 `InternalServiceSigner` 只依赖内部身份开关与密钥，不能依赖 Feign 是否存在；Feign 拦截器单独按类路径装配，admin 的 Java HttpClient 在没有 Feign 时仍须正常获得签名器。
 - 网关不签发也不校验内部签名，内部签名只在服务之间生效。
 
 暂缓引入：

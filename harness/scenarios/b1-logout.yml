@@ -62,6 +62,38 @@ steps:
       status: 401
       json: { code: UNAUTHORIZED }
 
+  # 已提供但格式无效的 Authorization 不能降级成无头兼容分支。
+  - http: POST /api/auth/logout
+    headers:
+      Authorization: Basic invalid
+    json:
+      refreshToken: ${refresh}
+    expect:
+      status: 401
+      json: { code: UNAUTHORIZED }
+
+  - http: POST /api/auth/logout
+    headers:
+      Authorization: "Bearer "
+    json:
+      refreshToken: ${refresh}
+    expect:
+      status: 401
+      json: { code: UNAUTHORIZED }
+
+  - http: POST /api/auth/logout
+    headers:
+      Authorization: Bearer not-a-valid-token
+    json:
+      refreshToken: ${refresh}
+    expect:
+      status: 401
+      json: { code: UNAUTHORIZED }
+
+  - command: "docker exec ${dbContainer} psql -U foodmap -d foodmap_auth_db -tAc \"select count(*) from refresh_tokens where account_id=${accountId} and token_status='ACTIVE'\""
+    expect:
+      equals: "1"
+
   - command: "docker exec ${redisContainer} redis-cli --scan --pattern 'foodmap:auth:access-token-denylist:v1:*' | wc -l"
     capture:
       before: value
@@ -89,6 +121,21 @@ steps:
   - http: GET /api/users/me
     headers:
       Authorization: Bearer ${access}
+    expect:
+      status: 401
+      json: { code: UNAUTHORIZED }
+
+  # 原 Token 已在拒绝名单；追加空段不能改变哈希后重新进入业务链路。
+  - http: GET /api/users/me
+    headers:
+      Authorization: Bearer ${access}.
+    expect:
+      status: 401
+      json: { code: UNAUTHORIZED }
+
+  - http: GET /api/users/me
+    headers:
+      Authorization: Bearer ${access}..
     expect:
       status: 401
       json: { code: UNAUTHORIZED }

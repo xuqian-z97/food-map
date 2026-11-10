@@ -10,7 +10,8 @@
 | `b1-logging-closure.yml` | 新认证实例 18081：真实 200/401 请求 → JSON 文件 → Fluent Bit/Kafka → ES 与日志库；检查时间解析与密码泄露 | logging profile + log-service 18089 + `/tmp/foodmap-orbstack-logs`；可通过 `LOGGING_TEST_BASE_URL`、`LOGGING_TEST_ES_URL`、`FOODMAP_LOGGING_DIR` 覆盖单场景连接 |
 | `b1-identity-consistency.yml` | 全库身份绑定/会话不变量只读核验；历史不一致也会失败，不自动清理 | PostgreSQL |
 | `b1-identity-dual-write.yml` | 注册绑定双写、登录创建会话、登出撤销及脱敏字段 | Gateway/Auth/User + PostgreSQL + Redis |
-| `b1-logout.yml` | B1 登出链路：注册 → 登录 → `/api/users/me` → 登出 → 旧 Access 401 → 旧 Refresh 401 → Refresh 状态落库 → 拒绝名单只 +1 | Gateway + Auth + Redis + PostgreSQL（`foodmap-redis` / `foodmap-postgres` 容器） |
+| `b1-logout.yml` | 登出后原 Token、追加 `.` / `..` 均 401；异常 Authorization 401 且会话不变；有效登出 denylist +1；无头兼容分支 | Gateway + Auth + Redis + PostgreSQL；`FM_TEST_PW` |
+| `b1-internal-service-auth.yml` | locator 404、health 200、无签名/重放/过期/篡改 401、越权 403、真实 admin HttpClient → log 200；不验证 T-033 RBAC | Gateway/Auth/User + Redis + log 8089 + admin 8088；`FOODMAP_INTERNAL_SECRET` 必须与服务一致 |
 | `b1-auth-negative.yml` | 负向与刷新边界：错误密码 401、重复注册 409、短密码 400、无 Token 401、内部接口 403、有效 Refresh 换到可用 Access | Gateway + Auth/User + PostgreSQL；需要 `FM_TEST_PW` |
 | `b1-register-validation.yml` | 注册短密码前端拦截：XCUITest 输入 3 位密码提交后出现本地提示，且本轮认证日志没有注册请求 | Xcode + 模拟器 + 认证日志；不需要数据库 |
 | `b1-token-retention.yml` | 临时网络故障：登录后把当前用户请求指向不可达网关，Token 仍保留；恢复后会话重建；最后登出清理 | 上面的服务 + 模拟器 Debug App + `FM_TEST_PW` |

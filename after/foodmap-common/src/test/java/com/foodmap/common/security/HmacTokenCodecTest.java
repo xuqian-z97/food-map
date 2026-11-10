@@ -103,6 +103,29 @@ class HmacTokenCodecTest {
                 .satisfies(ex -> assertThat(((FoodMapException) ex).status()).isEqualTo(401));
     }
 
+    @org.junit.jupiter.params.ParameterizedTest
+    @org.junit.jupiter.params.provider.ValueSource(strings = {".", "..", ".suffix", ".suffix."})
+    void shouldRejectAppendedSegmentsIncludingTrailingEmptyParts(String suffix) {
+        HmacTokenCodec codec = new HmacTokenCodec("0123456789abcdef0123456789abcdef");
+        String access = codec.issueAccessToken(2001L, OffsetDateTime.now().plusHours(1));
+        String refresh = codec.issueRefreshToken(2001L, OffsetDateTime.now().plusDays(30));
+
+        assertThatThrownBy(() -> codec.parseAccessToken(access + suffix))
+                .isInstanceOfSatisfying(FoodMapException.class, ex -> assertThat(ex.status()).isEqualTo(401));
+        assertThatThrownBy(() -> codec.parseRefreshToken(refresh + suffix))
+                .isInstanceOfSatisfying(FoodMapException.class, ex -> assertThat(ex.status()).isEqualTo(401));
+    }
+
+    @Test
+    void shouldRejectRefreshTokenWithEmptyNonce() {
+        HmacTokenCodec codec = new HmacTokenCodec("0123456789abcdef0123456789abcdef");
+        String refresh = codec.issueRefreshToken(2001L, OffsetDateTime.now().plusDays(30));
+        String withoutNonce = refresh.substring(0, refresh.lastIndexOf('.') + 1);
+
+        assertThatThrownBy(() -> codec.parseRefreshToken(withoutNonce))
+                .isInstanceOfSatisfying(FoodMapException.class, ex -> assertThat(ex.status()).isEqualTo(401));
+    }
+
     @Test
     void shouldRejectAccessTokenPassedAsRefreshToken() {
         HmacTokenCodec codec = new HmacTokenCodec("0123456789abcdef0123456789abcdef");

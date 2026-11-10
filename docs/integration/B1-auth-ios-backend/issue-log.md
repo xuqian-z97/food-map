@@ -16,6 +16,9 @@
 | BUG-010 | iOS 注册响应无法解析 userId-only `accountId=null` | 真实 iOS L2 联调 | Critical | P0 | 已关闭 | 前端/契约 | IT-001/IT-002/IT-004 | 本表下方 §1.7 | 2026-11-05：App 内注册返回 `userId=200027 accountStatus=NORMAL`，`accountId` 为空不再报错 |
 | BUG-011 | iOS 退出登录按钮未调用后端 logout | 真实 iOS L2 联调报告审查 | Critical | P0 | 已关闭 | 前端 | IT-005/IT-006/IT-007 | `cb1145e` | 2026-11-05 模拟器复测通过，见 §1.3 |
 | BUG-012 | SQL DEBUG 日志输出完整手机号与邮箱 | LOG-002 敏感信息检查 | Major | P1 | 已关闭 | 后端 | LOG-002 | `6fd157c` | SQL 日志参数名通用（`loginIdentifier`）导致内容未脱敏；已在 `LogMasker` 增加按内容脱敏，见 §1.5 |
+| BUG-013 | Token 尾部空段可绕过登出 denylist | T-026 独立复核 | Critical | P0 | 已关闭 | 后端/common/网关 | b1-logout | 本次工作树 | 修复前可复现，新增回归已通过，见 §1.12 |
+| BUG-014 | 无效 Authorization 登出静默成功或先撤销会话 | T-027 独立复核 | Major | P1 | 已关闭 | 后端/auth | b1-logout | 本次工作树 | 格式错误/过期返回 401 且无会话副作用，见 §1.12 |
+| BUG-015 | admin 无 Feign 时内部签名器未装配 | T-032 独立复核 | Major | P1 | 已关闭 | 后端/common/admin | b1-internal-service-auth | 本次工作树 | 无 Feign 上下文与真实 admin→log 均通过，见 §1.12 |
 
 ### 1.1 本轮收口口径（2026-11-05）
 
@@ -121,6 +124,25 @@ L2 测试报告中有两处判定错误，已修正，B1 结论随之调整：
 | BUG-010 | 经 App 内 `APIClient.register` 真实注册：`userId=200027 accountStatus=NORMAL`，`accountId` 为空不再触发解码失败 |
 
 环境说明：本轮本地服务用默认端口 8080/8081/8082 启动，App 通过 `FOODMAP_BASE_URL` 覆盖为 8080。文档口径（18080/18081/18082）已在 2026-11-05 统一为 8080/8081/8082；本文件历史章节中的 180xx 视为旧口径，不再作为当前约定。
+
+### 1.12 后端加固独立复核与修复复测（2026-11-10）
+
+本节归档 BUG-013～015，不覆盖历史测试结论，也不推进 T-033。
+
+| 缺陷 | 复现步骤与测试数据 | 根因与修复范围 | 复测结果 |
+| --- | --- | --- | --- |
+| BUG-013 | 使用本轮签发的 Access，先登记 denylist，再追加 `.` / `..` 请求当前用户；原过滤器仍进入下游 | `split` 丢弃尾空段；common 改为保留空段并拒绝空片段，补 codec/gateway 参数化与真实场景 | 原 Token 及两种变体全部 401；无正文/Token 落证据 |
+| BUG-014 | 对本轮会话以空/Basic/空 Bearer/过期 Access 登出；原实现成功或先撤销后抛错 | auth 在任何会话写之前校验 Authorization 格式及 Access 有效期；仅 null 走兼容分支 | 单测覆盖 7 类拒绝并断言 session/refresh ACTIVE、可刷新且 denylist 不写；真实场景异常认证 401 |
+| BUG-015 | 用 admin 实际类路径加载日志客户端配置；无 Feign 时找不到 signer | common signer 与可选 Feign 配置拆分；新增 common/admin 上下文回归 | admin 8088 启动成功，完整 HTTP→log 8089 200，随机 requestId 筛选透传 |
+
+- 前端现象：本轮不是新增 UI 功能；两个既有 XCUITest 分别真实执行登录进地图、注册短密码本地拦截并通过。
+- 后端网络与日志：接口级登出场景 36/36；新增内部签名探针 13 个 HTTP 检查（verify 1 步）；链路请求头和日志不落 Token/签名/密钥。
+- requestId/traceId：真实接口脱敏头摘要见 `evidence/2026-11-10T14-37-06266d9e-B1 退出登录链路（接口级）.json`；自动配置单测没有 HTTP 请求，关联号不适用。
+- 环境问题：旧 Auth 18081 调 user provision 401→对外 502；更新为本次 classes 并显式配置 user 8082 后日志闭环通过。主 Auth 8081 仍走 Nacos。
+- 默认沙箱首轮 9 passed / 2 failed / 0 skipped：两个 XCUITest 被伪终端权限阻断。明确审批后以相同断言原样严格复跑，最终 **11 passed / 0 failed / 0 skipped**；不是把运行器失败改成跳过或通过。
+- 后端全量 **212/212**，0 failures/errors/skipped。精确源码清单、测试类计数、套件标识与结果见 `evidence/2026-11-10-hardening-retest.json`。
+- 修复提交：本节随本次修复提交；精确测试构建为 `f570464` 加 evidence 指纹对应工作树，不冒称历史 SHA 已包含修复。
+- 复测结论：BUG-013～015 关闭；A-007/A-008 依据新增证据重新签署为本地 L2 pass，不代表生产部署或 T-033 RBAC。
 
 ## 2. 问题详情
 

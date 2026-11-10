@@ -31,7 +31,6 @@ public class InternalServiceAuthAutoConfiguration {
      * 出站签名配置，供认证服务和管理后台构造内部请求签名头。
      */
     @Configuration(proxyBeanMethods = false)
-    @ConditionalOnClass(RequestInterceptor.class)
     @ConditionalOnProperty(prefix = "foodmap.internal", name = "enabled", havingValue = "true")
     static class SigningConfiguration {
 
@@ -50,6 +49,15 @@ public class InternalServiceAuthAutoConfiguration {
         ) {
             return new InternalServiceSigner(properties.getSecret(), serviceName);
         }
+    }
+
+    /**
+     * Feign 可选适配器独立装配，不能让 Java HttpClient 的签名器依赖 Feign 类路径。
+     */
+    @Configuration(proxyBeanMethods = false)
+    @ConditionalOnClass(RequestInterceptor.class)
+    @ConditionalOnProperty(prefix = "foodmap.internal", name = "enabled", havingValue = "true")
+    static class FeignSigningConfiguration {
 
         /**
          * 注册 Feign 内部服务签名拦截器，只对 {@code /internal/**} 请求生效。

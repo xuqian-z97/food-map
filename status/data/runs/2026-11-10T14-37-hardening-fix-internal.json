@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-10T14-37-hardening-fix-internal",
+  "at": "2026-11-10T14:37:49+08:00",
+  "kind": "e2e",
+  "command": "node tools/verify/cli.mjs run harness/scenarios/b1-internal-service-auth.yml",
+  "env": "local",
+  "result": {
+    "total": 1,
+    "passed": 1,
+    "failed": 0,
+    "skipped": 0
+  },
+  "covers": [
+    "F-025"
+  ],
+  "evidence": [
+    "docs/integration/B1-auth-ios-backend/evidence/2026-11-10T14-37-d4c0b57e-B1 内部服务签名与后台日志真实链路.json"
+  ],
+  "notes": ""
+}

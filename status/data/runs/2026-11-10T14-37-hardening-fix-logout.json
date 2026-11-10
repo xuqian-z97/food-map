@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-10T14-37-hardening-fix-logout",
+  "at": "2026-11-10T14:37:48+08:00",
+  "kind": "e2e",
+  "command": "node tools/verify/cli.mjs run harness/scenarios/b1-logout.yml",
+  "env": "local",
+  "result": {
+    "total": 36,
+    "passed": 36,
+    "failed": 0,
+    "skipped": 0
+  },
+  "covers": [
+    "F-024",
+    "F-025"
+  ],
+  "evidence": [
+    "docs/integration/B1-auth-ios-backend/evidence/2026-11-10T14-37-06266d9e-B1 退出登录链路（接口级）.json"
+  ],
+  "notes": ""
+}

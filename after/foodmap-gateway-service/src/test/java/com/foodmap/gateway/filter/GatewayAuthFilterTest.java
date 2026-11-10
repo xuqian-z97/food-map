@@ -102,6 +102,27 @@ class GatewayAuthFilterTest {
         assertThat(exchange.getResponse().getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
     }
 
+    @org.junit.jupiter.params.ParameterizedTest
+    @org.junit.jupiter.params.provider.ValueSource(strings = {".", "..", ".appended"})
+    void shouldNotBypassDenylistWithAppendedTokenSegments(String suffix) {
+        HmacTokenCodec codec = new HmacTokenCodec(TOKEN_SECRET);
+        String token = codec.issueAccessToken(2001L, OffsetDateTime.now().plusHours(1));
+        RecordingAccessTokenDenylist denylist = new RecordingAccessTokenDenylist(codec.tokenHash(token));
+        GatewayAuthFilter filter = new GatewayAuthFilter(TOKEN_SECRET, denylist);
+        MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.get("/api/users/me")
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token + suffix).build());
+        AtomicReference<ServerWebExchange> downstream = new AtomicReference<>();
+
+        filter.filter(exchange, next -> {
+            downstream.set(next);
+            return Mono.empty();
+        }).block();
+
+        assertThat(exchange.getResponse().getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+        assertThat(downstream.get()).isNull();
+        assertThat(denylist.queriedHash()).as("结构非法应在查询 denylist 之前拒绝").isNull();
+    }
+
     @Test
     void shouldRejectInternalProvisionPathThroughExternalGateway() {
         GatewayAuthFilter filter = new GatewayAuthFilter(TOKEN_SECRET);

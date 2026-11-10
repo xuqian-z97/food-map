@@ -7,3 +7,4 @@ priority: P0
 owner: agent
 doneAt: 2026-11-10T11:58:07+08:00
 planRef: docs/superpowers/plans/2026-11-09-backend-hardening.md
+notes: "2026-11-10 复核修复：保留尾空段并拒绝空片段；追加点号不再绕过 denylist；单测与真实登出 36/36。"

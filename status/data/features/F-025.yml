@@ -21,7 +21,7 @@ paths:
 tasks:
   - T-031
   - T-032
+acceptance: A-008
 dependsOn:
   - F-024
-acceptance: A-008
-notes: "T-031/T-032 完成，A-008 验收通过；locator 关闭实测 404，内部签名四类拒绝分支与注册链路均验证"
+notes: "A-008 已复核重签；补无 Feign 装配与真实 admin→log；13 项 HTTP 检查通过，严格 11/11；T-033 不在范围。"

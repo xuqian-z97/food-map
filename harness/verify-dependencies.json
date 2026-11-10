@@ -14,6 +14,15 @@
   "logging-kafka": {"checks": [
     {"type": "exec", "argv": ["docker", "exec", "foodmap-kafka", "/opt/kafka/bin/kafka-topics.sh", "--bootstrap-server", "localhost:9092", "--list"], "contains": "foodmap.logs.api-access", "label": "Kafka 未就绪或日志 topic 未初始化"}
   ]},
+  "internal-log": {"checks": [
+    {"type": "http", "url": "http://127.0.0.1:8089/actuator/health", "label": "内部签名验证用日志服务 8089 未就绪"}
+  ]},
+  "internal-admin": {"checks": [
+    {"type": "http", "url": "http://127.0.0.1:8088/actuator/health", "label": "内部签名验证用管理后台 8088 未就绪"}
+  ]},
+  "internal-secret": {"checks": [
+    {"type": "env", "name": "FOODMAP_INTERNAL_SECRET", "label": "未注入与本地服务一致的内部签名验证密钥 FOODMAP_INTERNAL_SECRET"}
+  ]},
   "network": {"checks": [
     {"type": "http", "url": "http://127.0.0.1:8080/internal/auth/health", "label": "认证网关不可达或权限受限"},
     {"type": "http", "url": "http://127.0.0.1:8080/internal/users/health", "label": "用户服务网关路由不可达或权限受限"}

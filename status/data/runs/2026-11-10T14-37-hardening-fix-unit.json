@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-10T14-37-hardening-fix-unit",
+  "at": "2026-11-10T14:37:44+08:00",
+  "kind": "unit",
+  "command": "cd after && mvn -o -B test",
+  "env": "local",
+  "result": {
+    "total": 212,
+    "passed": 212,
+    "failed": 0,
+    "skipped": 0
+  },
+  "perModule": {
+    "foodmap-admin-service": 13,
+    "foodmap-auth-service": 33,
+    "foodmap-common": 118,
+    "foodmap-gateway-service": 20,
+    "foodmap-log-service": 22,
+    "foodmap-user-service": 6
+  },
+  "modules": [
+    "foodmap-admin-service",
+    "foodmap-auth-service",
+    "foodmap-common",
+    "foodmap-gateway-service",
+    "foodmap-log-service",
+    "foodmap-user-service"
+  ],
+  "covers": [
+    "F-024",
+    "F-025"
+  ],
+  "evidence": [
+    "docs/integration/B1-auth-ios-backend/evidence/2026-11-10-hardening-retest.json"
+  ]
+}

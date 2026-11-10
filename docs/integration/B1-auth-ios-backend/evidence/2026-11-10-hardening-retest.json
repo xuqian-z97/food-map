@@ -1,0 +1,1785 @@
+{
+  "runId": "suite-b3a84f9e-9adc-4e8d-be2d-97c7dd96c29d",
+  "startedAt": "2026-11-10T06:33:44.814Z",
+  "finishedAt": "2026-11-10T06:35:51.151Z",
+  "durationMs": 126336,
+  "requireFull": true,
+  "ok": true,
+  "exitCode": 0,
+  "summary": {
+    "scenarios": 11,
+    "passed": 11,
+    "failed": 0,
+    "skipped": 0,
+    "steps": 179
+  },
+  "command": "VERIFY_REQUIRE_FULL=1 ./harness/scripts/verify.sh",
+  "permission": "Explicitly approved danger-full-access for XCUITest pseudo terminal; assertions unchanged",
+  "scenarios": [
+    {
+      "name": "B1 认证负向与刷新边界",
+      "source": "harness/scenarios/b1-auth-negative.yml",
+      "ok": true,
+      "exitCode": 0,
+      "summary": {
+        "total": 21,
+        "passed": 21,
+        "failed": 0,
+        "skipped": 0,
+        "setupFailed": 0,
+        "teardownFailed": 0
+      },
+      "observations": [
+        {
+          "phase": "setup",
+          "action": "http",
+          "ok": true,
+          "method": "GET",
+          "status": 200,
+          "path": ":8080/internal/auth/health"
+        },
+        {
+          "phase": "setup",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "setup",
+          "action": "http",
+          "ok": true,
+          "method": "POST",
+          "status": 200,
+          "path": ":8080/api/auth/register"
+        },
+        {
+          "phase": "setup",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "step",
+          "action": "http",
+          "ok": true,
+          "method": "POST",
+          "status": 401,
+          "path": ":8080/api/auth/login"
+        },
+        {
+          "phase": "step",
+          "action": "http",
+          "ok": true,
+          "method": "POST",
+          "status": 409,
+          "path": ":8080/api/auth/register"
+        },
+        {
+          "phase": "step",
+          "action": "http",
+          "ok": true,
+          "method": "POST",
+          "status": 400,
+          "path": ":8080/api/auth/register"
+        },
+        {
+          "phase": "step",
+          "action": "http",
+          "ok": true,
+          "method": "GET",
+          "status": 401,
+          "path": ":8080/api/users/me"
+        },
+        {
+          "phase": "step",
+          "action": "http",
+          "ok": true,
+          "method": "POST",
+          "status": 403,
+          "path": ":8080/internal/users/bootstrap"
+        },
+        {
+          "phase": "step",
+          "action": "http",
+          "ok": true,
+          "method": "POST",
+          "status": 200,
+          "path": ":8080/api/auth/login"
+        },
+        {
+          "phase": "step",
+          "action": "http",
+          "ok": true,
+          "method": "POST",
+          "status": 200,
+          "path": ":8080/api/auth/refresh"
+        },
+        {
+          "phase": "step",
+          "action": "http",
+          "ok": true,
+          "method": "GET",
+          "status": 200,
+          "path": ":8080/api/users/me"
+        },
+        {
+          "phase": "step",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "teardown",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "teardown",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "teardown",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "teardown",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "teardown",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "teardown",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "teardown",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "teardown",
+          "action": "command",
+          "ok": true
+        }
+      ]
+    },
+    {
+      "name": "B1 身份模型一致性核验",
+      "source": "harness/scenarios/b1-identity-consistency.yml",
+      "ok": true,
+      "exitCode": 0,
+      "summary": {
+        "total": 15,
+        "passed": 15,
+        "failed": 0,
+        "skipped": 0,
+        "setupFailed": 0,
+        "teardownFailed": 0
+      },
+      "observations": [
+        {
+          "phase": "step",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "step",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "step",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "step",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "step",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "step",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "step",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "step",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "step",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "step",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "step",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "step",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "step",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "step",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "step",
+          "action": "command",
+          "ok": true
+        }
+      ]
+    },
+    {
+      "name": "认证双写核验（身份绑定与会话）",
+      "source": "harness/scenarios/b1-identity-dual-write.yml",
+      "ok": true,
+      "exitCode": 0,
+      "summary": {
+        "total": 28,
+        "passed": 28,
+        "failed": 0,
+        "skipped": 0,
+        "setupFailed": 0,
+        "teardownFailed": 0
+      },
+      "observations": [
+        {
+          "phase": "step",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "step",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "step",
+          "action": "http",
+          "ok": true,
+          "method": "POST",
+          "status": 200,
+          "path": ":8080/api/auth/register"
+        },
+        {
+          "phase": "step",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "step",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "step",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "step",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "step",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "step",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "step",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "step",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "step",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "step",
+          "action": "http",
+          "ok": true,
+          "method": "POST",
+          "status": 200,
+          "path": ":8080/api/auth/login"
+        },
+        {
+          "phase": "step",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "step",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "step",
+          "action": "http",
+          "ok": true,
+          "method": "POST",
+          "status": 200,
+          "path": ":8080/api/auth/logout"
+        },
+        {
+          "phase": "step",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "step",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "step",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "step",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "teardown",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "teardown",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "teardown",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "teardown",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "teardown",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "teardown",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "teardown",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "teardown",
+          "action": "command",
+          "ok": true
+        }
+      ]
+    },
+    {
+      "name": "B1 内部服务签名与后台日志真实链路",
+      "source": "harness/scenarios/b1-internal-service-auth.yml",
+      "ok": true,
+      "exitCode": 0,
+      "summary": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0,
+        "setupFailed": 0,
+        "teardownFailed": 0
+      },
+      "observations": [
+        {
+          "phase": "step",
+          "action": "command",
+          "ok": true,
+          "checks": {
+            "result": "pass",
+            "checks": [
+              {
+                "name": "locator-disabled",
+                "status": 404
+              },
+              {
+                "name": "explicit-auth-health",
+                "status": 200
+              },
+              {
+                "name": "explicit-user-health",
+                "status": 200
+              },
+              {
+                "name": "user-missing-signature",
+                "status": 401
+              },
+              {
+                "name": "log-missing-signature",
+                "status": 401
+              },
+              {
+                "name": "log-valid-signature",
+                "status": 200
+              },
+              {
+                "name": "log-replayed-nonce",
+                "status": 401
+              },
+              {
+                "name": "log-expired-timestamp",
+                "status": 401
+              },
+              {
+                "name": "log-wrong-service",
+                "status": 403
+              },
+              {
+                "name": "provision-wrong-service",
+                "status": 403
+              },
+              {
+                "name": "log-tampered-signature",
+                "status": 401
+              },
+              {
+                "name": "user-health-exempt",
+                "status": 200
+              },
+              {
+                "name": "admin-http-client-to-log",
+                "status": 200
+              }
+            ],
+            "adminRbacValidated": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "B1 iOS 登录后登出链路",
+      "source": "harness/scenarios/b1-ios-logout.yml",
+      "ok": true,
+      "exitCode": 0,
+      "summary": {
+        "total": 19,
+        "passed": 19,
+        "failed": 0,
+        "skipped": 0,
+        "setupFailed": 0,
+        "teardownFailed": 0
+      },
+      "observations": [
+        {
+          "phase": "setup",
+          "action": "http",
+          "ok": true,
+          "method": "GET",
+          "status": 200,
+          "path": ":8080/internal/auth/health"
+        },
+        {
+          "phase": "setup",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "setup",
+          "action": "http",
+          "ok": true,
+          "method": "POST",
+          "status": 200,
+          "path": ":8080/api/auth/register"
+        },
+        {
+          "phase": "setup",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "step",
+          "action": "app",
+          "ok": true
+        },
+        {
+          "phase": "step",
+          "action": "app",
+          "ok": true
+        },
+        {
+          "phase": "step",
+          "action": "sleep",
+          "ok": true
+        },
+        {
+          "phase": "step",
+          "action": "app",
+          "ok": true
+        },
+        {
+          "phase": "step",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "step",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "teardown",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "teardown",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "teardown",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "teardown",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "teardown",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "teardown",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "teardown",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "teardown",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "teardown",
+          "action": "command",
+          "ok": true
+        }
+      ]
+    },
+    {
+      "name": "B1 日志真实闭环",
+      "source": "harness/scenarios/b1-logging-closure.yml",
+      "ok": true,
+      "exitCode": 0,
+      "summary": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0,
+        "setupFailed": 0,
+        "teardownFailed": 0
+      },
+      "observations": [
+        {
+          "phase": "step",
+          "action": "command",
+          "ok": true
+        }
+      ]
+    },
+    {
+      "name": "B1 退出登录链路（接口级）",
+      "source": "harness/scenarios/b1-logout.yml",
+      "ok": true,
+      "exitCode": 0,
+      "summary": {
+        "total": 36,
+        "passed": 36,
+        "failed": 0,
+        "skipped": 0,
+        "setupFailed": 0,
+        "teardownFailed": 0
+      },
+      "observations": [
+        {
+          "phase": "setup",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "setup",
+          "action": "http",
+          "ok": true,
+          "method": "POST",
+          "status": 200,
+          "path": ":8080/api/auth/register"
+        },
+        {
+          "phase": "setup",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "step",
+          "action": "http",
+          "ok": true,
+          "method": "POST",
+          "status": 200,
+          "path": ":8080/api/auth/login"
+        },
+        {
+          "phase": "step",
+          "action": "http",
+          "ok": true,
+          "method": "GET",
+          "status": 200,
+          "path": ":8080/api/users/me"
+        },
+        {
+          "phase": "step",
+          "action": "http",
+          "ok": true,
+          "method": "GET",
+          "status": 401,
+          "path": ":8080/api/users/me"
+        },
+        {
+          "phase": "step",
+          "action": "http",
+          "ok": true,
+          "method": "POST",
+          "status": 401,
+          "path": ":8080/api/auth/logout"
+        },
+        {
+          "phase": "step",
+          "action": "http",
+          "ok": true,
+          "method": "POST",
+          "status": 401,
+          "path": ":8080/api/auth/logout"
+        },
+        {
+          "phase": "step",
+          "action": "http",
+          "ok": true,
+          "method": "POST",
+          "status": 401,
+          "path": ":8080/api/auth/logout"
+        },
+        {
+          "phase": "step",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "step",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "step",
+          "action": "http",
+          "ok": true,
+          "method": "POST",
+          "status": 200,
+          "path": ":8080/api/auth/logout"
+        },
+        {
+          "phase": "step",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "step",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "step",
+          "action": "http",
+          "ok": true,
+          "method": "GET",
+          "status": 401,
+          "path": ":8080/api/users/me"
+        },
+        {
+          "phase": "step",
+          "action": "http",
+          "ok": true,
+          "method": "GET",
+          "status": 401,
+          "path": ":8080/api/users/me"
+        },
+        {
+          "phase": "step",
+          "action": "http",
+          "ok": true,
+          "method": "GET",
+          "status": 401,
+          "path": ":8080/api/users/me"
+        },
+        {
+          "phase": "step",
+          "action": "http",
+          "ok": true,
+          "method": "POST",
+          "status": 401,
+          "path": ":8080/api/auth/refresh"
+        },
+        {
+          "phase": "step",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "step",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "step",
+          "action": "http",
+          "ok": true,
+          "method": "POST",
+          "status": 200,
+          "path": ":8080/api/auth/login"
+        },
+        {
+          "phase": "step",
+          "action": "http",
+          "ok": true,
+          "method": "POST",
+          "status": 200,
+          "path": ":8080/api/auth/logout"
+        },
+        {
+          "phase": "step",
+          "action": "http",
+          "ok": true,
+          "method": "GET",
+          "status": 200,
+          "path": ":8080/api/users/me"
+        },
+        {
+          "phase": "step",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "step",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "step",
+          "action": "http",
+          "ok": true,
+          "method": "POST",
+          "status": 401,
+          "path": ":8080/api/auth/refresh"
+        },
+        {
+          "phase": "teardown",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "teardown",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "teardown",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "teardown",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "teardown",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "teardown",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "teardown",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "teardown",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "teardown",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "teardown",
+          "action": "command",
+          "ok": true
+        }
+      ]
+    },
+    {
+      "name": "B1 注册短密码前端拦截",
+      "source": "harness/scenarios/b1-register-validation.yml",
+      "ok": true,
+      "exitCode": 0,
+      "summary": {
+        "total": 3,
+        "passed": 3,
+        "failed": 0,
+        "skipped": 0,
+        "setupFailed": 0,
+        "teardownFailed": 0
+      },
+      "observations": [
+        {
+          "phase": "step",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "step",
+          "action": "xcode",
+          "ok": true,
+          "passed": 1,
+          "failed": 0,
+          "skipped": 0,
+          "exitCode": 0
+        },
+        {
+          "phase": "step",
+          "action": "command",
+          "ok": true
+        }
+      ]
+    },
+    {
+      "name": "B1 登出后重启会话清理",
+      "source": "harness/scenarios/b1-session-restart.yml",
+      "ok": true,
+      "exitCode": 0,
+      "summary": {
+        "total": 22,
+        "passed": 22,
+        "failed": 0,
+        "skipped": 0,
+        "setupFailed": 0,
+        "teardownFailed": 0
+      },
+      "observations": [
+        {
+          "phase": "setup",
+          "action": "http",
+          "ok": true,
+          "method": "GET",
+          "status": 200,
+          "path": ":8080/internal/auth/health"
+        },
+        {
+          "phase": "setup",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "setup",
+          "action": "http",
+          "ok": true,
+          "method": "POST",
+          "status": 200,
+          "path": ":8080/api/auth/register"
+        },
+        {
+          "phase": "setup",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "step",
+          "action": "app",
+          "ok": true
+        },
+        {
+          "phase": "step",
+          "action": "app",
+          "ok": true
+        },
+        {
+          "phase": "step",
+          "action": "sleep",
+          "ok": true
+        },
+        {
+          "phase": "step",
+          "action": "app",
+          "ok": true
+        },
+        {
+          "phase": "step",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "step",
+          "action": "app",
+          "ok": true
+        },
+        {
+          "phase": "step",
+          "action": "app",
+          "ok": true
+        },
+        {
+          "phase": "step",
+          "action": "sleep",
+          "ok": true
+        },
+        {
+          "phase": "step",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "step",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "teardown",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "teardown",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "teardown",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "teardown",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "teardown",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "teardown",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "teardown",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "teardown",
+          "action": "command",
+          "ok": true
+        }
+      ]
+    },
+    {
+      "name": "B1 临时网络故障不误清认证状态",
+      "source": "harness/scenarios/b1-token-retention.yml",
+      "ok": true,
+      "exitCode": 0,
+      "summary": {
+        "total": 16,
+        "passed": 16,
+        "failed": 0,
+        "skipped": 0,
+        "setupFailed": 0,
+        "teardownFailed": 0
+      },
+      "observations": [
+        {
+          "phase": "setup",
+          "action": "http",
+          "ok": true,
+          "method": "GET",
+          "status": 200,
+          "path": ":8080/internal/auth/health"
+        },
+        {
+          "phase": "setup",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "setup",
+          "action": "http",
+          "ok": true,
+          "method": "POST",
+          "status": 200,
+          "path": ":8080/api/auth/register"
+        },
+        {
+          "phase": "setup",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "step",
+          "action": "app",
+          "ok": true
+        },
+        {
+          "phase": "step",
+          "action": "app",
+          "ok": true
+        },
+        {
+          "phase": "step",
+          "action": "sleep",
+          "ok": true
+        },
+        {
+          "phase": "step",
+          "action": "app",
+          "ok": true
+        },
+        {
+          "phase": "teardown",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "teardown",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "teardown",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "teardown",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "teardown",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "teardown",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "teardown",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "teardown",
+          "action": "command",
+          "ok": true
+        }
+      ]
+    },
+    {
+      "name": "B1 iOS 登录 UI 全链路",
+      "source": "harness/scenarios/b1-ui-login.yml",
+      "ok": true,
+      "exitCode": 0,
+      "summary": {
+        "total": 17,
+        "passed": 17,
+        "failed": 0,
+        "skipped": 0,
+        "setupFailed": 0,
+        "teardownFailed": 0
+      },
+      "observations": [
+        {
+          "phase": "setup",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "setup",
+          "action": "http",
+          "ok": true,
+          "method": "GET",
+          "status": 200,
+          "path": ":8080/internal/auth/health"
+        },
+        {
+          "phase": "setup",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "setup",
+          "action": "http",
+          "ok": true,
+          "method": "POST",
+          "status": 200,
+          "path": ":8080/api/auth/register"
+        },
+        {
+          "phase": "step",
+          "action": "xcode",
+          "ok": true,
+          "passed": 1,
+          "failed": 0,
+          "skipped": 0,
+          "exitCode": 0
+        },
+        {
+          "phase": "step",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "step",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "step",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "teardown",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "teardown",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "teardown",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "teardown",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "teardown",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "teardown",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "teardown",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "teardown",
+          "action": "command",
+          "ok": true
+        },
+        {
+          "phase": "teardown",
+          "action": "command",
+          "ok": true
+        }
+      ]
+    }
+  ],
+  "unitTests": {
+    "command": "cd after && mvn -o -B test",
+    "result": {
+      "tests": 212,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "reports": [
+      {
+        "class": "com.foodmap.admin.controller.AdminLogControllerPermissionTest",
+        "tests": 3,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.foodmap.admin.infrastructure.client.AdminLogClientConfigurationTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.foodmap.admin.infrastructure.client.HttpLogApiAccessLogClientTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.foodmap.admin.service.AdminApiAccessLogQueryServiceTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.foodmap.admin.service.AdminUserServiceImplTest",
+        "tests": 2,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.foodmap.admin.service.Pbkdf2AdminPasswordHashServiceTest",
+        "tests": 5,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.foodmap.auth.application.port.AuthRepositoryPortTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.foodmap.auth.config.TokenSecretConfigContractTest",
+        "tests": 2,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.foodmap.auth.config.TokenSecretPropertiesTest",
+        "tests": 6,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.foodmap.auth.domain.Pbkdf2PasswordHashServiceTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.foodmap.auth.infrastructure.client.user.FeignUserProfileProvisionClientTest",
+        "tests": 2,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.foodmap.auth.service.AuthServiceImplTest",
+        "tests": 21,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.foodmap.common.api.ApiResponseTest",
+        "tests": 2,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.foodmap.common.exception.FoodMapExceptionTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.foodmap.common.feign.FoodMapFeignAutoConfigurationTest",
+        "tests": 2,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.foodmap.common.feign.FoodMapFeignTraceRequestInterceptorTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.foodmap.common.logging.LogContextTest",
+        "tests": 3,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.foodmap.common.logging.LogMaskerTest",
+        "tests": 2,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.foodmap.common.logging.LogMdcFilterTest",
+        "tests": 2,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.foodmap.common.logging.LogbackJsonConfigTest",
+        "tests": 2,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.foodmap.common.logging.ResilientRollingFileAppenderTest",
+        "tests": 2,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.foodmap.common.logging.SafeLogLogTypeTest",
+        "tests": 6,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.foodmap.common.logging.SafeLogTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.foodmap.common.logging.mybatis.EnvironmentSqlLogConfigProviderTest",
+        "tests": 2,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.foodmap.common.logging.mybatis.SqlLogFormatterTest",
+        "tests": 4,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.foodmap.common.logging.mybatis.SqlLogPolicyTest",
+        "tests": 2,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.foodmap.common.mq.DomainEventEnvelopeTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.foodmap.common.persistence.BaseEntityTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.foodmap.common.redis.CacheKeyBuilderTest",
+        "tests": 2,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.foodmap.common.redis.DistributedLockClientTest",
+        "tests": 5,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.foodmap.common.redis.DistributedLockCommandTest",
+        "tests": 4,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.foodmap.common.redis.DistributedLockKeyBuilderTest",
+        "tests": 2,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.foodmap.common.redis.redisson.FoodMapRedissonPropertiesTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.foodmap.common.redis.redisson.RedissonAccessTokenDenylistClientTest",
+        "tests": 2,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.foodmap.common.redis.redisson.RedissonDistributedLockClientTest",
+        "tests": 7,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.foodmap.common.search.elasticsearch.ElasticsearchSearchClientTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.foodmap.common.security.CurrentUserResolverTest",
+        "tests": 4,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.foodmap.common.security.CurrentUserTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.foodmap.common.security.HmacTokenCodecTest",
+        "tests": 14,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.foodmap.common.security.InternalServiceAccessPolicyTest",
+        "tests": 5,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.foodmap.common.security.InternalServiceAuthAutoConfigurationTest",
+        "tests": 3,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.foodmap.common.security.InternalServiceAuthPropertiesTest",
+        "tests": 4,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.foodmap.common.security.InternalServiceRequestVerifierTest",
+        "tests": 8,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.foodmap.common.security.InternalServiceSignatureFilterTest",
+        "tests": 3,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.foodmap.common.security.InternalServiceSignatureTest",
+        "tests": 5,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.foodmap.common.storage.ObjectStorageCommandTest",
+        "tests": 3,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.foodmap.common.storage.minio.MinioHttpObjectStorageGatewayTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.foodmap.common.storage.minio.MinioObjectStorageClientTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.foodmap.common.validation.CheckTest",
+        "tests": 5,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.foodmap.common.web.FoodMapGlobalExceptionHandlerTest",
+        "tests": 3,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.foodmap.gateway.config.GatewayRouteConfigContractTest",
+        "tests": 3,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.foodmap.gateway.config.TokenSecretConfigContractTest",
+        "tests": 2,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.foodmap.gateway.filter.GatewayAuthFilterSecretTest",
+        "tests": 4,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.foodmap.gateway.filter.GatewayAuthFilterTest",
+        "tests": 9,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.foodmap.gateway.filter.GatewayTraceFilterTest",
+        "tests": 2,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.foodmap.log.infrastructure.archive.ElasticsearchLogArchiveExportClientTest",
+        "tests": 2,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.foodmap.log.infrastructure.archive.LogArchiveFallbackConfigurationTest",
+        "tests": 3,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.foodmap.log.infrastructure.archive.ObjectStorageLogArchiveObjectStorageClientTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.foodmap.log.infrastructure.messaging.ApiAccessLogEventParserTest",
+        "tests": 10,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.foodmap.log.service.ApiAccessLogIngestionServiceTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.foodmap.log.service.ApiAccessLogQueryServiceTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.foodmap.log.service.ApiAccessLogRetentionServiceTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.foodmap.log.service.LogArchiveExecutionServiceTest",
+        "tests": 2,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.foodmap.log.service.LogArchivePlanningServiceTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.foodmap.user.application.port.UserRepositoryPortTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.foodmap.user.controller.UserControllerTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.foodmap.user.service.UserServiceImplTest",
+        "tests": 4,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    ]
+  },
+  "build": {
+    "base": "f570464",
+    "sourceFileSha256": {
+      "after/foodmap-admin-service/src/test/java/com/foodmap/admin/infrastructure/client/AdminLogClientConfigurationTest.java": "8d5702469b0f5066dafbb71a578f588c7c5e7a8970e6f81d728a58d03e37cb99",
+      "after/foodmap-auth-service/src/main/java/com/foodmap/auth/service/impl/AuthServiceImpl.java": "e80a5b30eef01adab87ef503b819588042d3c9a446c327da7cbc18cb30c23ecf",
+      "after/foodmap-auth-service/src/test/java/com/foodmap/auth/service/AuthServiceImplTest.java": "6a8c4749a2b8fe98fc774a288abd8f3b49f13c7b5dcb814a96d14af1ce8fb5ef",
+      "after/foodmap-common/src/main/java/com/foodmap/common/security/HmacTokenCodec.java": "0ca338ffccdd66fb87d69ae7a88fdfe5662b9a6a110eacf4d2cd7e77196ac184",
+      "after/foodmap-common/src/main/java/com/foodmap/common/security/InternalServiceAuthAutoConfiguration.java": "b77d7b1594e5e5a7ccaa10d237ac5962c270ab1b2e759f6ec217690c930fc9c6",
+      "after/foodmap-common/src/test/java/com/foodmap/common/security/HmacTokenCodecTest.java": "2dc9a632827f57b906ba8f82600eda36ce4e8ba25f7a438b01b1cdf040a51408",
+      "after/foodmap-common/src/test/java/com/foodmap/common/security/InternalServiceAuthAutoConfigurationTest.java": "480a147f407781be8e17e840ce71ee074a55ed0964e59f6aed0ab39bb41432cd",
+      "after/foodmap-gateway-service/src/test/java/com/foodmap/gateway/filter/GatewayAuthFilterTest.java": "f7dde7ef9cff3407c5981fae33b4b7f160a223ff120d5a4dfeeff58c2b50028d",
+      "harness/scenarios/README.md": "a699287fedd4e35eee5ec9c53ed21fa664c774f0cfee6e5ff7c9562c0a2d4e3e",
+      "harness/scenarios/b1-internal-service-auth.yml": "d8fea08beb6c37874434bc985ed430ae45077b71b11774703092d0faf1ff2567",
+      "harness/scenarios/b1-logout.yml": "d8a149cfc361519d6639e93bedf9514c44ef5deab7ea73923649204114a0909f",
+      "harness/scenarios/internal-service-auth-check.py": "38437894991b9582b86a35c96d604a52f3191b7cc98b3a403399ca8de5ca217c",
+      "harness/verify-dependencies.json": "dcdbe5bd3660594bf9a79ace3a07b90b396e68127a7b51e21e50737e7a089337"
+    },
+    "sourceDigest": "620f76dbbac20dda0b3f0e4dc91b13e25c3081d342befd977f25cfed0328dcc1",
+    "note": "Tested uncommitted worktree; manifest pins implementation and scenario inputs, not the old baseline commit alone."
+  },
+  "finalHarness": {
+    "runId": "suite-52d8cf2a-7fd2-461d-b075-40cf31096eca",
+    "startedAt": "2026-11-10T06:45:45.429Z",
+    "finishedAt": "2026-11-10T06:47:51.646Z",
+    "ok": true,
+    "exitCode": 0,
+    "requireFull": true,
+    "summary": {
+      "scenarios": 11,
+      "passed": 11,
+      "failed": 0,
+      "skipped": 0,
+      "steps": 179
+    },
+    "command": "VERIFY_REQUIRE_FULL=1 ./harness/scripts/run-all.sh",
+    "staticChecks": "docs/api/backend/logging/integration/ios/git completed; pre-existing read() Javadoc warnings retained"
+  }
+}

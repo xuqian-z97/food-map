@@ -276,6 +276,45 @@ class AuthServiceImplTest {
         assertThat(recordingDenylist.deniedHash()).isNull();
     }
 
+    @org.junit.jupiter.params.ParameterizedTest
+    @org.junit.jupiter.params.provider.ValueSource(strings = {"", " ", "Basic invalid", "Bearer ", "Bearer", "Bearer not-a-valid-token"})
+    void logoutShouldRejectProvidedInvalidAuthorizationWithoutChangingSession(String authorization) {
+        assertLogoutRejectedWithoutChangingSession(authorization, false);
+    }
+
+    @Test
+    void logoutShouldRejectExpiredAccessTokenWithoutChangingSession() {
+        assertLogoutRejectedWithoutChangingSession(null, true);
+    }
+
+    /**
+     * 验证失败登出在写操作前拒绝，内存替身不依赖 Spring 事务也不能留下半撤销状态。
+     *
+     * @param authorization 要验证的异常认证头。
+     * @param expired 是否由本轮签发器生成已过期 Token。
+     */
+    private void assertLogoutRejectedWithoutChangingSession(String authorization, boolean expired) {
+        RecordingAccessTokenDenylist denylist = new RecordingAccessTokenDenylist();
+        TestContext context = newContext(denylist);
+        AuthService service = context.service();
+        RegisterResponse registered = service.register(defaultRegisterRequest());
+        LoginResponse login = service.login(new LoginRequest("foodie_01", "secret123"));
+        String header = expired ? "Bearer " + context.tokenIssuer().issueAccessToken(
+                registered.userId(), OffsetDateTime.now().minusMinutes(1)) : authorization;
+        String hash = context.tokenIssuer().tokenHash(login.refreshToken());
+
+        assertThatThrownBy(() -> service.logout(new LogoutRequest(login.refreshToken()), header))
+                .isInstanceOfSatisfying(FoodMapException.class, ex -> assertThat(ex.status()).isEqualTo(401));
+
+        assertThat(denylist.denyCount()).isZero();
+        assertThat(context.refreshTokenRepository().findByTokenHash(hash)).hasValueSatisfying(
+                token -> assertThat(token.getTokenStatus()).isEqualTo("ACTIVE"));
+        assertThat(context.sessionRepository().findByRefreshTokenHash(hash)).hasValueSatisfying(
+                session -> assertThat(session.getSessionStatus()).isEqualTo("ACTIVE"));
+        assertThat(service.refresh(new RefreshTokenRequest(login.refreshToken())).userId())
+                .isEqualTo(registered.userId());
+    }
+
     @Test
     void logoutWithoutAccessTokenShouldOnlyRevokeRefreshToken() {
         RecordingAccessTokenDenylist recordingDenylist = new RecordingAccessTokenDenylist();

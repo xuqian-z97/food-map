@@ -168,7 +168,8 @@ Authorization: Bearer <access-token>
 
 说明：
 
-- `Authorization` 推荐传入当前登录会话持有的 Access Token。
+- `Authorization` 推荐传入当前登录会话持有的有效 Access Token。头已提供但为空、非 Bearer、Token 结构/类型/签名无效或已过期时返回 `401 UNAUTHORIZED`，不撤销 Refresh 会话，也不写 denylist。
+- Access Token 只接受 3 个非空片段，Refresh Token 只接受 4 个非空片段；追加 `.`、`..` 或任意非空后缀均无效。
 - 认证服务不会把 Access Token 明文落库或写入 Redis。
 - 认证服务只把 Access Token 摘要写入 Redis denylist，并设置 TTL 到该 Access Token 原过期时间。
 - 如果不传 `Authorization`，接口仍会兼容只撤销请求体中的 Refresh Token，但当前未过期 Access Token 无法被立即加入 denylist。
@@ -189,8 +190,8 @@ Authorization: Bearer <access-token>
 
 错误响应：
 
-- `401 UNAUTHORIZED`：Refresh Token 无效、已过期或已失效；Access Token 已过期、签名无效或命中 denylist。
-- `403 FORBIDDEN`：已认证但账号状态不允许继续使用。
+- `401 UNAUTHORIZED`：Refresh Token 结构/类型/签名无效，或已提供的 Authorization 格式无效、Access Token 结构/类型/签名无效或已过期。
+- 对可解析但不存在、已过期或已撤销的 Refresh Token 保持幂等，不泄露会话是否存在；重复登出不因 Access Token 已在 denylist 而报错。
 
 ## 7. GET /api/users/me
 

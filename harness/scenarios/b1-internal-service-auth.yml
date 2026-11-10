@@ -1,0 +1,10 @@
+name: B1 内部服务签名与后台日志真实链路
+requires: [network, redis, internal-log, internal-admin, internal-secret]
+description: "只读验证 locator、无签名、过期、重放、越权、篡改和 admin Java HttpClient 到 log 的真实签名链路；不验证 T-033 RBAC"
+config:
+  commandTimeoutMs: 120000
+steps:
+  - command: "python3 internal-service-auth-check.py"
+    expect:
+      exitCode: 0
+      stdoutContains: '"result": "pass"'

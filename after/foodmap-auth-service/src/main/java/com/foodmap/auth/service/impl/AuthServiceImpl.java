@@ -350,9 +350,9 @@ public class AuthServiceImpl implements AuthService {
     /**
      * 执行退出登录：撤销旧表 Refresh Token、撤销新表会话，并按需把 Access Token 写入拒绝名单。
      *
-     * <p>携带 Authorization 时先撤销 Refresh Token 再校验 Access Token；Access Token 无效会抛出 401，
-     * 事务整体回滚，避免出现「Refresh Token 已撤销但请求返回失败」的半完成状态。
-     * 不携带 Authorization 时跳过拒绝名单写入，只完成 Refresh Token 撤销。</p>
+     * <p>携带 Authorization 时必须先校验其格式、Access Token 与有效期，再进行任何会话写操作；
+     * 无效认证返回 401，即使使用不支持事务的测试替身也不能留下半撤销状态。
+     * 完全不携带 Authorization 时跳过拒绝名单写入，只完成 Refresh Token 撤销。</p>
      *
      * @param request 退出登录请求，包含待撤销的 Refresh Token。
      * @param authorization HTTP Authorization 请求头，允许为空。
@@ -360,6 +360,11 @@ public class AuthServiceImpl implements AuthService {
     private void doLogout(LogoutRequest request, String authorization) {
         OffsetDateTime now = OffsetDateTime.now();
         tokenIssuer.parseRefreshToken(request.refreshToken());
+        String accessToken = extractBearerToken(authorization);
+        TokenClaims accessClaims = accessToken == null ? null : tokenIssuer.parseAccessToken(accessToken);
+        if (accessClaims != null) {
+            ensureTokenNotExpired(accessClaims, now, "Access Token已过期");
+        }
         String refreshTokenHash = tokenIssuer.tokenHash(request.refreshToken());
         refreshTokenRepository.findByTokenHash(refreshTokenHash)
                 .ifPresent(entity -> {
@@ -368,7 +373,9 @@ public class AuthServiceImpl implements AuthService {
                     }
                 });
         revokeSessionByRefreshTokenHash(refreshTokenHash, now);
-        denyAccessTokenIfPresent(authorization, now);
+        if (accessClaims != null) {
+            accessTokenDenylistClient.deny(tokenIssuer.tokenHash(accessToken), accessClaims.expiresTime());
+        }
     }
 
     /**
@@ -638,35 +645,23 @@ public class AuthServiceImpl implements AuthService {
     }
 
     /**
-     * 从 Authorization 请求头中提取 Bearer Access Token，校验未过期后写入拒绝名单。
+     * 提取登出请求的 Bearer Token，仅完全缺少请求头时走兼容分支。
      *
-     * @param authorization HTTP Authorization 请求头。
-     * @param now 当前业务时间，用于判断 Access Token 是否仍需拒绝。
-     */
-    private void denyAccessTokenIfPresent(String authorization, OffsetDateTime now) {
-        String accessToken = extractBearerToken(authorization);
-        if (accessToken == null) {
-            return;
-        }
-        TokenClaims accessClaims = tokenIssuer.parseAccessToken(accessToken);
-        if (accessClaims.isExpiredAt(now)) {
-            return;
-        }
-        accessTokenDenylistClient.deny(tokenIssuer.tokenHash(accessToken), accessClaims.expiresTime());
-    }
-
-    /**
-     * 提取 Bearer Token，非 Bearer 或空白请求头按未携带 Access Token 处理。
-     *
-     * @param authorization HTTP Authorization 请求头。
-     * @return Bearer Token 明文；不存在时返回 null。
+     * @param authorization HTTP Authorization 请求头；已提供但格式错误时返回 401。
+     * @return Bearer Token 明文；请求头不存在时返回 null。
      */
     private String extractBearerToken(String authorization) {
-        if (authorization == null || !authorization.startsWith(BEARER_PREFIX)) {
+        if (authorization == null) {
             return null;
         }
+        if (!authorization.startsWith(BEARER_PREFIX)) {
+            throw new FoodMapException(CommonErrorCode.UNAUTHORIZED, "Authorization 格式无效");
+        }
         String token = authorization.substring(BEARER_PREFIX.length()).trim();
-        return token.isBlank() ? null : token;
+        if (token.isBlank()) {
+            throw new FoodMapException(CommonErrorCode.UNAUTHORIZED, "缺少Access Token");
+        }
+        return token;
     }
 
     /**

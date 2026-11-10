@@ -18,6 +18,17 @@
 | 文档提交 | `8208c84 docs: refine identity auth refactor plan`，本次身份基线同步待提交 |
 | 相关文档 | `CODEX-front.md`、`CODEX-after.md`、`CODEX-gen.md`、`docs/api/auth-user.md`、`docs/superpowers/plans/2026-06-22-b1-auth-ios-backend-integration.md` |
 
+### 2026-11-10 加固复核补充范围
+
+本轮仅修复 T-026/T-027/T-032 审查缺陷，并复跑已有认证联调；不新增前端功能，不执行 T-033。
+
+- 联调安全点：接口契约已同步；Gateway/Auth/User/Redis/PostgreSQL、Admin 8088/Log 8089、日志验证 Auth 18081 与模拟器均就绪，准入允许复测。
+- 前端职责：沿用登录 UI 与注册短密码拦截 XCUITest，以及登出/重启/临时网络探针；无前端代码修改。
+- 后端职责：空后缀 Token 401、无效认证登出 401 且不撤销会话、无 Feign 时签名器装配、admin HttpClient 到日志服务自动签名。
+- 验收场景：`b1-logout.yml` 扩展至 36 步，`b1-internal-service-auth.yml` 新增 13 个 HTTP 检查；严格全套 11 场景、212 个后端单测均通过。
+- 证据：`evidence/2026-11-10-hardening-retest.json` 固化源码 SHA-256 与套件结果；requestId/traceId 脱敏摘要见 14:37 的接口级原始证据，缺陷详情见 issue-log §1.12。
+- 判定：本地 L2 复测通过；管理员身份仍沿用现有请求头骨架，不构成 T-033 RBAC 或生产安全验收。
+
 ## 2. 联调目标
 
 本次联调需要验证的功能：

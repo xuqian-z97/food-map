@@ -7,3 +7,4 @@ priority: P0
 owner: agent
 doneAt: 2026-11-10T13:56:54+08:00
 planRef: docs/superpowers/plans/2026-11-09-backend-hardening.md
+notes: "2026-11-10 复核修复：signer 与 optional Feign 解耦；无 Feign 上下文和真实 admin 8088→log 8089 链路通过。"

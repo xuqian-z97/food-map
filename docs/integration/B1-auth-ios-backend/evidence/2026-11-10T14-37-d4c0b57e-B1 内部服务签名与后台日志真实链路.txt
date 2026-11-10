@@ -1,0 +1,10 @@
+验证场景: B1 内部服务签名与后台日志真实链路
+Run ID: run-20261110T063749Z-d4c0b57e
+Scenario: /Users/zhangxuqian/myPrjDev/food-map/harness/scenarios/b1-internal-service-auth.yml
+开始: 2026-11-10T06:37:49.406Z
+结束: 2026-11-10T06:37:49.543Z
+耗时: 137ms
+结果: PASS (1/1)
+
+#   结果  耗时     步骤
+1   ok    136ms    command python3 internal-service-auth-check.py

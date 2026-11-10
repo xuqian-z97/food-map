@@ -183,9 +183,15 @@ public class HmacTokenCodec {
      */
     private TokenClaims parse(String token, int expectedParts) {
         String effectiveToken = Check.notBlank("token", token);
-        String[] parts = effectiveToken.split("\\.");
+        // 必须保留末尾空段：默认 split 会丢弃 token + "." 的空段，造成 denylist 哈希绕过。
+        String[] parts = effectiveToken.split("\\.", -1);
         if (parts.length != expectedParts) {
             throw new FoodMapException(CommonErrorCode.UNAUTHORIZED, "Token 结构错误");
+        }
+        for (String part : parts) {
+            if (part.isBlank()) {
+                throw new FoodMapException(CommonErrorCode.UNAUTHORIZED, "Token 结构错误");
+            }
         }
         String unsignedToken = parts[0] + "." + parts[1];
         String expectedSignature = sign(unsignedToken);
