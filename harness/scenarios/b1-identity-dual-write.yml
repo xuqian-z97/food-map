@@ -1,11 +1,11 @@
 name: 认证双写核验（身份绑定与会话）
-requires: [network, sql, redis]
+requires: [network, sql, redis, test-password]
 description: "注册、登录、登出后检查 auth_identity_bindings 与 auth_sessions 是否被真实写入：绑定 3 条、哈希与脱敏正确、会话状态随登出变化"
 config:
   baseUrl: http://127.0.0.1:8080
 vars:
-  password: Foodmap@123
   dbContainer: foodmap-postgres
+  userDbName: foodmap_user_db
 steps:
   - command: "date +%s | cut -c3-10"
     capture:
@@ -24,7 +24,7 @@ steps:
       accountName: zxq_dw_${suffix}
       phone: "139${suffix}"
       email: "dw${suffix}@example.com"
-      password: ${password}
+      password: ${env:FM_TEST_PW}
       nickname: dual-write
       registeredChannel: IOS
     expect:
@@ -32,6 +32,12 @@ steps:
       json: { code: OK }
     capture:
       userId: data.userId
+
+  - command: "docker exec ${dbContainer} psql -U foodmap -d foodmap_auth_db -tAc \"select account_id from auth_accounts where account_name='zxq_dw_${suffix}'\""
+    capture:
+      accountId: value
+    expect:
+      exitCode: 0
 
   - command: "docker exec ${dbContainer} psql -U foodmap -d foodmap_auth_db -tAc \"select count(*) from auth_identity_bindings where is_delete=0 and user_id=${userId}\""
     capture:
@@ -68,7 +74,7 @@ steps:
   - http: POST /api/auth/login
     json:
       loginIdentifier: zxq_dw_${suffix}
-      password: ${password}
+      password: ${env:FM_TEST_PW}
     expect:
       status: 200
       json: { code: OK }
@@ -107,3 +113,37 @@ steps:
   - command: "[ ${activeAfterLogout} -eq 0 ]"
     expect:
       exitCode: 0
+
+# 只清理本轮生成的账号（按 account_id / user_id），不按前缀删库，也不触碰历史数据。
+teardown:
+  - command: "docker exec ${dbContainer} sh -c 'for t in user_settings user_profiles users; do psql -U foodmap -d ${userDbName} -c \"delete from $t where user_id=${userId}\" >/dev/null; done'"
+    expect:
+      exitCode: 0
+
+  - command: "docker exec ${dbContainer} psql -U foodmap -d foodmap_auth_db -c \"delete from auth_sessions where user_id=${userId}\""
+    expect:
+      exitCode: 0
+
+  - command: "docker exec ${dbContainer} psql -U foodmap -d foodmap_auth_db -c \"delete from auth_identity_bindings where user_id=${userId}\""
+    expect:
+      exitCode: 0
+
+  - command: "docker exec ${dbContainer} psql -U foodmap -d foodmap_auth_db -c \"delete from login_logs where account_id=${accountId}\""
+    expect:
+      exitCode: 0
+
+  - command: "docker exec ${dbContainer} psql -U foodmap -d foodmap_auth_db -c \"delete from refresh_tokens where account_id=${accountId}\""
+    expect:
+      exitCode: 0
+
+  - command: "docker exec ${dbContainer} psql -U foodmap -d foodmap_auth_db -c \"delete from auth_credentials where account_id=${accountId}\""
+    expect:
+      exitCode: 0
+
+  - command: "docker exec ${dbContainer} psql -U foodmap -d foodmap_auth_db -c \"delete from auth_accounts where account_id=${accountId}\""
+    expect:
+      exitCode: 0
+
+  - command: "docker exec ${dbContainer} psql -U foodmap -d foodmap_auth_db -tAc \"select (select count(*) from auth_accounts where account_id=${accountId}) + (select count(*) from auth_identity_bindings where user_id=${userId}) + (select count(*) from auth_sessions where user_id=${userId}) + (select count(*) from refresh_tokens where account_id=${accountId}) + (select count(*) from login_logs where account_id=${accountId}) + (select count(*) from auth_credentials where account_id=${accountId})\""
+    expect:
+      equals: "0"

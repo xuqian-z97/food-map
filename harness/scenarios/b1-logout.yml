@@ -1,13 +1,13 @@
 name: B1 退出登录链路（接口级）
-requires: [network, sql, redis]
-description: "真实网关复跑 B1 登出链路：注册→登录→当前用户→登出→旧 Token 失效；Redis 与 PostgreSQL 走 docker exec，不落 Token"
+requires: [network, sql, redis, test-password]
+description: "真实网关复跑 B1 登出链路：注册→登录→当前用户→登出→旧 Token 失效；Redis 与 PostgreSQL 走 docker exec，不落 Token；teardown 只清理本轮账号并断言清零"
 config:
   baseUrl: http://127.0.0.1:8080
 vars:
-  password: Foodmap@123
   redisContainer: foodmap-redis
   dbContainer: foodmap-postgres
-steps:
+  userDbName: foodmap_user_db
+setup:
   - command: "date +%s"
     capture:
       stamp: value
@@ -19,17 +19,26 @@ steps:
       accountName: zxq_vk_${stamp}
       phone: null
       email: null
-      password: ${password}
+      password: ${env:FM_TEST_PW}
       nickname: verify-kit
       registeredChannel: IOS
     expect:
       status: 200
       json: { code: OK }
+    capture:
+      userId: data.userId
 
+  - command: "docker exec ${dbContainer} psql -U foodmap -d foodmap_auth_db -tAc \"select account_id from auth_accounts where account_name='zxq_vk_${stamp}'\""
+    capture:
+      accountId: value
+    expect:
+      exitCode: 0
+
+steps:
   - http: POST /api/auth/login
     json:
       loginIdentifier: zxq_vk_${stamp}
-      password: ${password}
+      password: ${env:FM_TEST_PW}
     expect:
       status: 200
       json: { code: OK }
@@ -82,7 +91,7 @@ steps:
       status: 401
       json: { code: UNAUTHORIZED }
 
-  - command: "docker exec ${dbContainer} psql -U foodmap -d foodmap_auth_db -tAc \"select count(*) from refresh_tokens rt join auth_accounts a on a.account_id = rt.account_id where a.account_name = 'zxq_vk_${stamp}' and rt.token_status = 'REVOKED'\""
+  - command: "docker exec ${dbContainer} psql -U foodmap -d foodmap_auth_db -tAc \"select count(*) from refresh_tokens where account_id=${accountId} and token_status='REVOKED'\""
     capture:
       revoked: value
     expect:
@@ -91,3 +100,45 @@ steps:
   - command: "[ ${revoked} -eq 1 ]"
     expect:
       exitCode: 0
+
+# 只清理本轮生成的账号（按 account_id / user_id），不按前缀删库，也不触碰历史数据。
+teardown:
+  - command: "docker exec ${dbContainer} sh -c 'for t in user_settings user_profiles users; do psql -U foodmap -d ${userDbName} -c \"delete from $t where user_id=${userId}\" >/dev/null; done'"
+    expect:
+      exitCode: 0
+
+  - command: "docker exec ${dbContainer} psql -U foodmap -d foodmap_auth_db -c \"delete from auth_sessions where user_id=${userId}\""
+    expect:
+      exitCode: 0
+
+  - command: "docker exec ${dbContainer} psql -U foodmap -d foodmap_auth_db -c \"delete from auth_identity_bindings where user_id=${userId}\""
+    expect:
+      exitCode: 0
+
+  - command: "docker exec ${dbContainer} psql -U foodmap -d foodmap_auth_db -c \"delete from login_logs where account_id=${accountId}\""
+    expect:
+      exitCode: 0
+
+  - command: "docker exec ${dbContainer} psql -U foodmap -d foodmap_auth_db -c \"delete from refresh_tokens where account_id=${accountId}\""
+    expect:
+      exitCode: 0
+
+  - command: "docker exec ${dbContainer} psql -U foodmap -d foodmap_auth_db -c \"delete from auth_credentials where account_id=${accountId}\""
+    expect:
+      exitCode: 0
+
+  - command: "docker exec ${dbContainer} psql -U foodmap -d foodmap_auth_db -c \"delete from auth_accounts where account_id=${accountId}\""
+    expect:
+      exitCode: 0
+
+  - command: "docker exec ${dbContainer} psql -U foodmap -d foodmap_auth_db -tAc \"select count(*) from auth_accounts where account_id=${accountId}\""
+    expect:
+      equals: "0"
+
+  - command: "docker exec ${dbContainer} psql -U foodmap -d foodmap_auth_db -tAc \"select (select count(*) from auth_identity_bindings where user_id=${userId}) + (select count(*) from auth_sessions where user_id=${userId})\""
+    expect:
+      equals: "0"
+
+  - command: "docker exec ${dbContainer} psql -U foodmap -d foodmap_auth_db -tAc \"select (select count(*) from refresh_tokens where account_id=${accountId}) + (select count(*) from login_logs where account_id=${accountId}) + (select count(*) from auth_credentials where account_id=${accountId})\""
+    expect:
+      equals: "0"

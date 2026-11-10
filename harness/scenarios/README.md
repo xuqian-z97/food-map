@@ -45,6 +45,20 @@ node tools/verify/cli.mjs run harness/scenarios/b1-ios-logout.yml --evidence-dir
 退出码：`0` 全通过，`1` 有步骤失败，`2` scenario/配置错误。
 每次运行都会在证据目录生成 `.txt`（人看）和 `.json`（agent 读）。
 
+## 凭据、配置与数据清理约定
+
+- **凭据单一来源**：所有需要密码的场景统一读 `${env:FM_TEST_PW}`，仓库内不写明文密码；
+  缺该变量时依赖预检标记 `test-password` 不就绪，场景跳过而不是用默认密码跑。
+- **配置与预检一致**：容器名（`foodmap-postgres` / `foodmap-redis`）、模拟器 UDID、认证日志
+  路径必须与 [verify-dependencies.json](../verify-dependencies.json) 保持一致；换机器时两处一起改。
+- **只清理本轮数据**：teardown 按本轮注册返回的 `userId` / 查询到的 `accountId` 精确删除，
+  删除后断言相关表计数为 0；**禁止按 `zxq_%` 之类前缀批量删库**，避免误删其他会话或历史数据。
+- **全库审计与回归分开**：`b1-identity-consistency.yml` 是**只读全库审计**，用于发现历史不一致；
+  它失败时说明库里有真实问题，场景**不会**自动修复或清理。其余四个场景是**本轮回归**，只断言
+  本轮产生的数据。
+- **历史基线**：本机当前存在约 39 个历史 `zxq_*` 账号（早期手工/联调遗留），不属于任何场景的
+  清理范围；新增残留应以“运行前后计数不变”判断，而不是要求这类账号为零。
+
 ## 约定
 
 - 场景只断言**可观测事实**：状态码、业务码、Redis key 数量、数据库状态、探针日志。
