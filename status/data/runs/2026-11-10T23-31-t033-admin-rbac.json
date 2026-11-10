@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-10T23-31-t033-admin-rbac",
+  "at": "2026-11-10T23:31:14+08:00",
+  "kind": "e2e",
+  "command": "node tools/verify/cli.mjs run harness/scenarios/t033-admin-rbac.yml",
+  "env": "local",
+  "result": {
+    "total": 1,
+    "passed": 1,
+    "failed": 0,
+    "skipped": 0
+  },
+  "covers": [
+    "F-020"
+  ],
+  "evidence": [
+    "/tmp/verify-evidence"
+  ],
+  "notes": ""
+}

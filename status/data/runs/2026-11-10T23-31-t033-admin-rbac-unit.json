@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-10T23-31-t033-admin-rbac-unit",
+  "at": "2026-11-10T23:31:42+08:00",
+  "kind": "unit",
+  "command": "cd after && mvn -pl foodmap-common,foodmap-gateway-service,foodmap-auth-service,foodmap-user-service,foodmap-admin-service,foodmap-log-service -am test -Dstyle.color=never",
+  "env": "local",
+  "result": {
+    "total": 83,
+    "passed": 83,
+    "failed": 0,
+    "skipped": 0
+  },
+  "perModule": {
+    "foodmap-admin-service": 50,
+    "foodmap-gateway-service": 33
+  },
+  "modules": [
+    "foodmap-admin-service",
+    "foodmap-gateway-service"
+  ],
+  "covers": [
+    "F-020"
+  ],
+  "evidence": [
+    "after/foodmap-admin-service/target/surefire-reports"
+  ]
+}
